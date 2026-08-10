@@ -1,0 +1,31 @@
+# Flutter & Dart gitignore
+.dart_tool/
+.idea/
+.vscode/
+.pub/
+.pub-cache/
+build/
+
+# Android
+.gradle/
+local.properties
+capture_*.png
+*.apk
+*.aab
+
+# iOS
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+**/Runner.xcodeproj/project.xcworkspace
+**/Runner.xcodeproj/xcuserdata
+**/Runner.xcworkspace/
+**/Flutter/App.framework
+**/Flutter/Flutter.framework
+**/Flutter/Generated.xcconfig
+
+# OS
+.DS_Store
+Thumbs.db

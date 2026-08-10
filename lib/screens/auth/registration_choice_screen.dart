@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'corporate_signup_screen.dart';
-import 'public_signup_screen.dart';
+import 'company_manager_signup_screen.dart';
 
 class RegistrationChoiceScreen extends StatelessWidget {
   const RegistrationChoiceScreen({Key? key}) : super(key: key);
@@ -25,31 +25,30 @@ class RegistrationChoiceScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Join KarmaRide',
+                'How will you use KarmaRide?',
                 style: GoogleFonts.outfit(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Select your account type to get started',
+                'Select how you want to access the platform',
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   color: Colors.white70,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
 
-              // Option 1: Corporate Employee
-              _buildChoiceCard(
+              // Button 1: I'm a User (Employees & Public Commuters)
+              _buildChoiceButton(
                 context,
-                title: 'Corporate Employee',
-                subtitle: 'Verify with your company email domain (e.g. name@tcs.com) & get instant access.',
-                icon: Icons.business_rounded,
+                emoji: '🙋',
+                title: "I'm a User",
+                subtitle: 'Ride-pooling for corporate employees and commuters (Driver & Rider).',
                 accentColor: const Color(0xFFFF5722),
-                badgeText: '90-Day Free Trial',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -60,21 +59,20 @@ class RegistrationChoiceScreen extends StatelessWidget {
                 },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Option 2: Public User (Non-Corporate)
-              _buildChoiceCard(
+              // Button 2: I'm a Manager (Company Admins & HR)
+              _buildChoiceButton(
                 context,
-                title: 'Public User (Non-Corporate)',
-                subtitle: 'Join as an individual. Verify with Aadhaar & Driving License to offer or request rides.',
-                icon: Icons.person_outline_rounded,
+                emoji: '🏢',
+                title: "I'm a Manager",
+                subtitle: 'Company HR & portal managers entering an activation code.',
                 accentColor: const Color(0xFF29B6F6),
-                badgeText: 'Individual Verification',
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const PublicSignupScreen(),
+                      builder: (context) => const CompanyManagerSignupScreen(),
                     ),
                   );
                 },
@@ -84,7 +82,7 @@ class RegistrationChoiceScreen extends StatelessWidget {
 
               Center(
                 child: Text(
-                  '🔒 Secure & Encrypted Verification',
+                  '🔒 Encrypted & Verified Access',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: Colors.white38,
@@ -99,13 +97,12 @@ class RegistrationChoiceScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChoiceCard(
+  Widget _buildChoiceButton(
     BuildContext context, {
+    required String emoji,
     required String title,
     required String subtitle,
-    required IconData icon,
     required Color accentColor,
-    required String badgeText,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -115,17 +112,16 @@ class RegistrationChoiceScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF151C33),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: accentColor.withOpacity(0.4), width: 1.5),
+          border: Border.all(color: accentColor.withOpacity(0.5), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: accentColor.withOpacity(0.08),
+              color: accentColor.withOpacity(0.1),
               blurRadius: 15,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
@@ -133,54 +129,34 @@ class RegistrationChoiceScreen extends StatelessWidget {
                 color: accentColor.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: accentColor, size: 28),
+              child: Text(emoji, style: const TextStyle(fontSize: 28)),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: accentColor,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      height: 1.4,
+                      height: 1.3,
                       color: Colors.white70,
                     ),
                   ),
                 ],
               ),
             ),
+            Icon(Icons.chevron_right_rounded, color: accentColor, size: 28),
           ],
         ),
       ),

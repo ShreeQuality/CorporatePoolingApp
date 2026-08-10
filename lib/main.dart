@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'core/services/supabase_service.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'screens/home/home_screen.dart';
+import 'screens/auth/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +21,10 @@ class CorporatePoolingApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: MaterialApp(
-        title: 'Corporate Pooling',
+        title: 'KarmaRide',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
-        home: const HomeScreen(),
+        home: const WelcomeScreen(),
       ),
     );
   }

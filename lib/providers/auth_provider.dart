@@ -41,4 +41,38 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     return false;
   }
+
+  Future<Map<String, dynamic>> registerCorporate({
+    required String fullName,
+    required String email,
+    required String password,
+    String? phone,
+  }) async {
+    try {
+      return await _apiService.registerCorporate(fullName, email, password, phone);
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> registerPublic({
+    required String fullName,
+    required String email,
+    required String password,
+    String? phone,
+  }) async {
+    try {
+      return await _apiService.registerPublic(fullName, email, password, phone);
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyOtp(String email, String otp) async {
+    try {
+      return await _apiService.verifyOtp(email, otp);
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
 }

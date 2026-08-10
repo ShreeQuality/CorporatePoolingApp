@@ -1,5 +1,5 @@
 # Codemagic CI/CD Configuration for CorporatePoolingApp (KarmaRide)
-# Official Flutter Cloud Build Pipeline (EAS Equivalent for Flutter)
+# Auto-triggers cloud builds automatically on `git push`
 
 workflows:
   android-release:
@@ -9,6 +9,13 @@ workflows:
     environment:
       flutter: stable
       java: 17
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
     scripts:
       - name: Set up local properties
         script: |
@@ -24,7 +31,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - user@example.com
+          - shreequality@gmail.com
         notify:
           success: true
           failure: true

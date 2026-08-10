@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'corporate_signup_screen.dart';
+import 'user_phone_login_screen.dart';
 import 'company_manager_signup_screen.dart';
 
 class RegistrationChoiceScreen extends StatelessWidget {
@@ -42,7 +42,7 @@ class RegistrationChoiceScreen extends StatelessWidget {
               ),
               const SizedBox(height: 36),
 
-              // Button 1: I'm a User (Employees & Public Commuters)
+              // Button 1: I'm a User (Phone Number OTP Sign Up / Login)
               _buildChoiceButton(
                 context,
                 emoji: '🙋',
@@ -53,7 +53,7 @@ class RegistrationChoiceScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CorporateSignupScreen(),
+                      builder: (context) => const UserPhoneLoginScreen(),
                     ),
                   );
                 },
@@ -61,7 +61,7 @@ class RegistrationChoiceScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Button 2: I'm a Manager (Company Admins & HR)
+              // Button 2: I'm a Manager (Activation Code)
               _buildChoiceButton(
                 context,
                 emoji: '🏢',

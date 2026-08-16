@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.2 | August 2026 | Dedicated Admin Portal
+### Version 2.3 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -52,10 +52,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 3. **Domain Ownership Verification:** Super Admin verifies the official corporate domain before whitelisting it, preventing lookalike domain spoofing.
 4. **1-Click Fraud Killswitch:** Super Admin can immediately ban fraudulent accounts, freezing associated wallets and invalidating linked accounts.
 
-### 2.3 Family Wallet Linking Policy & Governance
-1. **Family Linking Caps:** Globally configure maximum family sub-accounts per primary employee (Default: **4 accounts**).
-2. **Monthly Spending Limits:** Configure maximum monthly Karma Coin spending limits for linked family accounts to prevent system abuse.
-
 ---
 
 ## 3. Tech Park, Building & Node Directory
@@ -68,12 +64,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 2. **Multi-Company Mapping:**
    - Map multiple tenant companies to the same physical `building_id` to enable cross-company pooling.
 
-### 3.2 Official Pickup & Drop Landmark Nodes
-1. **Landmark Node Registry:**
-   - Define verified campus meeting points (e.g., *Gate 1 Security Booth*, *Basement B2 Pillar 12*, *Metro Station Drop-off*).
-2. **Route Snapping:**
-   - Automatically snap rider pickup pins to these verified nodes to eliminate driver detour confusion.
-
 ---
 
 ## 4. Driver, Vehicle & Commute Policy Management
@@ -81,49 +71,55 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ### 4.1 Vehicle Category & Seat Capacity Controls
 1. **Seat Capacity Overrides:**
-   - Dynamically adjust maximum allowed passenger limits per vehicle category without code redeployment:
-     - Motorcycle / Scooter: **1 Passenger** (Strictly locked).
-     - Auto-Rickshaw: **2 Passengers**.
-     - Hatchback / Sedan / SUV: **1 to 4 Passengers** (Configurable).
+   - Motorcycle / Scooter: **1 Passenger** (Locked).
+   - Auto-Rickshaw: **2 Passengers**.
+   - Hatchback / Sedan / SUV: **1 to 4 Passengers** (Configurable).
 
 ### 4.2 Two-Wheeler Safety & Helmet Policy Toggles
-1. **Spare Helmet Enforcement:**
-   - Global or city-specific toggle: `ENFORCE_MANDATORY_SPARE_HELMET = TRUE`.
-   - When enabled, hides all 2-wheeler rides from search results unless driver verified `has_spare_helmet = true`.
+1. **Spare Helmet Enforcement:** Global toggle `ENFORCE_MANDATORY_SPARE_HELMET = TRUE`.
 
 ### 4.3 Karma Coin Pricing & Distance Rate Configurator
-1. **Base Rate per Kilometer:**
-   - Configure the base Karma Coin earn/spend rate per kilometer:
-     - Four-Wheeler (Car/Sedan): Default = **2.0 Coins / km**.
-     - Two-Wheeler (Bike/Scooter): Default = **1.0 Coin / km**.
-2. **Dynamic Fuel Offset Multipliers:**
-   - Adjust coin rates during high-demand peak traffic windows (e.g. 1.2x multiplier between 8:30 AM – 10:00 AM).
-
-### 4.4 Recurring Commute & Nightly Auto-Match Controller
-1. **Validity Duration Settings:**
-   - Set maximum allowed validity for recurring rides (Default options: `1 week`, `1 month`, `3 months`).
-2. **Nightly Cron Trigger Window:**
-   - Configure the execution schedule for the pre-matching cron job (Default: **8:00 PM Local Time daily**).
+1. **Base Rate per Kilometer:** Four-Wheeler (Default: **2.0 Coins/km**), Two-Wheeler (Default: **1.0 Coin/km**).
 
 ---
 
-## 5. Rider Booking, Escrow & Dispute Resolution
-*(Corresponds to Main SRS Section 5: Find a Ride)*
+## 5. Rider Booking, Escrow & Request Lifecycle Controls
+*(Corresponds to Main SRS Section 8: Ride Request, Acceptance & Wait Timers)*
 
-### 5.1 Request Expiry & Auto-Cancellation Timeout
-1. **Driver Response Window:**
-   - Configure how long a driver has to accept a ride request before it auto-expires (Default: **15 minutes**; drops to **3 minutes** for *NOW ⚡* rides).
-2. **Auto-Refund:**
-   - Unaccepted or expired requests automatically release locked escrow coins back to the rider's balance.
+```
++-----------------------------------------------------------------------------------+
+|               Super Admin Console: Request & Timer Governance Dashboard           |
++-----------------------------------------------------------------------------------+
+|  Request Expiry Timers:                                                           |
+|  - NOW ⚡ Ride Expiry Window:                  [ 3   ] minutes                    |
+|  - SCHEDULED 🕐 Ride Expiry Window:            [ 15  ] minutes                    |
+|  - SCHEDULED Hard Cutoff before departure:     [ 15  ] minutes                    |
+|  - RECURRING 🔄 Nightly Lock-in Window:        [ 2   ] hours (8 PM - 10 PM)       |
+|                                                                                   |
+|  Multi-Request & Booking Limits:                                                  |
+|  - Max Simultaneous Requests per Rider:        [ 3   ] drivers                    |
+|                                                                                   |
+|  Wait Timer & No-Show Compensation:                                               |
+|  - Pickup Arrival Geofence Radius:             [ 50  ] meters                     |
+|  - Driver Free Wait Window:                    [ 5   ] minutes                    |
+|  - Rider No-Show Compensation to Driver:       [ 0   ] Coins (Default: 0, editable|
+|                                                                                   |
+|  Anti-Spam & Strike Policies:                                                     |
+|  - Rejection Count Threshold:                  [ 3   ] rejections in 7 days       |
+|  - Mutual Cooldown Lockout Duration:           [ 7   ] days                       |
+|  - Driver Late Cancellation Warning Window:    [ 30  ] minutes before depart      |
+|                                                                                   |
+|                                [ SAVE & APPLY POLICY ]                            |
++-----------------------------------------------------------------------------------+
+```
 
-### 5.2 Escrow Lock Intervention & Manual Refund Tool
-1. **Stuck Escrow Management:**
-   - Inspect any ride request in `'pending'` or `'in_ride'` status.
-   - Admin action: **"Force Release Escrow"** (instantly returns coins to rider) or **"Force Settle to Driver"** (resolves driver compensation in network failure scenarios).
-
-### 5.3 Booking Velocity & Abuse Protection
-1. **Concurrent Request Limits:**
-   - Set maximum active simultaneous ride requests allowed per rider (Default: **3 active requests** to prevent seat hoarding).
+### 5.1 Dynamic Parameter Descriptions
+1. **Rider No-Show Compensation (Default: 0 Coins):**
+   - Configured to **0 Coins by default** for friendly community onboarding; Super Admin can adjust this to 5 or 10 coins at any time without app store updates.
+2. **Escrow Intervention & Manual Force-Release:**
+   - Super Admin tool to force-release stuck escrow locks or force-settle disputed transactions.
+3. **Driver Strike Management:**
+   - Audit and reset late cancellation strikes for drivers with valid emergency excuses.
 
 ---
 
@@ -170,11 +166,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 2. **Dispatch Escalation:**
    - Direct integration link to emergency dispatch authorities (112) with pre-generated incident summary tokens.
 
-### 7.2 Safety Dispute & Strike Audit Console
-1. **User Reports & Strike System:**
-   - Audit rider/driver reports (rash driving, rude behavior, no spare helmet).
-   - Manage the **3-Strike System** (Strike 1: Warning, Strike 2: 7-day matching freeze, Strike 3: Permanent ban).
-
 ---
 
 ## 8. Karma Coin Economy & Corporate Prepaid Plan Management
@@ -203,4 +194,4 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ### 9.2 Audit Logging
 - Mandatory Multi-Factor Authentication (MFA / TOTP) on all admin accounts.
-- Granular Audit Logging: Every parameter change, user ban, or escrow release is immutably logged in `admin_audit_logs` with admin UID, IP address, old value, and new value.
+- Granular Audit Logging: Every parameter change, user ban, or escrow release is immutably logged in `admin_audit_logs`.

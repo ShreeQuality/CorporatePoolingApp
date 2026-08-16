@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.7 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.8 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -56,7 +56,8 @@ Unlike commercial taxi aggregators (Uber, Ola, Rapido), CorporatePoolingApp oper
 ```
 Driver Flow:
   GiveRideScreen → Vehicle & Helmet Picker → TimePicker (Now/Schedule/Recurring)
-  → RouteMapScreen (Polyline generation) → Post to Supabase `rides` table
+  → Approx Reach Time (ETA) Calculated → RouteMapScreen (Polyline generation)
+  → Post to Supabase `rides` table (Max 4/day cap check)
   → "Create Return Ride?" 1-Tap Prompt → RequestsScreen (Review & Accept)
   → DriverLiveScreen (BLE Broadcast & GPS)
 
@@ -237,11 +238,25 @@ Immediately after a driver posts a morning ride (whether **NOW ⚡** or **SCHEDU
 +-------------------------------------------------------------------+
 ```
 
-* **Purpose:** Educates immediate/now drivers about scheduling their return commutes and automatically doubles platform ride inventory with 1 tap!
+---
+
+### 4.6 Driver Daily Posting Limits & Collision Detection (Max 4 Rides/Day)
+
+To accommodate both corporate employees and family users (e.g. school drop, office morning, office evening, family errand) while preventing illegal taxi fraud:
+
+1. **Daily Posting Cap:** Maximum **4 active rides per user per calendar day** (Configurable in Super Admin).
+2. **Approximate Destination Arrival Time (ETA Calculation):**
+   * When a driver enters `depart_time` (e.g. `8:30 AM`), the app automatically computes `approx_reach_time` based on route distance and traffic speed (e.g. `9:15 AM`).
+   * Stored in the database as `approx_reach_time TIME NOT NULL`.
+3. **Time-Overlap Collision Guard:**
+   * A driver cannot post a second ride whose time window `[depart_time, approx_reach_time]` overlaps with an already existing active ride of that driver.
+   * Prevents impossible physics (e.g. being in two cars at the same hour).
+4. **Dual-Role Collision Prevention:**
+   * The database prevents a user from posting a ride as a Driver during any time slot where they already have a confirmed booking as a Rider.
 
 ---
 
-### 4.6 Database Schema: `public.rides`
+### 4.7 Database Schema: `public.rides`
 
 ```sql
 CREATE TYPE ride_status_enum AS ENUM ('posted', 'started', 'in_progress', 'completed', 'cancelled');
@@ -262,11 +277,12 @@ CREATE TABLE public.rides (
     route_points JSONB NOT NULL,
     distance_km NUMERIC(5, 2) NOT NULL,
     estimated_duration_mins INT NOT NULL,
+    depart_time TIME NOT NULL,
+    approx_reach_time TIME NOT NULL, -- Destination arrival ETA
+    depart_date DATE,
     seats_offered INT NOT NULL DEFAULT 1,
     seats_available INT NOT NULL DEFAULT 1,
     time_type time_type_enum NOT NULL,
-    depart_time TIME NOT NULL,
-    depart_date DATE,
     recurring_days INT[] DEFAULT '{}',
     valid_until DATE,
     completion_dates DATE[] DEFAULT '{}',

@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.4 | August 2026 | Dedicated Admin Portal
+### Version 2.5 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -69,17 +69,28 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 ## 4. Driver, Vehicle & Commute Policy Management
 *(Corresponds to Main SRS Section 4: Offer a Ride)*
 
-### 4.1 Vehicle Category & Seat Capacity Controls
-1. **Seat Capacity Overrides:**
-   - Motorcycle / Scooter: **1 Passenger** (Locked).
-   - Auto-Rickshaw: **2 Passengers**.
-   - Hatchback / Sedan / SUV: **1 to 4 Passengers** (Configurable).
-
-### 4.2 Two-Wheeler Safety & Helmet Policy Toggles
-1. **Spare Helmet Enforcement:** Global toggle `ENFORCE_MANDATORY_SPARE_HELMET = TRUE`.
-
-### 4.3 Karma Coin Pricing & Distance Rate Configurator
-1. **Base Rate per Kilometer:** Four-Wheeler (Default: **2.0 Coins/km**), Two-Wheeler (Default: **1.0 Coin/km**).
+```
++-----------------------------------------------------------------------------------+
+|               Super Admin Console: Driver Commute Policies & Limits               |
++-----------------------------------------------------------------------------------+
+|  Driver Daily Posting Caps:                                                       |
+|  - MAX_DAILY_POSTED_RIDES_PER_DRIVER:          [ 4   ] rides/day (Default: 4)     |
+|  - [X] ENFORCE_TIME_OVERLAP_COLLISION_GUARD    (Block overlapping time windows)   |
+|  - [X] ENFORCE_DUAL_ROLE_COLLISION_GUARD       (Block driver+rider at same hour)  |
+|                                                                                   |
+|  Vehicle Category & Capacity Limits:                                              |
+|  - Motorcycle / Scooter Max Passengers:        [ 1   ] (Locked)                   |
+|  - Auto-Rickshaw Max Passengers:               [ 2   ] (Configurable)             |
+|  - Car / Sedan / SUV Max Passengers:           [ 3   ] (Configurable: 1 to 4)     |
+|  - [X] ENFORCE_MANDATORY_SPARE_HELMET          (Require spare helmet on 2-wheelers|
+|                                                                                   |
+|  Karma Coin Rates:                                                                |
+|  - Four-Wheeler Base Rate:                     [ 2.0 ] Coins/km                   |
+|  - Two-Wheeler Base Rate:                      [ 1.0 ] Coins/km                   |
+|                                                                                   |
+|                                [ SAVE POLICY ]                                    |
++-----------------------------------------------------------------------------------+
+```
 
 ---
 

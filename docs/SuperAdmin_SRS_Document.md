@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.6 | August 2026 | Dedicated Admin Portal
+### Version 2.7 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -64,62 +64,63 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 *(Corresponds to Main SRS Section 4: Offer a Ride)*
 
 ```
-+-----------------------------------------------------------------------------------+
-|               Super Admin Console: Driver Commute Policies & Limits               |
-+-----------------------------------------------------------------------------------+
-|  Driver Daily Posting Caps:                                                       |
-|  - MAX_DAILY_POSTED_RIDES_PER_DRIVER:          [ 4   ] rides/day (Default: 4)     |
-|  - [X] ENFORCE_TIME_OVERLAP_COLLISION_GUARD    (Block overlapping time windows)   |
-|  - [X] ENFORCE_DUAL_ROLE_COLLISION_GUARD       (Block driver+rider at same hour)  |
-|                                                                                   |
-|  Vehicle Category & Capacity Limits:                                              |
-|  - Motorcycle / Scooter Max Passengers:        [ 1   ] (Locked)                   |
-|  - Auto-Rickshaw Max Passengers:               [ 2   ] (Configurable)             |
-|  - Car / Sedan / SUV Max Passengers:           [ 3   ] (Configurable: 1 to 4)     |
-|  - [X] ENFORCE_MANDATORY_SPARE_HELMET          (Require spare helmet on 2-wheelers|
-|                                                                                   |
-|  Karma Coin Rates:                                                                |
-|  - Four-Wheeler Base Rate:                     [ 2.0 ] Coins/km                   |
-|  - Two-Wheeler Base Rate:                      [ 1.0 ] Coins/km                   |
-|                                                                                   |
-|                                [ SAVE POLICY ]                                    |
-+-----------------------------------------------------------------------------------+
++-------------------------------------------------------------------+
+|       Super Admin Console: Driver Commute Policies & Limits       |
++-------------------------------------------------------------------+
+|  Driver Daily Posting Caps:                                       |
+|  - MAX_DAILY_POSTED_RIDES_PER_DRIVER:          [ 4   ] rides/day  |
+|  - [X] ENFORCE_TIME_OVERLAP_COLLISION_GUARD    (Block overlap)    |
+|  - [X] ENFORCE_DUAL_ROLE_COLLISION_GUARD       (Block dual role)  |
+|                                                                   |
+|  Vehicle Category & Capacity Limits:                              |
+|  - Motorcycle / Scooter Max Passengers:        [ 1   ] (Locked)   |
+|  - Auto-Rickshaw Max Passengers:               [ 2   ]            |
+|  - Car / Sedan / SUV Max Passengers:           [ 3   ] (1 to 4)   |
+|  - [X] ENFORCE_MANDATORY_SPARE_HELMET          (2-Wheeler rule)   |
+|                                                                   |
+|  Karma Coin Rates:                                                |
+|  - Four-Wheeler Base Rate:                     [ 2.0 ] Coins/km   |
+|  - Two-Wheeler Base Rate:                      [ 1.0 ] Coins/km   |
+|                                                                   |
+|                                [ SAVE POLICY ]                    |
++-------------------------------------------------------------------+
 ```
 
 ---
 
 ## 5. Rider Booking, Escrow, Boarding & Lifecycle Governance
-*(Corresponds to Main SRS Section 8 & 9: Request Flow & 3-Level Boarding)*
+*(Corresponds to Main SRS Section 8, 9 & 10: Request Flow, 3-Level Boarding & Drop-Off)*
 
 ```
-+-----------------------------------------------------------------------------------+
-|               Super Admin Console: Request & Boarding Governance Dashboard        |
-+-----------------------------------------------------------------------------------+
-|  Boarding & Anti-Fraud Controls:                                                  |
-|  - BLE Proximity Signal Threshold:             [ -65 ] dBm (approx 3 meters)      |
-|  - Drop-off Geofence Radius:                   [ 500 ] meters                     |
-|  - MAX_CONSECUTIVE_SKIPS_BEFORE_PENALTY:       [ 3   ] skips                      |
-|                                                                                   |
-|  Competitive Feature Switches:                                                    |
-|  - [X] ENABLE_AUTO_RETURN_RIDE_PROMPT          (Prompt return trip on post)       |
-|  - [X] ENABLE_RIDE_SEARCH_ALERTS               (Notify riders when ride posted)   |
-|  - [X] ENABLE_DRIVER_AUTO_ACCEPT_TOGGLE        (Allow drivers smart auto-accept)  |
-|  - MAX_SEATS_PER_RIDER_BOOKING:                [ 2   ] seats max                  |
-|                                                                                   |
-|  Wait Timer & No-Show Compensation:                                               |
-|  - Pickup Arrival Geofence Radius:             [ 50  ] meters                     |
-|  - Driver Free Wait Window:                    [ 5   ] minutes                    |
-|  - Rider No-Show Compensation to Driver:       [ 0   ] Coins (Default: 0, editable|
-|                                                                                   |
-|  Dispute & Escrow Intervention:                                                   |
-|  [ ⚡ FORCE RELEASE ESCROW TO RIDER ]    [ ⚡ FORCE SETTLE COINS TO DRIVER ]        |
-+-----------------------------------------------------------------------------------+
++-------------------------------------------------------------------+
+|       Super Admin Console: Lifecycle & ESG Governance Dashboard   |
++-------------------------------------------------------------------+
+|  Boarding & Anti-Fraud Controls:                                  |
+|  - BLE Proximity Signal Threshold:             [ -65 ] dBm        |
+|  - Drop-off Geofence Radius:                   [ 500 ] meters     |
+|  - MAX_CONSECUTIVE_SKIPS_BEFORE_PENALTY:       [ 3   ] skips      |
+|                                                                   |
+|  ESG Carbon Engine & Attendance Policies:                         |
+|  - ESG CO2 Emission Factor:                    [ 0.15] kg CO2/km  |
+|  - Tree Offset Factor:                         [ 20.0] kg CO2/tree|
+|  - Soft Attendance Morning Window Start:       [06:00] AM         |
+|  - Soft Attendance Morning Window End:         [11:00] AM         |
+|                                                                   |
+|  Competitive Feature Switches:                                    |
+|  - [X] ENABLE_AUTO_RETURN_RIDE_PROMPT          (Prompt on post)   |
+|  - [X] ENABLE_RIDE_SEARCH_ALERTS               (Notify riders)    |
+|  - [X] ENABLE_DRIVER_AUTO_ACCEPT_TOGGLE        (Smart auto-accept)|
+|  - MAX_SEATS_PER_RIDER_BOOKING:                [ 2   ] seats max  |
+|                                                                   |
+|  Wait Timer & No-Show Compensation:                               |
+|  - Pickup Arrival Geofence Radius:             [ 50  ] meters     |
+|  - Driver Free Wait Window:                    [ 5   ] minutes    |
+|  - Rider No-Show Compensation to Driver:       [ 0   ] Coins      |
+|                                                                   |
+|  Dispute & Escrow Intervention:                                   |
+|  [ ⚡ FORCE RELEASE ESCROW TO RIDER ]    [ ⚡ FORCE SETTLE TO DRIVER] |
++-------------------------------------------------------------------+
 ```
-
-### 5.1 Dispute & Failure Investigation Tools
-1. **Premature Drop-off Investigator:** Visual audit map displaying the vehicle's actual drop coordinate vs agreed drop pin.
-2. **Chronic Skip Deprioritizer:** Automated de-ranking of drivers who skip $> 3$ consecutive recurring days without 24h notice.
-3. **Emergency Manual Override:** Allows platform support officers to force-verify boarding in phone battery death scenarios.
 
 ---
 
@@ -127,32 +128,29 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 *(Corresponds to Main SRS Section 6: Matching Algorithm)*
 
 ```
-+-----------------------------------------------------------------------------------+
-|               Super Admin Console: Algorithm Tuning Dashboard                     |
-+-----------------------------------------------------------------------------------+
-|  Matching Radii Controls:                                                         |
-|  - Phase 1 Pickup Radius (Pre-departure):      [ 500  ] meters                    |
-|  - Same Building Expanded Radius:              [ 1500 ] meters                    |
-|  - Phase 2 Pickup Radius (Live On-Route):      [ 150  ] meters                    |
-|  - Drop-off Radius Threshold:                  [ 500  ] meters                    |
-|                                                                                   |
-|  Mathematical Multipliers:                                                        |
-|  - Urban Road Tortuosity Multiplier:           [ 1.30 ] x  (Slider: 1.0 - 2.0)    |
-|                                                                                   |
-|  Trust & Priority Scoring Weights (Total = 100):                                  |
-|  - Proximity Weight:                           [  40  ] pts                       |
-|  - Same Company Colleague Bonus:               [  30  ] pts                       |
-|  - Same Building Cluster Bonus:                [  25  ] pts                       |
-|  - Time Compatibility Weight:                  [  20  ] pts                       |
-|  - Driver Karma Rating Weight:                 [  10  ] pts                       |
-|                                                                                   |
-|  Hard Safety Filter Policies:                                                     |
-|  - [X] Enforce Mandatory 2-Wheeler Spare Helmet Guard                             |
-|  - [X] Enforce Strict Polyline Directionality Index Check                         |
-|  - [X] Enforce Women-Only Hard Cryptographic Isolation                            |
-|                                                                                   |
-|                    [ TEST ALGORITHM SIMULATOR ]   [ SAVE & PUBLISH CONFIG ]       |
-+-----------------------------------------------------------------------------------+
++-------------------------------------------------------------------+
+|       Super Admin Console: Algorithm Tuning Dashboard             |
++-------------------------------------------------------------------+
+|  Matching Radii Controls:                                         |
+|  - Phase 1 Pickup Radius (Pre-departure):      [ 500  ] meters    |
+|  - Same Building Expanded Radius:              [ 1500 ] meters    |
+|  - Phase 2 Pickup Radius (Live On-Route):      [ 150  ] meters    |
+|  - Drop-off Radius Threshold:                  [ 500  ] meters    |
+|                                                                   |
+|  Trust & Priority Scoring Weights (Total = 100):                  |
+|  - Proximity Weight:                           [  40  ] pts       |
+|  - Same Company Colleague Bonus:               [  30  ] pts       |
+|  - Same Building Cluster Bonus:                [  25  ] pts       |
+|  - Time Compatibility Weight:                  [  20  ] pts       |
+|  - Driver Karma Rating Weight:                 [  10  ] pts       |
+|                                                                   |
+|  Hard Safety Filter Policies:                                     |
+|  - [X] Enforce Mandatory 2-Wheeler Spare Helmet Guard             |
+|  - [X] Enforce Strict Polyline Directionality Index Check         |
+|  - [X] Enforce Women-Only Hard Cryptographic Isolation            |
+|                                                                   |
+|                    [ TEST ALGORITHM SIMULATOR ]   [ SAVE CONFIG ] |
++-------------------------------------------------------------------+
 ```
 
 ---
@@ -171,14 +169,11 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 ## 8. Karma Coin Economy & Corporate Prepaid Plan Management
 
 ### 8.1 Double-Entry Ledger & Supply Audit
-1. **Ledger Monitor:**
-   - Real-time audit of total platform Karma Coins in circulation, locked escrow volume, and historical burn/mint rates.
+1. **Ledger Monitor:** Real-time audit of total platform Karma Coins in circulation, locked escrow volume, and historical burn/mint rates.
 
 ### 8.2 Corporate Prepaid Commute Pools & Invoicing
-1. **Prepaid Pool Management:**
-   - Monitor employer prepaid wallet balances and generate automated **18% GST B2B Tax Invoices** (SAC 9984).
-2. **Fuel Voucher Reconciliation:**
-   - Reconcile HPCL/BPCL/IOCL gift card distributions against employer-funded subsidy pools.
+1. **Prepaid Pool Management:** Monitor employer prepaid wallet balances and generate automated **18% GST B2B Tax Invoices** (SAC 9984).
+2. **Fuel Voucher Reconciliation:** Reconcile HPCL/BPCL/IOCL gift card distributions against employer-funded subsidy pools.
 
 ---
 

@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.9 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.10 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -14,6 +14,7 @@
 7. [GPS Tracking System & Live Navigation](#7-gps-tracking-system--live-navigation)
 8. [Ride Request, Acceptance Flow, Wait Timers & Commute Calendar](#8-ride-request-acceptance-flow-wait-timers--commute-calendar)
 9. [Hardware-Agnostic 3-Level Boarding Verification & State Machine](#9-hardware-agnostic-3-level-boarding-verification--state-machine)
+10. [Ride Completion, Atomic Coin Transfer & ESG Engine](#10-ride-completion-atomic-coin-transfer--esg-engine)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -60,13 +61,13 @@ Driver Flow:
   → Approx Reach Time (ETA) Calculated → RouteMapScreen (Polyline generation)
   → Post to Supabase `rides` table (Max 4/day cap check)
   → "Create Return Ride?" 1-Tap Prompt → RequestsScreen (Review & Accept)
-  → DriverLiveScreen (BLE Broadcast & GPS) → Boarding Verified → Complete Ride
+  → DriverLiveScreen (BLE Broadcast & GPS) → Boarding Verified → Complete Ride (Drop-off & Coins)
 
 Rider Flow:
   FindRideScreen → RiderTimePicker → PostGIS + In-Memory Polyline Match
   → (If 0 rides: "Set Search Alert" 🔔) → RoutePreviewScreen (Drag & Snap Pins)
   → Multi-Seat Selection [1 or 2] → Send Request (Smart Escrow locked)
-  → RiderLiveScreen (Live Tracking & 5-min timer) → Boarding (BLE/QR/PIN) → Drop-off
+  → RiderLiveScreen (Live Tracking & 5-min timer) → Boarding (BLE/QR/PIN) → Drop-off & Receipt
 
 Corporate Employer / HR Manager Flow:
   CompanyManagerSignup (Upload GSTIN + CIN + LOA) → Super Admin Review
@@ -212,7 +213,7 @@ CREATE TABLE public.users (
 ### 4.3 Departure Time Modes
 - **Mode A: ⚡ NOW** (Single instance, real-time discovery).
 - **Mode B: 🕐 SCHEDULED** (Future departure, departure push notification).
-- **Mode C: 🔄 RECURRING** (Mon–Fri fixed commute, 8:00 PM auto-match cron, per-day completion state in `completion_dates[]`, and daily skip toggle in `skip_dates[]`).
+- **Mode C: 🔄 RECURRING** (Mon–Fri fixed commute, 8:00 PM auto-match cron, per-day completion in `completion_dates[]`, and daily skip toggle in `skip_dates[]`).
 
 ---
 
@@ -688,13 +689,9 @@ Drivers can toggle **"Smart Auto-Accept"** in their profile settings with strict
 
 **Primary Modules:** `lib/services/boarding_verification_service.dart`, `lib/screens/live/driver_live_screen.dart`, `lib/screens/live/rider_live_screen.dart`
 
-Section 9 defines the hardware-agnostic boarding verification protocol, the master ride lifecycle state machine, the infinite recurring state machine, day-wise skip mechanisms, and the comprehensive anti-fraud failure matrix.
-
 ---
 
 ### 9.1 Streamlined 3-Level Boarding Hierarchy
-
-To guarantee 100% boarding reliability on budget Indian smartphones without NFC chips, the system implements a strict 3-tier hierarchy:
 
 ```
 [ Rider Steps into Vehicle ]
@@ -754,7 +751,6 @@ To guarantee 100% boarding reliability on budget Indian smartphones without NFC 
 
 ### 9.3 Infinite Recurring State Machine (`completion_dates[]`)
 
-To eliminate database bloat and query slowdowns from duplicate rows:
 * A recurring commute exists as **ONE single master record** in `public.rides` with `time_type = 'recurring'`.
 * **Daily Execution Cycle:**
   1. **8:00 PM Nightly:** Pre-match pairs recurring commuters.
@@ -784,9 +780,7 @@ To eliminate database bloat and query slowdowns from duplicate rows:
 #### Skip Rules:
 1. **Single-Day Scope:** Tapping *"Skip Today"* skips **only that single day**. The rest of the monthly recurring schedule remains 100% active.
 2. **Advance Calendar Planning:** Drivers/Riders can tap any future date on the calendar (e.g. Wednesday) and mark it as **⚪ Skipped (WFH / Leave)**.
-3. **Automated Backup Suggester for Riders:**
-   * When a driver skips, the rider's coins are 100% refunded and the app immediately pops up:
-   * *"Rahul is taking WFH today. Here are 2 other colleagues leaving at 8:30 AM to Manyata — Tap to book!"*
+3. **Automated Backup Suggester for Riders:** When a driver skips, the rider's coins are 100% refunded and the app immediately suggests alternative colleagues leaving at that exact time.
 4. **Auto-Resume:** The dashboard automatically refreshes and activates for the next working day with zero manual setup.
 
 ---
@@ -839,8 +833,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ### 9.6 Negative Perspectives, Failure Modes & Anti-Fraud Defense Matrix
 
-The platform incorporates comprehensive defense controls for every potential failure, edge case, and fraud attempt:
-
 ```
 +----------------------------------------------------------------------------------------------------------------+
 | FAILURE / FRAUD SCENARIO                 | RISK & ATTACK VECTOR                | SYSTEM DEFENSE & MITIGATION   |
@@ -866,3 +858,103 @@ The platform incorporates comprehensive defense controls for every potential fai
 |                                          |                                     | Auto-refunds locks > 4 hours. |
 +----------------------------------------------------------------------------------------------------------------+
 ```
+
+---
+
+## 10. Ride Completion, Atomic Coin Transfer & ESG Engine
+
+**Primary Modules:** `lib/screens/live/driver_live_screen.dart`, `lib/screens/live/rider_receipt_screen.dart`, Supabase Database RPCs
+
+Section 10 defines the spatial drop-off geofence triggers, staggered multi-passenger completion workflows, atomic double-entry ledger coin transfers, automated ESG carbon calculations, and commute-derived soft attendance logging.
+
+---
+
+### 10.1 Drop-Off Geofence Detection & Completion Slider
+
+```
+[ Vehicle Enters 500m Drop Geofence at Tech Park ]
+                       │
+                       ▼
+[ Driver Screen Unlocks "🏁 Complete Ride" Slider ]
+                       │
+                       ▼
+[ Atomic PostgreSQL Function Executes (`complete_ride`) ]
+  ├──► 1. Coin Transfer: Escrow Coins ➔ Driver's Spendable Wallet (0.05s)
+  ├──► 2. Double-Entry Ledger: Immutable transaction logged
+  ├──► 3. ESG Engine: Calculates CO₂ Saved (KM × 0.15 × Riders)
+  └──► 4. Soft Attendance: Auto-marks employee arrival at Tech Park campus
+                       │
+                       ▼
+[ Realtime Push Notifications & Instant Receipts to Both Screens ]
+```
+
+#### Step-by-Step Drop-Off Flow:
+1. **500m Destination Arrival Geofence:** When vehicle coordinates enter within **500 meters** of the destination building (`building_id`), the driver's screen unlocks the green completion slider.
+2. **Premature Drop-Off Anti-Fraud Guard:** If the driver attempts to complete the ride when $> 500\text{ meters}$ away from the destination, the app blocks the action to prevent passenger abandonment.
+
+---
+
+### 10.2 Driver Drop-Off Cockpit (`driver_live_screen.dart`)
+
+```
++-------------------------------------------------------------------+
+|               🏢 ARRIVED AT MANYATA TECH PARK                     |
++-------------------------------------------------------------------+
+|  Trip Distance: 12.4 km  |  Duration: 28 mins                     |
+|                                                                   |
+|  Passengers to Drop Off:                                          |
+|  • 🟢 Rahul Sharma (Infosys)  ➔ [ 🏁 DROP OFF (+24 Coins) ]       |
+|  • 🟢 Priya Patel  (Wipro)    ➔ [ 🏁 DROP OFF (+18 Coins) ]       |
+|                                                                   |
+|          ============================================             |
+|          >>> SLIDE TO COMPLETE ALL & DROP OFF >>>                 |
+|          ============================================             |
++-------------------------------------------------------------------+
+```
+
+#### Staggered Multi-Passenger Drops:
+* When carrying multiple passengers with different drop-off gates (e.g. *Gate 1* vs. *Gate 4*):
+* Driver can tap **"Drop Off Rahul"** individually. Rahul's 24 coins are settled immediately and his receipt opens, while the ride continues for Priya until Gate 4.
+
+---
+
+### 10.3 Atomic Coin Transfer & Double-Entry Ledger
+
+The exact millisecond a passenger drop-off is completed:
+1. `coins_locked` in Escrow are **unlocked and credited directly to `driver_wallet.available_balance`**.
+2. An immutable double-entry ledger entry is logged in `public.coin_transactions`:
+   * **Sender:** Rider UUID (or Corporate Subsidy Pool)
+   * **Receiver:** Driver UUID
+   * **Amount:** e.g., `+24.00 Karma Coins`
+   * **Transaction Type:** `'ride_earning'`
+3. **Instant Push Receipt:** Rider’s phone vibrates:
+   * *"🎉 Ride Complete! 24 Karma Coins transferred to Rahul. Thank you for carpooling green!"*
+
+---
+
+### 10.4 Automated Corporate ESG Carbon Engine
+
+Upon trip completion, the backend ESG engine computes environmental savings:
+
+$$\text{CO}_2\text{ Saved (kg)} = \text{Distance (km)} \times 0.15\text{ kg} \times \text{Number of Riders}$$
+
+$$\text{Tree Equivalence} = \frac{\text{CO}_2\text{ Saved (kg)}}{20.0\text{ kg/tree/year}}$$
+
+* **Data Aggregation:**
+  * **Driver Stats:** Adds to driver's lifetime carbon offset total on profile.
+  * **Rider Stats:** Adds to rider's personal green commuter badge.
+  * **Corporate ESG Report:** Aggregated monthly for employer sustainability audits (BRSR / Scope 3 emissions reporting).
+
+---
+
+### 10.5 Commute-Derived Soft Attendance Integration
+
+If a verified corporate employee completes a morning carpool between **6:00 AM – 11:00 AM** at their registered corporate campus (`building_id`):
+* System automatically logs an arrival record in `public.corporate_attendance`:
+  * `employee_id`: UUID
+  * `company_id`: UUID
+  * `building_id`: UUID
+  * `status`: `'arrived_at_campus'`
+  * `arrival_time`: `08:42 AM`
+  * `transport_mode`: `'carpool'`
+* Enables HR Managers to view real-time morning presence on their dashboard without biometric card lines.

@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.2 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.3 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -71,6 +71,7 @@ Corporate Manager / HR Flow:
 
 **Core Relational Tables:**
 - `users` — User profiles, auth links, verification badges (Work Email, Aadhaar/DL), gender, vehicle references.
+- `vehicles` — Registered vehicles with plate numbers, model, type, spare helmet status, and verification flags.
 - `emergency_contacts` — User-defined personal contacts for emergency SOS broadcasts.
 - `buildings` — Physical IT parks, business complexes, and building hubs with centroid coordinates.
 - `companies` — Registered corporate employers with domain validation rules (e.g. `@tcs.com`) and manager assignments.
@@ -91,14 +92,9 @@ Corporate Manager / HR Flow:
 ### 3.1 Authentication & Registration Flows
 1. **Primary Phone Auth:** User enters Indian mobile number (+91) → Receives SMS OTP via Supabase Auth → Session created.
 2. **Registration Choice Screen (`registration_choice_screen.dart`):**
-   - **Corporate Commuter (`corporate_signup_screen.dart`):**
-     - Work email verification (`name@company.com`) via OTP.
-     - Maps to `company_id` and office `building_id`.
-   - **Public / Family User (`public_signup_screen.dart`):**
-     - Mandatory Government ID verification: **Aadhaar / Driving License (DL)** via DigiLocker / OCR.
-     - Optional link to an employee's **Family Wallet** for shared coin access.
-   - **Company Manager (`company_manager_signup_screen.dart`):**
-     - Corporate Email + Domain Whitelisting + Company Verification.
+   - **Corporate Commuter (`corporate_signup_screen.dart`):** Work email verification (`name@company.com`) via OTP. Maps to `company_id` and office `building_id`.
+   - **Public / Family User (`public_signup_screen.dart`):** Government ID verification (Aadhaar / DL). Optional link to Family Wallet.
+   - **Company Manager (`company_manager_signup_screen.dart`):** Corporate Email + Domain Whitelisting + Company Verification.
 
 ---
 
@@ -109,34 +105,6 @@ Corporate Manager / HR Flow:
 | **`corporate_employee`** | **Phone OTP + Corporate Work Email OTP**<br>*(e.g., user@infosys.com)* | • Post & book corporate rides.<br>• Access Building & Tech Park pools.<br>• Access "Women-Only" filter.<br>• Primary owner of Karma Coin & Family Wallet. |
 | **`public_user` / `family_member`** | **Phone OTP + Aadhaar / Driving License (DL)**<br>*(Verified via DigiLocker / Govt ID check)* | • Post & book public corridor rides.<br>• If linked to an employee: can spend coins from the shared Family Wallet. |
 | **`company_manager`** | **Corporate Official Work Email + Company GSTIN/CIN + Admin Approval** | • View company ESG & carbon reduction stats.<br>• View total monthly carpool participation.<br>• Manage company-sponsored ride subsidies. |
-
----
-
-### 3.3 Database Schema: `public.users`
-
-```sql
-CREATE TYPE user_role_enum AS ENUM ('corporate_employee', 'public_user', 'family_member', 'company_manager');
-CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other', 'prefer_not_to_say');
-
-CREATE TABLE public.users (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    phone_number VARCHAR(15) UNIQUE NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    gender gender_enum NOT NULL,
-    role user_role_enum DEFAULT 'corporate_employee',
-    work_email VARCHAR(150) UNIQUE,
-    work_email_verified BOOLEAN DEFAULT FALSE,
-    company_id UUID REFERENCES public.companies(id),
-    building_id UUID REFERENCES public.buildings(id),
-    primary_account_id UUID REFERENCES public.users(id), -- Primary employee link for Family Wallet sharing
-    gov_id_verified BOOLEAN DEFAULT FALSE, -- Aadhaar / Driving License verification flag
-    gov_id_type VARCHAR(20), -- 'aadhaar', 'driving_license'
-    profile_photo_url TEXT,
-    emergency_contacts JSONB DEFAULT '[]'::jsonb, -- Array of { name, phone, relation }
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
 
 ---
 
@@ -164,6 +132,38 @@ The ride offering workflow allows drivers to publish empty vehicle seats on thei
 | **Scooter (Gearless)** | **1** | Spare Helmet Required (`has_spare_helmet = true`). |
 | **Auto-Rickshaw** | **2** | Commercial badge check (if public). |
 | **Hatchback / Sedan / SUV** | **1 to 4** | Configurable by driver (Default: 3). |
+
+---
+
+### 4.1.1 Driver Registration: Unified DL & Vehicle RC Verification (₹0 Workflow)
+
+**Screen:** `lib/screens/driver/add_vehicle_screen.dart`
+
+To register as a driver, the user completes a single unified form in under 60 seconds with **zero third-party government API costs**:
+
+```
++-------------------------------------------------------------------+
+|                     Register Driver & Vehicle                     |
++-------------------------------------------------------------------+
+|  1. Vehicle Details:                                              |
+|     - Vehicle Type:   [ Bike 🛵 ]  [ Car 🚗 ]                     |
+|     - Vehicle Plate:  [ MH-12-AB-1234 ]  (Instant Regex Check ✅) |
+|     - Spare Helmet:   [X] Yes, I have a spare helmet              |
+|                                                                   |
+|  2. Document Photos (Saved to Supabase Storage):                  |
+|     [ 📷 Upload Driving License (DL) ]                            |
+|     [ 📷 Upload Vehicle RC Card      ]                            |
+|                                                                   |
+|                    [ SUBMIT FOR VERIFICATION ]                    |
++-------------------------------------------------------------------+
+```
+
+#### Step-by-Step Flow:
+1. **Frontend Regex Validation (₹0):** Vehicle number format is validated instantly in Dart (`^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$`).
+2. **Dual Photo Upload:** Driver snaps a photo of their **Driving License (DL)** and **Vehicle RC Card**. Files are uploaded to Supabase Storage (`driver-documents/`).
+3. **Database Insertion:** Inserts record in `public.vehicles` with `rc_verified = false` and updates user with `dl_verified = false`.
+4. **Super Admin 1-Click Verification (₹0):** Both photos appear side-by-side in the Super Admin KYC Audit Queue for 2-second visual verification and approval.
+5. **Instant Badge Activation:** Once approved, the user receives the **"Verified Driver"** badge and can start posting rides immediately.
 
 ---
 

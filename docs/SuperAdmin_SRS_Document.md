@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.3 | August 2026 | Dedicated Admin Portal
+### Version 2.4 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -90,6 +90,12 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 +-----------------------------------------------------------------------------------+
 |               Super Admin Console: Request & Timer Governance Dashboard           |
 +-----------------------------------------------------------------------------------+
+|  Competitive Feature Switches:                                                    |
+|  - [X] ENABLE_AUTO_RETURN_RIDE_PROMPT          (Prompt return trip on post)       |
+|  - [X] ENABLE_RIDE_SEARCH_ALERTS               (Notify riders when ride posted)   |
+|  - [X] ENABLE_DRIVER_AUTO_ACCEPT_TOGGLE        (Allow drivers smart auto-accept)  |
+|  - MAX_SEATS_PER_RIDER_BOOKING:                [ 2   ] seats max                  |
+|                                                                                   |
 |  Request Expiry Timers:                                                           |
 |  - NOW ⚡ Ride Expiry Window:                  [ 3   ] minutes                    |
 |  - SCHEDULED 🕐 Ride Expiry Window:            [ 15  ] minutes                    |
@@ -112,14 +118,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 |                                [ SAVE & APPLY POLICY ]                            |
 +-----------------------------------------------------------------------------------+
 ```
-
-### 5.1 Dynamic Parameter Descriptions
-1. **Rider No-Show Compensation (Default: 0 Coins):**
-   - Configured to **0 Coins by default** for friendly community onboarding; Super Admin can adjust this to 5 or 10 coins at any time without app store updates.
-2. **Escrow Intervention & Manual Force-Release:**
-   - Super Admin tool to force-release stuck escrow locks or force-settle disputed transactions.
-3. **Driver Strike Management:**
-   - Audit and reset late cancellation strikes for drivers with valid emergency excuses.
 
 ---
 

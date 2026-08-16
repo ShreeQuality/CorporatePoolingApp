@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.5 | August 2026 | Dedicated Admin Portal
+### Version 2.6 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -46,12 +46,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 +-----------------------------------------------------------------------------------+
 ```
 
-#### Verification & Anti-Fraud Gates:
-1. **Govt GST Portal Verification (`services.gst.gov.in`):** Super Admin verifies that the 15-digit GSTIN is **Active** and matches the company's registered legal name.
-2. **Govt MCA Database Verification (`mca.gov.in`):** Super Admin confirms the 21-digit CIN and verifies that the person who signed the Letter of Authority (LOA) is a legally listed **Active Director** in the government MCA master data.
-3. **Domain Ownership Verification:** Super Admin verifies the official corporate domain before whitelisting it, preventing lookalike domain spoofing.
-4. **1-Click Fraud Killswitch:** Super Admin can immediately ban fraudulent accounts, freezing associated wallets and invalidating linked accounts.
-
 ---
 
 ## 3. Tech Park, Building & Node Directory
@@ -94,41 +88,38 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ---
 
-## 5. Rider Booking, Escrow & Request Lifecycle Controls
-*(Corresponds to Main SRS Section 8: Ride Request, Acceptance & Wait Timers)*
+## 5. Rider Booking, Escrow, Boarding & Lifecycle Governance
+*(Corresponds to Main SRS Section 8 & 9: Request Flow & 3-Level Boarding)*
 
 ```
 +-----------------------------------------------------------------------------------+
-|               Super Admin Console: Request & Timer Governance Dashboard           |
+|               Super Admin Console: Request & Boarding Governance Dashboard        |
 +-----------------------------------------------------------------------------------+
+|  Boarding & Anti-Fraud Controls:                                                  |
+|  - BLE Proximity Signal Threshold:             [ -65 ] dBm (approx 3 meters)      |
+|  - Drop-off Geofence Radius:                   [ 500 ] meters                     |
+|  - MAX_CONSECUTIVE_SKIPS_BEFORE_PENALTY:       [ 3   ] skips                      |
+|                                                                                   |
 |  Competitive Feature Switches:                                                    |
 |  - [X] ENABLE_AUTO_RETURN_RIDE_PROMPT          (Prompt return trip on post)       |
 |  - [X] ENABLE_RIDE_SEARCH_ALERTS               (Notify riders when ride posted)   |
 |  - [X] ENABLE_DRIVER_AUTO_ACCEPT_TOGGLE        (Allow drivers smart auto-accept)  |
 |  - MAX_SEATS_PER_RIDER_BOOKING:                [ 2   ] seats max                  |
 |                                                                                   |
-|  Request Expiry Timers:                                                           |
-|  - NOW ⚡ Ride Expiry Window:                  [ 3   ] minutes                    |
-|  - SCHEDULED 🕐 Ride Expiry Window:            [ 15  ] minutes                    |
-|  - SCHEDULED Hard Cutoff before departure:     [ 15  ] minutes                    |
-|  - RECURRING 🔄 Nightly Lock-in Window:        [ 2   ] hours (8 PM - 10 PM)       |
-|                                                                                   |
-|  Multi-Request & Booking Limits:                                                  |
-|  - Max Simultaneous Requests per Rider:        [ 3   ] drivers                    |
-|                                                                                   |
 |  Wait Timer & No-Show Compensation:                                               |
 |  - Pickup Arrival Geofence Radius:             [ 50  ] meters                     |
 |  - Driver Free Wait Window:                    [ 5   ] minutes                    |
 |  - Rider No-Show Compensation to Driver:       [ 0   ] Coins (Default: 0, editable|
 |                                                                                   |
-|  Anti-Spam & Strike Policies:                                                     |
-|  - Rejection Count Threshold:                  [ 3   ] rejections in 7 days       |
-|  - Mutual Cooldown Lockout Duration:           [ 7   ] days                       |
-|  - Driver Late Cancellation Warning Window:    [ 30  ] minutes before depart      |
-|                                                                                   |
-|                                [ SAVE & APPLY POLICY ]                            |
+|  Dispute & Escrow Intervention:                                                   |
+|  [ ⚡ FORCE RELEASE ESCROW TO RIDER ]    [ ⚡ FORCE SETTLE COINS TO DRIVER ]        |
 +-----------------------------------------------------------------------------------+
 ```
+
+### 5.1 Dispute & Failure Investigation Tools
+1. **Premature Drop-off Investigator:** Visual audit map displaying the vehicle's actual drop coordinate vs agreed drop pin.
+2. **Chronic Skip Deprioritizer:** Automated de-ranking of drivers who skip $> 3$ consecutive recurring days without 24h notice.
+3. **Emergency Manual Override:** Allows platform support officers to force-verify boarding in phone battery death scenarios.
 
 ---
 

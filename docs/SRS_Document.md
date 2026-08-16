@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.4 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.5 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -11,6 +11,7 @@
 4. [Core Feature: Offer a Ride (Driver)](#4-core-feature-offer-a-ride-driver)
 5. [Core Feature: Find a Ride (Rider)](#5-core-feature-find-a-ride-rider)
 6. [Matching Algorithm — Phase-Based KM/Meter Logic & Scoring Engine](#6-matching-algorithm--phase-based-kmmeter-logic--scoring-engine)
+7. [GPS Tracking System & Live Navigation](#7-gps-tracking-system--live-navigation)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -138,17 +139,17 @@ CREATE TABLE public.users (
     role user_role_enum DEFAULT 'corporate_employee',
     work_email VARCHAR(150) UNIQUE,
     work_email_verified BOOLEAN DEFAULT FALSE,
-    office_id_photo_url TEXT, -- Fallback photo verification
+    office_id_photo_url TEXT,
     office_id_verified BOOLEAN DEFAULT FALSE,
     company_id UUID REFERENCES public.companies(id),
     building_id UUID REFERENCES public.buildings(id),
-    primary_account_id UUID REFERENCES public.users(id), -- Family wallet link
+    primary_account_id UUID REFERENCES public.users(id),
     aadhaar_verified BOOLEAN DEFAULT FALSE,
-    aadhaar_masked_number VARCHAR(20), -- e.g. "XXXX-XXXX-8421"
+    aadhaar_masked_number VARCHAR(20),
     dl_verified BOOLEAN DEFAULT FALSE,
     dl_photo_url TEXT,
     profile_photo_url TEXT,
-    emergency_contacts JSONB DEFAULT '[]'::jsonb, -- Array of { name, phone, relation }
+    emergency_contacts JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -160,19 +161,9 @@ CREATE TABLE public.users (
 
 **Primary Screen:** `lib/screens/driver/post_ride_screen.dart`
 
-The ride offering workflow allows drivers to publish empty vehicle seats on their daily route:
-1. Select registered vehicle (Bike, Scooter, Car, Sedan) + helmet availability check.
-2. Pick **From** (Pickup/Origin) and **To** (Destination/Building).
-3. Select departure mode: **⚡ NOW**, **🕐 SCHEDULED**, or **🔄 RECURRING**.
-4. Generate road-snapped polyline and sample route points.
-5. Configure safety filters (e.g., "Women-Only" match flag).
-6. Post the ride to the Supabase database.
-
 ---
 
 ### 4.1 Vehicle Selection & Seat Capacity Rules
-
-#### Capacity Logic & 2-Wheeler Constraints
 
 | Vehicle Type | Max Passenger Seats | Mandatory Equipment / Rules |
 |---|---|---|
@@ -186,8 +177,6 @@ The ride offering workflow allows drivers to publish empty vehicle seats on thei
 ### 4.1.1 Driver Registration: Unified DL & Vehicle RC Verification (₹0 Workflow)
 
 **Screen:** `lib/screens/driver/add_vehicle_screen.dart`
-
-To register as a driver, the user completes a single unified form in under 60 seconds with **zero third-party government API costs**:
 
 ```
 +-------------------------------------------------------------------+
@@ -206,46 +195,22 @@ To register as a driver, the user completes a single unified form in under 60 se
 +-------------------------------------------------------------------+
 ```
 
-#### Step-by-Step Flow:
-1. **Frontend Regex Validation (₹0):** Vehicle number format is validated instantly in Dart (`^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$`).
-2. **Dual Photo Upload:** Driver snaps a photo of their **Driving License (DL)** and **Vehicle RC Card**. Files are uploaded to Supabase Storage (`driver-documents/`).
-3. **Database Insertion:** Inserts record in `public.vehicles` with `rc_verified = false` and updates user with `dl_verified = false`.
-4. **Super Admin 1-Click Verification (₹0):** Both photos appear side-by-side in the Super Admin KYC Audit Queue for 2-second visual verification and approval.
-5. **Instant Badge Activation:** Once approved, the user receives the **"Verified Driver"** badge and can start posting rides immediately.
-
 ---
 
 ### 4.2 Location Picking & PostGIS Indexing
-
-- **Search via Mapbox / Ola Places Autocomplete:** Resolves address strings to `{ lat, lng, formatted_address }`.
-- **Snap to Tech Park / Building Gate:** If the destination is an office campus, coordinates snap to known security gate coordinates to avoid traffic blockages.
-- **Geospatial Storage:** Locations are stored as native PostGIS 2D Point geometries (`GEOMETRY(Point, 4326)`), enabling sub-millisecond spatial index searches via spatial GiST indexes.
+- Locations are stored as native PostGIS 2D Point geometries (`GEOMETRY(Point, 4326)`), enabling sub-millisecond spatial index searches via spatial GiST indexes.
 
 ---
 
 ### 4.3 Departure Time Modes
-
-#### 4.3.1 Mode A: ⚡ NOW
-- **Use Case:** Driver is walking to their vehicle and leaving immediately.
-- **Matching Behavior:** Instantly visible to riders searching in real-time. Uses **Phase 1 radius (500m)** while waiting; shifts to **Phase 2 radius (150m)** once driving starts.
-- **Lifecycle:** Single instance. Terminates upon drop-off.
-
-#### 4.3.2 Mode B: 🕐 SCHEDULED
-- **Use Case:** Pre-planned trip for today or up to 6 days ahead.
-- **Past Time Guard:** Prevents scheduling rides earlier than current local time.
-- **Lifecycle:** Pre-matched with riders; triggers departure push notification 15 minutes before scheduled time.
-
-#### 4.3.3 Mode C: 🔄 RECURRING (Commute Backbone)
-- **Use Case:** Fixed daily office commutes (e.g., Mon–Fri at 8:30 AM).
-- **Configuration:** Days of week, fixed departure time, validity duration (`1 week`, `1 month`, `3 months`), skip today toggle.
-- **Nightly 8:00 PM Auto-Match Lock-in:** The backend cron job pairs recurring riders and drivers every evening at 8:00 PM, locking in seats and eliminating morning booking anxiety.
-- **Per-Day Completion State:** Recurring rides **never** transition to a permanent `'completed'` status. Each day's execution adds `YYYY-MM-DD` to `completion_dates[]`, and the master status resets to `'posted'` for the next active calendar day.
+- **Mode A: ⚡ NOW** (Single instance, real-time discovery).
+- **Mode B: 🕐 SCHEDULED** (Future departure, departure push notification).
+- **Mode C: 🔄 RECURRING** (Mon–Fri fixed commute, 8:00 PM auto-match cron, per-day completion state in `completion_dates[]`).
 
 ---
 
 ### 4.4 Route Polyline & Point Extraction
-- The application calls the Map Routing API to retrieve the route polyline string between Origin and Destination.
-- The polyline is decoded into an array of discrete coordinate waypoints (`route_points = [{ lat, lng }]`) and stored as a PostGIS `LineString` for backend geospatial calculations.
+- Decodes route polyline into coordinate waypoints (`route_points = [{ lat, lng }]`) stored as PostGIS `LineString`.
 
 ---
 
@@ -258,29 +223,29 @@ CREATE TYPE time_type_enum AS ENUM ('now', 'scheduled', 'recurring');
 CREATE TABLE public.rides (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     driver_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    vehicle_type VARCHAR(30) NOT NULL, -- 'bike', 'scooter', 'car', 'sedan'
+    vehicle_type VARCHAR(30) NOT NULL,
     vehicle_number VARCHAR(20) NOT NULL,
     has_spare_helmet BOOLEAN DEFAULT FALSE,
     from_address TEXT NOT NULL,
     from_location GEOMETRY(Point, 4326) NOT NULL,
     to_address TEXT NOT NULL,
     to_location GEOMETRY(Point, 4326) NOT NULL,
-    building_id UUID REFERENCES public.buildings(id), -- Target Tech Park / Building cluster
+    building_id UUID REFERENCES public.buildings(id),
     route_geometry GEOMETRY(LineString, 4326) NOT NULL,
-    route_points JSONB NOT NULL, -- Array of { lat, lng } points for in-memory algorithm
+    route_points JSONB NOT NULL,
     distance_km NUMERIC(5, 2) NOT NULL,
     estimated_duration_mins INT NOT NULL,
     seats_offered INT NOT NULL DEFAULT 1,
     seats_available INT NOT NULL DEFAULT 1,
     time_type time_type_enum NOT NULL,
     depart_time TIME NOT NULL,
-    depart_date DATE, -- For scheduled rides
-    recurring_days INT[] DEFAULT '{}', -- 1 = Mon, 2 = Tue, ..., 7 = Sun
-    valid_until DATE, -- Expiry date for recurring commutes
+    depart_date DATE,
+    recurring_days INT[] DEFAULT '{}',
+    valid_until DATE,
     completion_dates DATE[] DEFAULT '{}',
     skip_dates DATE[] DEFAULT '{}',
     women_only_flag BOOLEAN DEFAULT FALSE,
-    boarding_daily_word VARCHAR(20) NOT NULL, -- e.g. "KARMA", "COFFEE"
+    boarding_daily_word VARCHAR(20) NOT NULL,
     boarding_ble_uuid UUID DEFAULT gen_random_uuid(),
     ride_status ride_status_enum DEFAULT 'posted',
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -298,23 +263,14 @@ CREATE INDEX idx_rides_route_geometry ON public.rides USING GIST(route_geometry)
 
 **Primary Screen:** `lib/screens/rider/find_ride_screen.dart`
 
-The Rider flow enables corporate employees to discover drivers travelling on identical commute corridors.
-
 ---
 
 ### 5.1 Rider Search Flow & Interactive Route Preview
-
-1. **Search Criteria Input:** Rider specifies pickup location, drop location, departure window, and optional "Women-Only" safety toggle.
-2. **PostGIS + In-Memory Evaluation:** Server filters candidate rides and computes compatibility scores (Section 6).
-3. **Interactive Route Map Preview (`rider_route_preview_screen.dart`):**
-   - Rider taps any matched driver card.
-   - The driver’s full route polyline renders on the map (blue corridor).
-   - Rider's proposed pickup pin (green) and drop pin (red) appear snapped to the driver's route.
-   - **Pickup Landmark Adjustment:** Rider can fine-tune / drag their pickup pin to a convenient roadside node (e.g., "Gate 2 Bus Stop") directly on the driver's path to minimize driver detour.
-4. **Request Submission & Escrow Lock:** Rider taps "Confirm Request", locking required Karma Coins in escrow.
-5. **Driver Review & Decision (`requests_screen.dart`):**
-   - Driver receives push notification with rider profile and requested pickup point.
-   - Driver taps **Accept** (locks seat, updates request to `accepted`) or **Reject** (instantly releases locked coins back to rider).
+1. Rider specifies pickup, drop, departure time, and safety preferences.
+2. Two-tier evaluation returns ranked drivers (Section 6).
+3. **Interactive Route Map Preview (`rider_route_preview_screen.dart`):** Displays driver route corridor and allows rider to fine-tune pickup landmark pin directly on the driver's road vector.
+4. **Escrow Lock:** Tapping request locks Karma Coins in escrow.
+5. **Driver Review (`requests_screen.dart`):** Driver receives push notification and taps Accept or Reject.
 
 ---
 
@@ -335,7 +291,7 @@ CREATE TABLE public.ride_requests (
     used_family_wallet_id UUID REFERENCES public.family_wallets(id),
     status request_status_enum DEFAULT 'pending',
     boarding_verified_at TIMESTAMPTZ,
-    verification_method_used VARCHAR(30), -- 'ble_proximity', 'daily_word_touch', 'qr_code', 'pin'
+    verification_method_used VARCHAR(30),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -350,243 +306,127 @@ CREATE INDEX idx_ride_requests_rider_id ON public.ride_requests(rider_id);
 
 **Module File:** `src/matchingAlgorithm.js` (Node.js) & `lib/services/matching_service.dart` (Dart)
 
-The matching algorithm is the core computational engine of CorporatePoolingApp. It executes an ultra-fast, zero-map-API-cost two-tier spatial evaluation.
-
 ---
 
 ### 6.1 The 2-Tier Hybrid Funnel Architecture
-
-```
-[ 10,000 Potential City Rides in Database ]
-                      │
-                      ▼
-[ Tier 1: PostGIS Server-side Spatial Pre-Filter ]
-  • Uses spatial GiST index (`ST_DWithin`) with a dynamic Bounding Box.
-  • Discards 95% of geographically irrelevant rides in < 5ms.
-                      │
-                      ▼
-[ Tier 2: In-Memory Cross-Track Polyline Matcher ]
-  • Node.js / Dart V8 in-memory engine executes line-segment vector math.
-  • Checks dynamic Phase radii, directionality, and corporate trust scoring.
-  • Execution Time: ~12 milliseconds (₹0 map API cost).
-                      │
-                      ▼
-[ Top Ranked Matches Displayed to Rider (Sorted by Score 0–100) ]
-```
+- **Tier 1 (PostGIS Spatial Pre-Filter):** `ST_DWithin` with dynamic Bounding Box prunes 95% of candidates in < 5ms.
+- **Tier 2 (In-Memory Cross-Track Polyline Matcher):** Evaluates line-segment distance, phase radii, and scoring in 12ms.
 
 ---
 
-### 6.2 Mathematical Foundation & Algorithmic Fixes
-
-#### A. Haversine Great-Circle Distance
-Computes raw spherical distance between two coordinate pairs $(lat_1, lng_1)$ and $(lat_2, lng_2)$ in meters:
-
-$$\Delta lat = (lat_2 - lat_1) \cdot \frac{\pi}{180}, \quad \Delta lng = (lng_2 - lng_1) \cdot \frac{\pi}{180}$$
-
-$$a = \sin^2\left(\frac{\Delta lat}{2}\right) + \cos\left(lat_1 \cdot \frac{\pi}{180}\right) \cdot \cos\left(lat_2 \cdot \frac{\pi}{180}\right) \cdot \sin^2\left(\frac{\Delta lng}{2}\right)$$
-
-$$d = 2 \cdot R \cdot \arcsin(\sqrt{a}) \quad \text{where } R = 6,371,000\text{ meters}$$
-
-#### B. Cross-Track Line-Segment Projection (Fixes Discrete Point Gap)
-Rather than checking distance strictly to discrete waypoints $P_i$, the algorithm projects the rider's coordinate $R$ orthogonally onto the vector segment between road points $A$ and $B$:
-
-$$\vec{v} = B - A, \quad \vec{u} = R - A$$
-
-$$t = \text{clamp}\left(\frac{\vec{u} \cdot \vec{v}}{\|\vec{v}\|^2}, 0, 1\right)$$
-
-$$\text{Closest Point on Road } P_{\text{closest}} = A + t \cdot \vec{v}$$
-
-$$\text{Distance} = \text{Haversine}(R, P_{\text{closest}})$$
-
-#### C. Urban Road Tortuosity Multiplier ($1.3\times$)
-Estimates actual driving distance through Indian city street networks without invoking paid Directions APIs:
-
-$$D_{\text{road}} \approx D_{\text{haversine}} \times 1.3$$
+### 6.2 Mathematical Foundation
+- **Cross-Track Line-Segment Projection:** Projects rider coordinate onto road segment $(A \to B)$ avoiding discrete waypoint gaps.
+- **Urban Tortuosity Multiplier:** $D_{\text{road}} \approx D_{\text{haversine}} \times 1.3$.
 
 ---
 
-### 6.3 Phase-Aware Dynamic Radii (Meter-wise Logic)
-
-The search tolerance adapts dynamically based on the driver's operational state:
-
-| Matching Phase | Driver Ride Status | Pickup Distance Threshold | Drop-off Distance Threshold | Rationale |
-|---|---|---|---|---|
-| **Phase 1: Pre-Departure** | `posted` / `scheduled` | **500 meters**<br>*(Expanded to **1,500m** if `building_id` matches)* | **500 meters** | Driver is stationary at home/desk and can easily accommodate a minor route adjustment. |
-| **Phase 2: Live On-Route** | `started` / `in_progress` | **150 meters** | **300 meters** | Driver is moving in traffic at 40 km/h; avoids dangerous U-turns, flyover misses, and sudden lane cuts. |
+### 6.3 Phase-Aware Dynamic Radii
+- **Phase 1 (Pre-Departure):** **500 meters** (Expanded to **1,500m** if `building_id` matches).
+- **Phase 2 (Live On-Route):** **150 meters** (Tightened for driver traffic safety).
 
 ---
 
 ### 6.4 Directionality & Backward Route Guard
-
-To prevent matching a rider traveling in the opposite direction along a shared bidirectional road:
-1. The algorithm finds the polyline segment index nearest to Rider Pickup ($\text{Index}_{\text{pickup}}$).
-2. The algorithm finds the polyline segment index nearest to Rider Drop ($\text{Index}_{\text{drop}}$).
-3. **Hard Constraint:** $\text{Index}_{\text{pickup}} < \text{Index}_{\text{drop}}$.
-4. If $\text{Index}_{\text{pickup}} \ge \text{Index}_{\text{drop}}$, the match is **immediately rejected (Score = 0)**.
+- Enforces $\text{Index}_{\text{pickup}} < \text{Index}_{\text{drop}}$. Hard rejects opposite direction rides.
 
 ---
 
 ### 6.5 Trust & Priority Scoring Formula (0 to 100 Points)
-
-Every candidate passing the geometric and directional filters is assigned a composite score computed entirely in-memory:
-
-$$\text{Total Match Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\text{time}} (20) + S_{\text{karma}} (10)$$
-
-#### Component Breakdown:
-
-1. **Proximity Score ($S_{\text{proximity}}$, Max 40 Pts):**
-   $$S_{\text{proximity}} = 40 \times \left(1 - \frac{d_{\text{pickup}} + d_{\text{drop}}}{2 \times \text{MaxRadius}}\right)$$
-
-2. **Corporate Trust Score ($S_{\text{trust}}$, Max 30 Pts):**
-   - **Same Company Colleague** (`driver.company_id == rider.company_id`): **+30 Points**
-   - **Same Building / Tech Park Hub** (`driver.building_id == rider.building_id`): **+25 Points**
-   - **Verified Corporate (Other Tech Park)**: **+15 Points**
-   - **Verified Public User (Aadhaar / DL)**: **+10 Points**
-
-3. **Time Compatibility Score ($S_{\text{time}}$, Max 20 Pts):**
-   - $\Delta \text{Time} \le 5\text{ mins}$: **+20 Points**
-   - $\Delta \text{Time} \le 15\text{ mins}$: **+10 Points**
-   - $\Delta \text{Time} > 15\text{ mins}$: **+0 Points**
-
-4. **Karma Punctuality & Driver Rating ($S_{\text{karma}}$, Max 10 Pts):**
-   $$S_{\text{karma}} = 2 \times \text{DriverRating (0.0 to 5.0)}$$
-
-*Note: The raw numerical score is strictly internal. The frontend UI maps high scores to intuitive visual badges (`Colleague`, `Same Building`, `Top Rated`).*
+$$\text{Total Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\text{time}} (20) + S_{\text{karma}} (10)$$
+- **Same Company Colleague:** +30 Pts.
+- **Same Building / Tech Park:** +25 Pts.
+- **Other Corporate:** +15 Pts.
+- **Public Verified:** +10 Pts.
 
 ---
 
-### 6.6 Hard Exclusion Safety & Logic Filters
-
-Before scoring, candidate rides must pass **4 mandatory gates**:
-
-```
-[ Candidate Ride ] ──► [ 1. Women-Only Check ] ──► [ 2. Directionality Check ]
-                                                            │
-[ Passed to Scoring ] ◄── [ 4. Seat Capacity ] ◄── [ 3. 2-Wheeler Helmet ]
-```
-
-1. **Women-Only Filter:** If Rider requested Female-only, strictly discard male drivers.
-2. **Directionality Check:** Hard reject if $\text{Index}_{\text{pickup}} \ge \text{Index}_{\text{drop}}$.
-3. **Two-Wheeler Helmet Rule:** If `vehicle_type` is Bike/Scooter, hard reject unless `has_spare_helmet = true`.
-4. **Capacity Check:** Hard reject if `seats_available < seats_requested`.
+### 6.6 Hard Exclusion Gates
+1. Women-Only Check $\rightarrow$ 2. Directionality Check $\rightarrow$ 3. 2-Wheeler Helmet Guard $\rightarrow$ 4. Seat Capacity Check.
 
 ---
 
-### 6.7 Complete Node.js Matching Implementation Reference
+## 7. GPS Tracking System & Live Navigation
 
-```javascript
-/**
- * CorporatePooling In-Memory Matching Engine
- * Version 3.4 | Production Zero-API-Cost Matcher
- */
+**Primary Module:** `lib/services/gps_tracking_service.dart` & Supabase Realtime Channels
 
-function distanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
+The GPS Tracking System powers real-time vehicle movement visualization, battery-efficient telemetry, and legal privacy isolation.
 
-function getClosestPointOnSegment(pLat, pLng, aLat, aLng, bLat, bLng) {
-  const dx = bLng - aLng;
-  const dy = bLat - aLat;
-  if (dx === 0 && dy === 0) return { lat: aLat, lng: aLng, t: 0 };
-  
-  let t = ((pLng - aLng) * dx + (pLat - aLat) * dy) / (dx * dx + dy * dy);
-  t = Math.max(0, Math.min(1, t));
-  return { lat: aLat + t * dy, lng: aLng + t * dx, t };
-}
+---
 
-export function matchRiderToRide(ride, riderQuery, config) {
-  // Gate 1: Hard Exclusion - Women-Only Filter
-  if (riderQuery.womenOnly && (!ride.women_only_flag || ride.driver_gender !== 'female')) {
-    return { isMatch: false, reason: 'WOMEN_ONLY_RESTRICTION' };
-  }
+### 7.1 Real-Time GPS Broadcasting Architecture
 
-  // Gate 2: Hard Exclusion - 2-Wheeler Helmet Guard
-  if (['bike', 'scooter'].includes(ride.vehicle_type) && !ride.has_spare_helmet) {
-    return { isMatch: false, reason: 'NO_SPARE_HELMET' };
-  }
+```
+[ Driver Phone in Motion ] ──► Flutter Background GPS Task (3–5s interval)
+                                      │
+                                      ▼
+[ Supabase Realtime Channel: `ride_locations:{ride_id}` ]
+                                      │
+                                      ▼
+[ Rider Phone Screen ] ───────► Smooth Marker Interpolation & Vehicle Rotation
+```
 
-  // Gate 3: Hard Exclusion - Capacity Check
-  if (ride.seats_available < (riderQuery.seatsRequested || 1)) {
-    return { isMatch: false, reason: 'NO_SEATS_AVAILABLE' };
-  }
-
-  const isLive = ['started', 'in_progress'].includes(ride.ride_status);
-  const isSameBuilding = riderQuery.buildingId && ride.building_id === riderQuery.buildingId;
-  
-  // Phase-aware Dynamic Radii
-  const maxPickupRadius = isLive 
-    ? config.phase2_pickup_radius // 150m
-    : (isSameBuilding ? config.phase1_same_building_radius : config.phase1_pickup_radius); // 1500m vs 500m
-  const maxDropRadius = isLive ? config.phase2_drop_radius : config.phase1_drop_radius; // 300m vs 500m
-
-  const points = ride.route_points;
-  let minPickupDist = Infinity;
-  let minDropDist = Infinity;
-  let pickupIndex = -1;
-  let dropIndex = -1;
-
-  for (let i = 0; i < points.length - 1; i++) {
-    const pA = points[i];
-    const pB = points[i + 1];
-
-    // Cross-track line-segment evaluation
-    const closestPickup = getClosestPointOnSegment(riderQuery.pickupLat, riderQuery.pickupLng, pA.lat, pA.lng, pB.lat, pB.lng);
-    const dPickup = distanceMeters(riderQuery.pickupLat, riderQuery.pickupLng, closestPickup.lat, closestPickup.lng) * config.urban_tortuosity_multiplier;
-
-    if (dPickup < minPickupDist) {
-      minPickupDist = dPickup;
-      pickupIndex = i;
-    }
-
-    const closestDrop = getClosestPointOnSegment(riderQuery.dropLat, riderQuery.dropLng, pA.lat, pA.lng, pB.lat, pB.lng);
-    const dDrop = distanceMeters(riderQuery.dropLat, riderQuery.dropLng, closestDrop.lat, closestDrop.lng) * config.urban_tortuosity_multiplier;
-
-    if (dDrop < minDropDist) {
-      minDropDist = dDrop;
-      dropIndex = i;
-    }
-  }
-
-  // Gate 4: Hard Exclusion - Directionality Guard
-  if (pickupIndex >= dropIndex) {
-    return { isMatch: false, reason: 'REVERSE_DIRECTION' };
-  }
-
-  if (minPickupDist > maxPickupRadius || minDropDist > maxDropRadius) {
-    return { isMatch: false, reason: 'OUT_OF_RADIUS' };
-  }
-
-  // Scoring Calculation (0 to 100)
-  const proximityScore = Math.max(0, 40 * (1 - (minPickupDist + minDropDist) / (maxPickupRadius + maxDropRadius)));
-  
-  let trustScore = 10;
-  if (ride.driver_company_id && ride.driver_company_id === riderQuery.companyId) {
-    trustScore = 30; // Same Company
-  } else if (isSameBuilding) {
-    trustScore = 25; // Same Building
-  } else if (ride.driver_is_corporate) {
-    trustScore = 15;
-  }
-
-  const timeDiffMins = Math.abs(ride.depart_timestamp - riderQuery.targetTimestamp) / (60 * 1000);
-  const timeScore = timeDiffMins <= 5 ? 20 : (timeDiffMins <= 15 ? 10 : 0);
-  const karmaScore = Math.min(10, (ride.driver_rating || 5.0) * 2);
-
-  const totalScore = Math.round(proximityScore + trustScore + timeScore + karmaScore);
-
-  return {
-    isMatch: true,
-    matchScore: totalScore,
-    pickupDistanceMeters: Math.round(minPickupDist),
-    dropDistanceMeters: Math.round(minDropDist),
-    isSameBuilding,
-    isSameCompany: ride.driver_company_id === riderQuery.companyId
-  };
+#### Protocol & Payload Schema:
+* Driver broadcasts over a private WebSocket channel (`ride_locations:{ride_id}`).
+* Realtime Payload emitted every **3 to 5 seconds**:
+```json
+{
+  "ride_id": "8421a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3b",
+  "driver_id": "u1234567-89ab-cdef-0123-456789abcdef",
+  "lat": 18.520432,
+  "lng": 73.856743,
+  "heading": 142.5,
+  "speed_kmh": 42.0,
+  "timestamp": "2026-08-16T17:55:00.000Z"
 }
 ```
+
+---
+
+### 7.2 Battery, Data & Motion Optimization
+
+To prevent battery drain and excessive mobile data usage during peak Indian traffic:
+1. **Motion Distance Threshold:** The GPS service only emits a WebSocket packet if the vehicle has moved **$> 5\text{ meters}$** from the previous broadcast (prevents spamming during red lights and traffic jams).
+2. **On-Device Kalman Filtering:** Applies linear quadratic estimation (Kalman filter) to smooth raw GPS noise and eliminate erratic jumping caused by urban high-rise buildings.
+3. **Automated Lifecycle Management:** The background GPS foreground service (`geolocator`) strictly terminates the moment the ride status transitions to `'completed'` or `'cancelled'`, releasing battery lock immediately.
+
+---
+
+### 7.3 Client-Side Smooth Marker Animation (Flutter)
+
+* **Tween Interpolation:** Rider's Flutter app uses spherical linear interpolation (`slerp`) between coordinate packets $(P_{\text{old}} \to P_{\text{new}})$ over a 3-second transition duration.
+* **Heading Rotation:** Vehicle icon rotates smoothly to align with the driver's current heading angle (`heading` in degrees), ensuring realistic navigation graphics identical to Uber and Google Maps.
+
+---
+
+### 7.4 Privacy & Legal Isolation (DPDP Act 2023 Compliance)
+
+```
++-------------------------------------------------------------------------------------------------------+
+| VIEWER                 | DRIVER LOCATION VISIBILITY      | RIDER LOCATION VISIBILITY | PRIVACY STATUS |
++-------------------------------------------------------------------------------------------------------+
+| 1. Confirmed Rider     | 🟢 Full Live 3–5s Moving Stream | (Own screen)              | Active in-ride |
+| 2. Confirmed Driver    | (Own vehicle GPS)               | 📍 Static Pickup Landmark | Active in-ride |
+| 3. Employer / HR Desk  | 🔴 100% BLOCKED (Zero GPS)      | 🔴 100% BLOCKED (Zero GPS)| Private Commute|
++-------------------------------------------------------------------------------------------------------+
+```
+
+#### Employer Milestone Status (Soft Attendance Only):
+Under Section 4 and 6 of the Indian DPDP Act, the Employer HR Dashboard **NEVER** receives raw live GPS maps or home address coordinates. The HR dashboard strictly displays abstract operational status milestones:
+* 🚗 `Commute In-Transit` (ETA to Tech Park: ~8:45 AM)
+* 🏢 `Arrived at Tech Park` (Checked into Basement / Campus Gate at 8:40 AM)
+* 🏠 `Working from Home` / `On Leave Today`
+
+---
+
+### 7.5 Network Resiliency & Flyover/Basement Recovery
+
+1. **Last-Known Coordinate Cache:** If mobile network drops under flyovers or in basement parking, the rider UI maintains the last known position with a subtle *"Reconnecting..."* status chip.
+2. **Exponential Backoff Auto-Reconnect:** Supabase WebSocket reconnects automatically within 0.5 seconds upon regaining network signal, resuming real-time streaming with zero user intervention.
+
+---
+
+### 7.6 1-Tap External Turn-by-Turn Voice Navigation
+
+**Driver Action Button:** `"🗺️ Start Turn-by-Turn Navigation"`
+* When tapped, the Flutter app triggers a deep link intent (`geo:lat,lng` / `https://maps.google.com/maps?daddr=...` or `olamaps://`) opening the driver's preferred native navigation app (**Ola Maps / Google Maps / Apple Maps**).
+* The CorporatePooling Flutter background service continues streaming vehicle GPS telemetry to the rider in the background while the driver hears voice driving directions.

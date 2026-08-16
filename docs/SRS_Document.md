@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.1 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.2 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -10,6 +10,7 @@
 3. [User Roles & Authentication](#3-user-roles--authentication)
 4. [Core Feature: Offer a Ride (Driver)](#4-core-feature-offer-a-ride-driver)
 5. [Core Feature: Find a Ride (Rider)](#5-core-feature-find-a-ride-rider)
+6. [Matching Algorithm — Phase-Based KM/Meter Logic & Scoring Engine](#6-matching-algorithm--phase-based-kmmeter-logic--scoring-engine)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -78,6 +79,7 @@ Corporate Manager / HR Flow:
 - `wallets` — User Karma Coin balances, earned coins, and platform credits.
 - `family_wallets` — Primary driver coin sharing pools with authorized family sub-members.
 - `coin_transactions` — Immutable double-entry ledger tracking every coin debit, credit, and escrow lock.
+- `app_config` — Dynamic system parameters hot-reloaded by Super Admin (matching radii, scoring weights, tortuosity multipliers).
 
 **Supabase Realtime Channels:**
 - `ride_locations:{ride_id}` — High-frequency driver GPS stream broadcast during active rides (every 3–5 seconds).
@@ -107,15 +109,6 @@ Corporate Manager / HR Flow:
 | **`corporate_employee`** | **Phone OTP + Corporate Work Email OTP**<br>*(e.g., user@infosys.com)* | • Post & book corporate rides.<br>• Access Building & Tech Park pools.<br>• Access "Women-Only" filter.<br>• Primary owner of Karma Coin & Family Wallet. |
 | **`public_user` / `family_member`** | **Phone OTP + Aadhaar / Driving License (DL)**<br>*(Verified via DigiLocker / Govt ID check)* | • Post & book public corridor rides.<br>• If linked to an employee: can spend coins from the shared Family Wallet. |
 | **`company_manager`** | **Corporate Official Work Email + Company GSTIN/CIN + Admin Approval** | • View company ESG & carbon reduction stats.<br>• View total monthly carpool participation.<br>• Manage company-sponsored ride subsidies. |
-
-#### How Family Members are Verified vs. Linked:
-*   **Identity Verification:** A family member goes through the **exact same legal identity verification as any public user (Aadhaar or Driving License)**.
-*   **Family Wallet Link (Financial Only):** The link to a primary employee is strictly for **sharing the employee's Karma Coin wallet balance** so the family member can commute using earned coins.
-
-#### How Company Managers are Verified:
-1. **Official Corporate Email:** Registration restricted to corporate domains (no Gmail/Yahoo).
-2. **Business Proof Verification:** Submission of Company Corporate Identification Number (CIN) / GSTIN or official corporate authorization letter.
-3. **Approval:** Super Admin reviews and activates the manager's dashboard privileges.
 
 ---
 
@@ -172,23 +165,6 @@ The ride offering workflow allows drivers to publish empty vehicle seats on thei
 | **Auto-Rickshaw** | **2** | Commercial badge check (if public). |
 | **Hatchback / Sedan / SUV** | **1 to 4** | Configurable by driver (Default: 3). |
 
-```dart
-int getMaxAllowedRiders(String vehicleType) {
-  switch (vehicleType.toLowerCase()) {
-    case 'bike':
-    case 'scooter':
-      return 1; // Strict rule: Max 1 pillion rider for 2-wheelers
-    case 'auto':
-      return 2;
-    case 'car':
-    case 'sedan':
-    case 'suv':
-    default:
-      return 3;
-  }
-}
-```
-
 ---
 
 ### 4.2 Location Picking & PostGIS Indexing
@@ -213,11 +189,7 @@ int getMaxAllowedRiders(String vehicleType) {
 
 #### 4.3.3 Mode C: 🔄 RECURRING (Commute Backbone)
 - **Use Case:** Fixed daily office commutes (e.g., Mon–Fri at 8:30 AM).
-- **Configuration:**
-  1. Days of Week selection (Default: Mon, Tue, Wed, Thu, Fri).
-  2. Fixed departure time (e.g., "08:30 AM").
-  3. Validity duration: `1 week`, `1 month`, or `3 months` (stored as `valid_until` date).
-  4. Skip Today toggle: Allows driver to take leave on a single day without destroying the recurring rule.
+- **Configuration:** Days of week, fixed departure time, validity duration (`1 week`, `1 month`, `3 months`), skip today toggle.
 - **Nightly 8:00 PM Auto-Match Lock-in:** The backend cron job pairs recurring riders and drivers every evening at 8:00 PM, locking in seats and eliminating morning booking anxiety.
 - **Per-Day Completion State:** Recurring rides **never** transition to a permanent `'completed'` status. Each day's execution adds `YYYY-MM-DD` to `completion_dates[]`, and the master status resets to `'posted'` for the next active calendar day.
 
@@ -283,58 +255,23 @@ The Rider flow enables corporate employees to discover drivers travelling on ide
 
 ---
 
-### 5.1 Rider Search Flow & Two-Phase Discovery
+### 5.1 Rider Search Flow & Interactive Route Preview
 
-```
-[ Rider Inputs: Pickup + Drop Location + Time Window + Safety Filters ]
-                                  │
-                                  ▼
-[ Step 1: PostGIS Spatial Pre-Filter (PostgreSQL Server) ]
-  Filters rides whose route_geometry passes within 1.5 km of Pickup & Drop.
-                                  │
-                                  ▼
-[ Step 2: In-Memory Polyline Matching (Node.js / Client Dart Engine) ]
-  Calculates exact Cross-Track distance to line segments:
-  - Phase 1 (Ride Posted): Within 500m pickup / 500m drop
-  - Phase 2 (Ride Started): Within 150m pickup
-                                  │
-                                  ▼
-[ Step 3: Corporate Trust & Building Filter ]
-  - Same Company -> 100% Match Priority
-  - Same Building ID -> 95% Match Priority (Basement/Lobby Pickup)
-  - Women-Only Filter Check -> Hides male drivers if Rider requested Female-only
-                                  │
-                                  ▼
-[ Step 4: Results Displayed with Match Score (0–100) & Instant Request Button ]
-```
+1. **Search Criteria Input:** Rider specifies pickup location, drop location, departure window, and optional "Women-Only" safety toggle.
+2. **PostGIS + In-Memory Evaluation:** Server filters candidate rides and computes compatibility scores (Section 6).
+3. **Interactive Route Map Preview (`rider_route_preview_screen.dart`):**
+   - Rider taps any matched driver card.
+   - The driver’s full route polyline renders on the map (blue corridor).
+   - Rider's proposed pickup pin (green) and drop pin (red) appear snapped to the driver's route.
+   - **Pickup Landmark Adjustment:** Rider can fine-tune / drag their pickup pin to a convenient roadside node (e.g., "Gate 2 Bus Stop") directly on the driver's path to minimize driver detour.
+4. **Request Submission & Escrow Lock:** Rider taps "Confirm Request", locking required Karma Coins in escrow.
+5. **Driver Review & Decision (`requests_screen.dart`):**
+   - Driver receives push notification with rider profile and requested pickup point.
+   - Driver taps **Accept** (locks seat, updates request to `accepted`) or **Reject** (instantly releases locked coins back to rider).
 
 ---
 
-### 5.2 Rider Search Criteria & Matching Rules
-
-| Parameter | Rule / Logic |
-|---|---|
-| **Pickup Location** | Must be within 500m of the driver's road path (Phase 1) or 150m (Phase 2). |
-| **Drop Location** | Must be within 500m of the driver's destination or office building. |
-| **Time Compatibility** | Departure time within ±15 minutes of rider's preferred time. |
-| **Vehicle Match** | For bike-pool requests, verifies driver has `has_spare_helmet = true`. |
-| **Gender Filter** | If rider enables "Women-Only", only female drivers offering rides with `women_only_flag = true` appear. |
-| **Building ID Bonus** | If `driver.building_id == rider.building_id`, displays a **"Same Building" badge**, allowing direct basement parking pickups. |
-
----
-
-### 5.3 Ride Request & Escrow Locking
-
-When the rider taps "Request Ride", the application:
-1. Calculates the required Karma Coins based on route distance (`distance_km * COIN_RATE_PER_KM`).
-2. Checks wallet balance:
-   - Evaluates Rider's individual `wallet`.
-   - If balance is insufficient, checks if Rider is linked to an active `family_wallet` with available coin pool.
-3. Places coins in **Escrow Lock** (`coins_locked`) inside `public.ride_requests`. Coins are deducted from spendable balance immediately to prevent double-spending, but are not released to the driver until physical ride completion.
-
----
-
-### 5.4 Database Schema: `public.ride_requests`
+### 5.2 Database Schema: `public.ride_requests`
 
 ```sql
 CREATE TYPE request_status_enum AS ENUM ('pending', 'accepted', 'rejected', 'cancelled', 'in_ride', 'completed');
@@ -356,7 +293,253 @@ CREATE TABLE public.ride_requests (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index for instant lookup of requests by ride or rider
 CREATE INDEX idx_ride_requests_ride_id ON public.ride_requests(ride_id);
 CREATE INDEX idx_ride_requests_rider_id ON public.ride_requests(rider_id);
+```
+
+---
+
+## 6. Matching Algorithm — Phase-Based KM/Meter Logic & Scoring Engine
+
+**Module File:** `src/matchingAlgorithm.js` (Node.js) & `lib/services/matching_service.dart` (Dart)
+
+The matching algorithm is the core computational engine of CorporatePoolingApp. It executes an ultra-fast, zero-map-API-cost two-tier spatial evaluation.
+
+---
+
+### 6.1 The 2-Tier Hybrid Funnel Architecture
+
+```
+[ 10,000 Potential City Rides in Database ]
+                      │
+                      ▼
+[ Tier 1: PostGIS Server-side Spatial Pre-Filter ]
+  • Uses spatial GiST index (`ST_DWithin`) with a dynamic Bounding Box.
+  • Discards 95% of geographically irrelevant rides in < 5ms.
+                      │
+                      ▼
+[ Tier 2: In-Memory Cross-Track Polyline Matcher ]
+  • Node.js / Dart V8 in-memory engine executes line-segment vector math.
+  • Checks dynamic Phase radii, directionality, and corporate trust scoring.
+  • Execution Time: ~12 milliseconds (₹0 map API cost).
+                      │
+                      ▼
+[ Top Ranked Matches Displayed to Rider (Sorted by Score 0–100) ]
+```
+
+---
+
+### 6.2 Mathematical Foundation & Algorithmic Fixes
+
+#### A. Haversine Great-Circle Distance
+Computes raw spherical distance between two coordinate pairs $(lat_1, lng_1)$ and $(lat_2, lng_2)$ in meters:
+
+$$\Delta lat = (lat_2 - lat_1) \cdot \frac{\pi}{180}, \quad \Delta lng = (lng_2 - lng_1) \cdot \frac{\pi}{180}$$
+
+$$a = \sin^2\left(\frac{\Delta lat}{2}\right) + \cos\left(lat_1 \cdot \frac{\pi}{180}\right) \cdot \cos\left(lat_2 \cdot \frac{\pi}{180}\right) \cdot \sin^2\left(\frac{\Delta lng}{2}\right)$$
+
+$$d = 2 \cdot R \cdot \arcsin(\sqrt{a}) \quad \text{where } R = 6,371,000\text{ meters}$$
+
+#### B. Cross-Track Line-Segment Projection (Fixes Discrete Point Gap)
+Rather than checking distance strictly to discrete waypoints $P_i$, the algorithm projects the rider's coordinate $R$ orthogonally onto the vector segment between road points $A$ and $B$:
+
+$$\vec{v} = B - A, \quad \vec{u} = R - A$$
+
+$$t = \text{clamp}\left(\frac{\vec{u} \cdot \vec{v}}{\|\vec{v}\|^2}, 0, 1\right)$$
+
+$$\text{Closest Point on Road } P_{\text{closest}} = A + t \cdot \vec{v}$$
+
+$$\text{Distance} = \text{Haversine}(R, P_{\text{closest}})$$
+
+#### C. Urban Road Tortuosity Multiplier ($1.3\times$)
+Estimates actual driving distance through Indian city street networks without invoking paid Directions APIs:
+
+$$D_{\text{road}} \approx D_{\text{haversine}} \times 1.3$$
+
+---
+
+### 6.3 Phase-Aware Dynamic Radii (Meter-wise Logic)
+
+The search tolerance adapts dynamically based on the driver's operational state:
+
+| Matching Phase | Driver Ride Status | Pickup Distance Threshold | Drop-off Distance Threshold | Rationale |
+|---|---|---|---|---|
+| **Phase 1: Pre-Departure** | `posted` / `scheduled` | **500 meters**<br>*(Expanded to **1,500m** if `building_id` matches)* | **500 meters** | Driver is stationary at home/desk and can easily accommodate a minor route adjustment. |
+| **Phase 2: Live On-Route** | `started` / `in_progress` | **150 meters** | **300 meters** | Driver is moving in traffic at 40 km/h; avoids dangerous U-turns, flyover misses, and sudden lane cuts. |
+
+---
+
+### 6.4 Directionality & Backward Route Guard
+
+To prevent matching a rider traveling in the opposite direction along a shared bidirectional road:
+1. The algorithm finds the polyline segment index nearest to Rider Pickup ($\text{Index}_{\text{pickup}}$).
+2. The algorithm finds the polyline segment index nearest to Rider Drop ($\text{Index}_{\text{drop}}$).
+3. **Hard Constraint:** $\text{Index}_{\text{pickup}} < \text{Index}_{\text{drop}}$.
+4. If $\text{Index}_{\text{pickup}} \ge \text{Index}_{\text{drop}}$, the match is **immediately rejected (Score = 0)**.
+
+---
+
+### 6.5 Trust & Priority Scoring Formula (0 to 100 Points)
+
+Every candidate passing the geometric and directional filters is assigned a composite score computed entirely in-memory:
+
+$$\text{Total Match Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\text{time}} (20) + S_{\text{karma}} (10)$$
+
+#### Component Breakdown:
+
+1. **Proximity Score ($S_{\text{proximity}}$, Max 40 Pts):**
+   $$S_{\text{proximity}} = 40 \times \left(1 - \frac{d_{\text{pickup}} + d_{\text{drop}}}{2 \times \text{MaxRadius}}\right)$$
+
+2. **Corporate Trust Score ($S_{\text{trust}}$, Max 30 Pts):**
+   - **Same Company Colleague** (`driver.company_id == rider.company_id`): **+30 Points**
+   - **Same Building / Tech Park Hub** (`driver.building_id == rider.building_id`): **+25 Points**
+   - **Verified Corporate (Other Tech Park)**: **+15 Points**
+   - **Verified Public User (Aadhaar / DL)**: **+10 Points**
+
+3. **Time Compatibility Score ($S_{\text{time}}$, Max 20 Pts):**
+   - $\Delta \text{Time} \le 5\text{ mins}$: **+20 Points**
+   - $\Delta \text{Time} \le 15\text{ mins}$: **+10 Points**
+   - $\Delta \text{Time} > 15\text{ mins}$: **+0 Points**
+
+4. **Karma Punctuality & Driver Rating ($S_{\text{karma}}$, Max 10 Pts):**
+   $$S_{\text{karma}} = 2 \times \text{DriverRating (0.0 to 5.0)}$$
+
+*Note: The raw numerical score is strictly internal. The frontend UI maps high scores to intuitive visual badges (`Colleague`, `Same Building`, `Top Rated`).*
+
+---
+
+### 6.6 Hard Exclusion Safety & Logic Filters
+
+Before scoring, candidate rides must pass **4 mandatory gates**:
+
+```
+[ Candidate Ride ] ──► [ 1. Women-Only Check ] ──► [ 2. Directionality Check ]
+                                                            │
+[ Passed to Scoring ] ◄── [ 4. Seat Capacity ] ◄── [ 3. 2-Wheeler Helmet ]
+```
+
+1. **Women-Only Filter:** If Rider requested Female-only, strictly discard male drivers.
+2. **Directionality Check:** Hard reject if $\text{Index}_{\text{pickup}} \ge \text{Index}_{\text{drop}}$.
+3. **Two-Wheeler Helmet Rule:** If `vehicle_type` is Bike/Scooter, hard reject unless `has_spare_helmet = true`.
+4. **Capacity Check:** Hard reject if `seats_available < seats_requested`.
+
+---
+
+### 6.7 Complete Node.js Matching Implementation Reference
+
+```javascript
+/**
+ * CorporatePooling In-Memory Matching Engine
+ * Version 3.2 | Production Zero-API-Cost Matcher
+ */
+
+function distanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function getClosestPointOnSegment(pLat, pLng, aLat, aLng, bLat, bLng) {
+  const dx = bLng - aLng;
+  const dy = bLat - aLat;
+  if (dx === 0 && dy === 0) return { lat: aLat, lng: aLng, t: 0 };
+  
+  let t = ((pLng - aLng) * dx + (pLat - aLat) * dy) / (dx * dx + dy * dy);
+  t = Math.max(0, Math.min(1, t));
+  return { lat: aLat + t * dy, lng: aLng + t * dx, t };
+}
+
+export function matchRiderToRide(ride, riderQuery, config) {
+  // Gate 1: Hard Exclusion - Women-Only Filter
+  if (riderQuery.womenOnly && (!ride.women_only_flag || ride.driver_gender !== 'female')) {
+    return { isMatch: false, reason: 'WOMEN_ONLY_RESTRICTION' };
+  }
+
+  // Gate 2: Hard Exclusion - 2-Wheeler Helmet Guard
+  if (['bike', 'scooter'].includes(ride.vehicle_type) && !ride.has_spare_helmet) {
+    return { isMatch: false, reason: 'NO_SPARE_HELMET' };
+  }
+
+  // Gate 3: Hard Exclusion - Capacity Check
+  if (ride.seats_available < (riderQuery.seatsRequested || 1)) {
+    return { isMatch: false, reason: 'NO_SEATS_AVAILABLE' };
+  }
+
+  const isLive = ['started', 'in_progress'].includes(ride.ride_status);
+  const isSameBuilding = riderQuery.buildingId && ride.building_id === riderQuery.buildingId;
+  
+  // Phase-aware Dynamic Radii
+  const maxPickupRadius = isLive 
+    ? config.phase2_pickup_radius // 150m
+    : (isSameBuilding ? config.phase1_same_building_radius : config.phase1_pickup_radius); // 1500m vs 500m
+  const maxDropRadius = isLive ? config.phase2_drop_radius : config.phase1_drop_radius; // 300m vs 500m
+
+  const points = ride.route_points;
+  let minPickupDist = Infinity;
+  let minDropDist = Infinity;
+  let pickupIndex = -1;
+  let dropIndex = -1;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const pA = points[i];
+    const pB = points[i + 1];
+
+    // Cross-track line-segment evaluation
+    const closestPickup = getClosestPointOnSegment(riderQuery.pickupLat, riderQuery.pickupLng, pA.lat, pA.lng, pB.lat, pB.lng);
+    const dPickup = distanceMeters(riderQuery.pickupLat, riderQuery.pickupLng, closestPickup.lat, closestPickup.lng) * config.urban_tortuosity_multiplier;
+
+    if (dPickup < minPickupDist) {
+      minPickupDist = dPickup;
+      pickupIndex = i;
+    }
+
+    const closestDrop = getClosestPointOnSegment(riderQuery.dropLat, riderQuery.dropLng, pA.lat, pA.lng, pB.lat, pB.lng);
+    const dDrop = distanceMeters(riderQuery.dropLat, riderQuery.dropLng, closestDrop.lat, closestDrop.lng) * config.urban_tortuosity_multiplier;
+
+    if (dDrop < minDropDist) {
+      minDropDist = dDrop;
+      dropIndex = i;
+    }
+  }
+
+  // Gate 4: Hard Exclusion - Directionality Guard
+  if (pickupIndex >= dropIndex) {
+    return { isMatch: false, reason: 'REVERSE_DIRECTION' };
+  }
+
+  if (minPickupDist > maxPickupRadius || minDropDist > maxDropRadius) {
+    return { isMatch: false, reason: 'OUT_OF_RADIUS' };
+  }
+
+  // Scoring Calculation (0 to 100)
+  const proximityScore = Math.max(0, 40 * (1 - (minPickupDist + minDropDist) / (maxPickupRadius + maxDropRadius)));
+  
+  let trustScore = 10;
+  if (ride.driver_company_id && ride.driver_company_id === riderQuery.companyId) {
+    trustScore = 30; // Same Company
+  } else if (isSameBuilding) {
+    trustScore = 25; // Same Building
+  } else if (ride.driver_is_corporate) {
+    trustScore = 15;
+  }
+
+  const timeDiffMins = Math.abs(ride.depart_timestamp - riderQuery.targetTimestamp) / (60 * 1000);
+  const timeScore = timeDiffMins <= 5 ? 20 : (timeDiffMins <= 15 ? 10 : 0);
+  const karmaScore = Math.min(10, (ride.driver_rating || 5.0) * 2);
+
+  const totalScore = Math.round(proximityScore + trustScore + timeScore + karmaScore);
+
+  return {
+    isMatch: true,
+    matchScore: totalScore,
+    pickupDistanceMeters: Math.round(minPickupDist),
+    dropDistanceMeters: Math.round(minDropDist),
+    isSameBuilding,
+    isSameCompany: ride.driver_company_id === riderQuery.companyId
+  };
+}
 ```

@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 1.0 | August 2026 | Dedicated Admin Portal
+### Version 2.0 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -31,7 +31,46 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
 2. **Cluster Mapping:**
    - Map multiple companies to the same `building_id` to enable cross-company pooling.
 
-### 2.3 Trust, Safety & Fraud Prevention
+### 2.3 Dynamic Matching Algorithm & Parameter Control Console (NEW)
+
+The Super Admin has complete, hot-reloading control over the platform's matching math and thresholds without requiring backend code deployments:
+
+```
++-----------------------------------------------------------------------------------+
+|               Super Admin Console: Algorithm Tuning Dashboard                     |
++-----------------------------------------------------------------------------------+
+|  Matching Radii Controls:                                                         |
+|  - Phase 1 Pickup Radius (Pre-departure):      [ 500  ] meters                    |
+|  - Same Building Expanded Radius:              [ 1500 ] meters                    |
+|  - Phase 2 Pickup Radius (Live On-Route):      [ 150  ] meters                    |
+|  - Drop-off Radius Threshold:                  [ 500  ] meters                    |
+|                                                                                   |
+|  Mathematical Multipliers:                                                        |
+|  - Urban Road Tortuosity Multiplier:           [ 1.30 ] x  (Slider: 1.0 - 2.0)    |
+|                                                                                   |
+|  Trust & Priority Scoring Weights (Total = 100):                                  |
+|  - Proximity Weight:                           [  40  ] pts                       |
+|  - Same Company Colleague Bonus:               [  30  ] pts                       |
+|  - Same Building Cluster Bonus:                [  25  ] pts                       |
+|  - Time Compatibility Weight:                  [  20  ] pts                       |
+|  - Driver Karma Rating Weight:                 [  10  ] pts                       |
+|                                                                                   |
+|  Hard Safety Filter Policies:                                                     |
+|  - [X] Enforce Mandatory 2-Wheeler Spare Helmet Guard                             |
+|  - [X] Enforce Strict Polyline Directionality Index Check                         |
+|  - [X] Enforce Women-Only Hard Cryptographic Isolation                            |
+|                                                                                   |
+|                    [ TEST ALGORITHM SIMULATOR ]   [ SAVE & PUBLISH CONFIG ]       |
++-----------------------------------------------------------------------------------+
+```
+
+#### Capabilities:
+1. **Live Parameter Overrides:** Changes saved in the admin console update the `app_config` table in Supabase and hot-reload in the Node.js matching engine in under 5 seconds.
+2. **Algorithm Sandbox Simulator:** Admin can input sample coordinates (e.g. Pune Station to Hinjewadi) and preview how match scores change before publishing parameters live to production.
+
+---
+
+### 2.4 Trust, Safety & Fraud Prevention
 1. **Government ID / Aadhaar Manual Audit Queue:**
    - Review flagged DigiLocker / Aadhaar / Driving License verification exceptions.
    - Audit rejected verification attempts.
@@ -43,7 +82,7 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
    - Manage user reports (e.g., no helmet provided on bike ride, rash driving, off-route deviations).
    - Temporary suspension or permanent blacklisting of users across phone numbers and corporate emails.
 
-### 2.4 Karma Coin Economy & Corporate Petrol Card Subsidies
+### 2.5 Karma Coin Economy & Corporate Petrol Card Subsidies
 1. **Double-Entry Ledger Audit:**
    - Monitor total platform Karma Coins in circulation, locked escrow volume, and transaction history.
 2. **Corporate Voucher / Petrol Card Reconciliation:**
@@ -58,7 +97,7 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
 
 | Admin Role | Permissions |
 |---|---|
-| **`super_admin`** | Full access: system settings, financial ledgers, company approvals, user ban/unban. |
+| **`super_admin`** | Full access: algorithm tuning, system settings, financial ledgers, company approvals, user ban/unban. |
 | **`support_officer`** | Dispute resolution, user identity verification review, SOS emergency monitor. |
 | **`finance_admin`** | Corporate invoice generation, Karma Coin minting/burning audits, fuel card reconciliation. |
 

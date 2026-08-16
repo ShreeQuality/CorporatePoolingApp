@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.3 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.4 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -7,7 +7,7 @@
 
 1. [Introduction](#1-introduction)
 2. [System Overview & Architecture](#2-system-overview--architecture)
-3. [User Roles & Authentication](#3-user-roles--authentication)
+3. [User Roles, Verification & Authentication](#3-user-roles-verification--authentication)
 4. [Core Feature: Offer a Ride (Driver)](#4-core-feature-offer-a-ride-driver)
 5. [Core Feature: Find a Ride (Rider)](#5-core-feature-find-a-ride-rider)
 6. [Matching Algorithm — Phase-Based KM/Meter Logic & Scoring Engine](#6-matching-algorithm--phase-based-kmmeter-logic--scoring-engine)
@@ -28,7 +28,7 @@ Unlike commercial taxi aggregators (Uber, Ola, Rapido), CorporatePoolingApp oper
 
 ### 1.3 Core Philosophy & Architectural Pillars
 - **Karma Economy (No Direct Cash/Petrol Liability):** Rides are funded through "Karma Coins". Drivers earn coins by providing rides; coins can be shared across family members or redeemed for employer-sponsored petrol cards / green incentives.
-- **Tech Park & Building ID Clustering:** Overcomes the "Company Isolation Trap". While verification is done via corporate email, matching allows cross-company pooling if commuters share the same physical office building or tech park.
+- **Tech Park & Building ID Clustering:** Overcomes the "Company Isolation Trap". While verification is done via corporate email or office ID badge, matching allows cross-company pooling if commuters share the same physical office building or tech park.
 - **Multi-Modal Vehicles (Bike & Car):** Designed for Indian road realities with explicit 2-wheeler (Bike/Scooter: 1 passenger + spare helmet requirement) and 4-wheeler support.
 - **Hardware-Agnostic 4-Level Boarding Verification:** Replaces missing NFC chips on budget Indian smartphones with Bluetooth Low Energy (BLE) auto-handshake, dynamic "Daily Karma Word" screen touch, dynamic QR codes, and fallback PIN.
 - **Data Privacy & Legal Compliance (DPDP Act 2023):** Commutes are classified as personal time. Live SOS broadcasts route strictly to **Personal Trusted Contacts (Family)** and Emergency Services (112), preventing unauthorized workplace surveillance.
@@ -62,49 +62,97 @@ Rider Flow:
   → Filter by Women-Only / Building ID → Send Request (Coins locked)
   → RiderLiveScreen (BLE Scan / Screen Touch Verification / Live Map)
 
-Corporate Manager / HR Flow:
-  CompanyManagerSignup → ManagerDashboard → Employee Verification
-  → Aggregated ESG & CO2 Savings Analytics (No individual live GPS tracking)
+Corporate Employer / HR Manager Flow:
+  CompanyManagerSignup (Upload GSTIN + CIN + LOA) → Super Admin Review
+  → ManagerDashboard (Prepaid Commute Pool Recharge & ESG Carbon Reports)
 ```
 
-### 2.2 Supabase Relational Architecture (PostgreSQL)
+---
 
-**Core Relational Tables:**
-- `users` — User profiles, auth links, verification badges (Work Email, Aadhaar/DL), gender, vehicle references.
-- `vehicles` — Registered vehicles with plate numbers, model, type, spare helmet status, and verification flags.
-- `emergency_contacts` — User-defined personal contacts for emergency SOS broadcasts.
-- `buildings` — Physical IT parks, business complexes, and building hubs with centroid coordinates.
-- `companies` — Registered corporate employers with domain validation rules (e.g. `@tcs.com`) and manager assignments.
-- `rides` — Active, scheduled, and recurring ride offers with PostGIS line geometry (`geometry(LineString, 4326)`).
-- `ride_requests` — Booking requests linking riders to posted rides, tracking lifecycle status and locked coins.
-- `wallets` — User Karma Coin balances, earned coins, and platform credits.
-- `family_wallets` — Primary driver coin sharing pools with authorized family sub-members.
-- `coin_transactions` — Immutable double-entry ledger tracking every coin debit, credit, and escrow lock.
-- `app_config` — Dynamic system parameters hot-reloaded by Super Admin (matching radii, scoring weights, tortuosity multipliers).
+## 3. User Roles, Verification & Authentication
 
-**Supabase Realtime Channels:**
-- `ride_locations:{ride_id}` — High-frequency driver GPS stream broadcast during active rides (every 3–5 seconds).
+### 3.1 Finalized Verification Framework by User Role
+
+```
++---------------------------------------------------------------------------------------------------+
+|                                 PLATFORM VERIFICATION MATRIX                                      |
++---------------------------------------------------------------------------------------------------+
+| 1. Corporate Employee  -> Phone OTP + [Work Email OTP OR Office ID Photo] + Mandatory Aadhaar KYC|
+| 2. Public / Family User-> Phone OTP + Mandatory Aadhaar / DL KYC (QR / ML Kit / Photo)            |
+| 3. Corporate Employer  -> Phone OTP + Admin Work Email OTP + GSTIN + CIN + Signed Letterhead (LOA)|
+| 4. Driver (Bike/Car)   -> Vehicle Plate Regex Check + Driving License Photo + Vehicle RC Photo    |
++---------------------------------------------------------------------------------------------------+
+```
 
 ---
 
-## 3. User Roles & Authentication
+### 3.2 Detailed Verification Specifications
 
-### 3.1 Authentication & Registration Flows
-1. **Primary Phone Auth:** User enters Indian mobile number (+91) → Receives SMS OTP via Supabase Auth → Session created.
-2. **Registration Choice Screen (`registration_choice_screen.dart`):**
-   - **Corporate Commuter (`corporate_signup_screen.dart`):** Work email verification (`name@company.com`) via OTP. Maps to `company_id` and office `building_id`.
-   - **Public / Family User (`public_signup_screen.dart`):** Government ID verification (Aadhaar / DL). Optional link to Family Wallet.
-   - **Company Manager (`company_manager_signup_screen.dart`):** Corporate Email + Domain Whitelisting + Company Verification.
+#### A. Corporate Employees (`corporate_signup_screen.dart`)
+To ensure total safety and community trust, corporate commuters complete **Dual-Shield Verification**:
+1. **Employment Verification (Choice of 2 Methods):**
+   - **Method 1 (Instant):** Corporate Work Email OTP (`@company.com`). System validates domain against `public.companies` whitelist.
+   - **Method 2 (Firewall Fallback):** Physical Office ID Card photo upload (for employees in banks or defense companies where firewalls block external OTPs). Verified via on-device OCR / Super Admin review.
+2. **Legal Identity Verification (Mandatory Aadhaar KYC):**
+   - **Phase 1 (₹0 Launch):** On-Device Aadhaar Secure QR Code scan / Google ML Kit text extraction with Verhoeff mathematical checksum + photo upload.
+   - **Phase 2 (Scale):** Optional automated DigiLocker API (Setu / Cashfree) for instant 2-second Govt OTP KYC.
+3. **Result:** Employee gets the **"Verified Corporate Citizen"** badge, mapping them to their `company_id` and `building_id`.
+
+#### B. Public & Family Users (`public_signup_screen.dart`)
+1. **Primary Phone Auth:** SMS OTP via Supabase Auth + Fast2SMS/MSG91.
+2. **Identity KYC:** Mandatory Government ID verification (Aadhaar or Driving License) via Secure QR scan / on-device OCR / Super Admin audit.
+3. **Family Account Linking:** Optional link to a primary employee's account for **sharing Karma Coin balances only**.
+
+#### C. Corporate Employers / HR Managers (`company_manager_signup_screen.dart`)
+To onboard an enterprise onto the platform's B2B prepaid program:
+1. **Account Creation:** Phone SMS OTP + Authorized Corporate Work Email OTP (`hr.director@company.com`).
+2. **Required Business Documents:**
+   - **GSTIN Certificate (Form GST REG-06):** 15-digit tax registration proof.
+   - **Certificate of Incorporation (CIN):** 21-digit MCA registration document.
+   - **Company Corporate PAN Card:** 10-digit tax ID.
+   - **HR Letter of Authority (LOA):** 1-page signed authorization on official company letterhead with corporate stamp.
+3. **Super Admin Verification & Anti-Fraud Gates:**
+   - Super Admin cross-references GSTIN on the official Govt GST Portal (`services.gst.gov.in`).
+   - Super Admin verifies company status and confirms signing Director name on the official MCA Master Database (`mca.gov.in`).
+   - Super Admin verifies corporate email domain ownership before whitelisting.
+4. **Activation:** Super Admin activates the company portal, enabling prepaid wallet recharges and employee commute grants.
+
+#### D. Drivers (`add_vehicle_screen.dart`)
+1. **Format Validation (₹0):** Vehicle registration number validated in Dart (`^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$`).
+2. **Dual Document Upload:** Snaps photo of **Driving License (DL)** and **Vehicle RC Card**.
+3. **1-Click Super Admin Approval:** Documents audited side-by-side in the Super Admin KYC queue at **₹0 API cost**.
 
 ---
 
-### 3.2 User Roles & Verification Specifications
+### 3.3 Database Schema: `public.users`
 
-| Role | Identity & Verification Tier | Capabilities & Access |
-|---|---|---|
-| **`corporate_employee`** | **Phone OTP + Corporate Work Email OTP**<br>*(e.g., user@infosys.com)* | • Post & book corporate rides.<br>• Access Building & Tech Park pools.<br>• Access "Women-Only" filter.<br>• Primary owner of Karma Coin & Family Wallet. |
-| **`public_user` / `family_member`** | **Phone OTP + Aadhaar / Driving License (DL)**<br>*(Verified via DigiLocker / Govt ID check)* | • Post & book public corridor rides.<br>• If linked to an employee: can spend coins from the shared Family Wallet. |
-| **`company_manager`** | **Corporate Official Work Email + Company GSTIN/CIN + Admin Approval** | • View company ESG & carbon reduction stats.<br>• View total monthly carpool participation.<br>• Manage company-sponsored ride subsidies. |
+```sql
+CREATE TYPE user_role_enum AS ENUM ('corporate_employee', 'public_user', 'family_member', 'company_manager');
+CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other', 'prefer_not_to_say');
+
+CREATE TABLE public.users (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    phone_number VARCHAR(15) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    gender gender_enum NOT NULL,
+    role user_role_enum DEFAULT 'corporate_employee',
+    work_email VARCHAR(150) UNIQUE,
+    work_email_verified BOOLEAN DEFAULT FALSE,
+    office_id_photo_url TEXT, -- Fallback photo verification
+    office_id_verified BOOLEAN DEFAULT FALSE,
+    company_id UUID REFERENCES public.companies(id),
+    building_id UUID REFERENCES public.buildings(id),
+    primary_account_id UUID REFERENCES public.users(id), -- Family wallet link
+    aadhaar_verified BOOLEAN DEFAULT FALSE,
+    aadhaar_masked_number VARCHAR(20), -- e.g. "XXXX-XXXX-8421"
+    dl_verified BOOLEAN DEFAULT FALSE,
+    dl_photo_url TEXT,
+    profile_photo_url TEXT,
+    emergency_contacts JSONB DEFAULT '[]'::jsonb, -- Array of { name, phone, relation }
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
 ---
 
@@ -239,7 +287,6 @@ CREATE TABLE public.rides (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Spatial indices for ultra-fast PostGIS route bounding queries
 CREATE INDEX idx_rides_from_location ON public.rides USING GIST(from_location);
 CREATE INDEX idx_rides_to_location ON public.rides USING GIST(to_location);
 CREATE INDEX idx_rides_route_geometry ON public.rides USING GIST(route_geometry);
@@ -430,7 +477,7 @@ Before scoring, candidate rides must pass **4 mandatory gates**:
 ```javascript
 /**
  * CorporatePooling In-Memory Matching Engine
- * Version 3.2 | Production Zero-API-Cost Matcher
+ * Version 3.4 | Production Zero-API-Cost Matcher
  */
 
 function distanceMeters(lat1, lon1, lat2, lon2) {

@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.1 | August 2026 | Dedicated Admin Portal
+### Version 2.2 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -16,36 +16,45 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
 ## 2. User Roles, Corporate Verification & KYC Governance
 *(Corresponds to Main SRS Section 3: User Roles & Auth)*
 
-### 2.1 User Management, Identity Audits & Ban Controls
+### 2.1 User Management & Manual KYC Audit Queue
 1. **Global User Search & Profile Inspection:**
    - Search any user across mobile phone number, full name, or corporate work email.
-   - Inspect account status, verification badges, vehicle details, linked family accounts, and complete ride history.
-2. **Manual KYC / Government ID Audit Queue:**
-   - Review pending or flagged DigiLocker / Aadhaar / Driving License verification exceptions.
-   - High-resolution document inspection viewer with one-click **Approve** or **Reject with Reason** actions.
-3. **Account Suspension & Blacklisting:**
-   - Temporary suspension or permanent account ban across phone numbers, device hardware IDs, and corporate email addresses.
-   - Immediate termination of all active ride postings and automatic refund of locked escrow coins upon account ban.
+   - Inspect verification badges (Work Email, Office ID Photo, Aadhaar KYC, DL, Vehicle RC), linked family accounts, and complete ride history.
+2. **Employee Physical Office ID Card Review Queue:**
+   - For employees who uploaded photos of their plastic Office ID badge (due to corporate email firewall blocks), Super Admin reviews the company logo, employee name, and employee ID with 1-click **Approve** or **Reject**.
+3. **Driver KYC Inspection (Side-by-Side DL + Vehicle RC):**
+   - Side-by-side high-resolution image viewer displaying the driver's **Driving License** and **Vehicle RC Card**.
+   - 1-Click action updates `users.dl_verified = true` and `vehicles.rc_verified = true` at **₹0 API cost**.
 
-### 2.2 Corporate Domain Whitelisting & Entity Management
-1. **Company Directory & Email Whitelisting:**
-   - Add, edit, or disable corporate entities (e.g., *Tata Consultancy Services*, *Infosys*, *Wipro*).
-   - Configure **Corporate Email Domain Whitelist rules** (e.g., auto-verifying any user registering with `@tcs.com`, `@tatamotors.com`).
-2. **Domain Matching Policy:**
-   - Configure domain strictness (e.g., require sub-domain match `@corp.wipro.com` vs root domain `@wipro.com`).
+### 2.2 Employer Verification & Anti-Fraud Governance Console
+When an enterprise HR / Company Manager registers their company, Super Admin audits the 4 mandatory business documents:
 
-### 2.3 Company Manager & HR Dashboard Approval Queue
-1. **Business Proof Verification:**
-   - Review corporate registration documents uploaded by HR/Company Managers: Corporate Identification Number (CIN), GSTIN certificates, or official authorization letters.
-2. **Privilege Grants:**
-   - Approve or revoke `company_manager` dashboard privileges.
-   - Assign corporate boundary scopes (e.g., manager can only view aggregated ESG statistics for their specific branch/building).
+```
++-----------------------------------------------------------------------------------+
+|               Super Admin Console: Employer Business Verification                 |
++-----------------------------------------------------------------------------------+
+|  Company Name: [ Infosys Limited ]              Domain: [ @infosys.com ]          |
+|  Manager Name: [ Rahul Sharma ]                 Manager Email: [ hr@infosys.com ] |
+|                                                                                   |
+|  Uploaded Documents:                                                              |
+|  [ 📄 GSTIN Certificate (REG-06) ]  --> Check on Govt GST Portal (15-digit active)|
+|  [ 📄 Certificate of Inc. (CIN)   ]  --> Check on Govt MCA Database (Pvt/Ltd)     |
+|  [ 📄 Company Corporate PAN       ]  --> Corporate Tax ID match                   |
+|  [ 📄 Signed Letter of Authority  ]  --> Confirm Signer is an active MCA Director |
+|                                                                                   |
+|       [ ❌ REJECT (FRAUD BAN) ]       [ ✅ APPROVE & WHITELIST DOMAIN ]            |
++-----------------------------------------------------------------------------------+
+```
 
-### 2.4 Family Wallet Linking Policy & Governance
-1. **Family Linking Caps:**
-   - Super Admin can globally configure the maximum number of family members a primary employee can link (Default: **4 sub-accounts**).
-2. **Monthly Spending Limits:**
-   - Configure global maximum monthly Karma Coin spending limits for linked family accounts to prevent system abuse.
+#### Verification & Anti-Fraud Gates:
+1. **Govt GST Portal Verification (`services.gst.gov.in`):** Super Admin verifies that the 15-digit GSTIN is **Active** and matches the company's registered legal name.
+2. **Govt MCA Database Verification (`mca.gov.in`):** Super Admin confirms the 21-digit CIN and verifies that the person who signed the Letter of Authority (LOA) is a legally listed **Active Director** in the government MCA master data.
+3. **Domain Ownership Verification:** Super Admin verifies the official corporate domain before whitelisting it, preventing lookalike domain spoofing.
+4. **1-Click Fraud Killswitch:** Super Admin can immediately ban fraudulent accounts, freezing associated wallets and invalidating linked accounts.
+
+### 2.3 Family Wallet Linking Policy & Governance
+1. **Family Linking Caps:** Globally configure maximum family sub-accounts per primary employee (Default: **4 accounts**).
+2. **Monthly Spending Limits:** Configure maximum monthly Karma Coin spending limits for linked family accounts to prevent system abuse.
 
 ---
 
@@ -150,10 +159,6 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
 +-----------------------------------------------------------------------------------+
 ```
 
-#### Capabilities:
-1. **Live Parameter Overrides:** Changes saved in the admin console update the `app_config` table in Supabase and hot-reload in the Node.js matching engine in under 5 seconds without server restarts.
-2. **Algorithm Sandbox Simulator:** Admin can input sample coordinates (e.g. Pune Station to Hinjewadi) and preview how match scores and filtered candidates change before publishing parameters live.
-
 ---
 
 ## 7. Trust, Safety & Incident Response (SOS)
@@ -172,17 +177,17 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
 
 ---
 
-## 8. Karma Coin Economy & Corporate Petrol Card Reconciliation
+## 8. Karma Coin Economy & Corporate Prepaid Plan Management
 
 ### 8.1 Double-Entry Ledger & Supply Audit
 1. **Ledger Monitor:**
    - Real-time audit of total platform Karma Coins in circulation, locked escrow volume, and historical burn/mint rates.
 
-### 8.2 Corporate Fuel Voucher (HPCL/BPCL/IOCL) Reconciliation
-1. **Subsidy Pool Management:**
-   - Manage employer-funded fuel subsidy pools (HPCL, BPCL, IOCL gift card integrations).
-2. **Enterprise Invoicing:**
-   - Generate monthly corporate invoices based on verified employee carbon savings reports.
+### 8.2 Corporate Prepaid Commute Pools & Invoicing
+1. **Prepaid Pool Management:**
+   - Monitor employer prepaid wallet balances and generate automated **18% GST B2B Tax Invoices** (SAC 9984).
+2. **Fuel Voucher Reconciliation:**
+   - Reconcile HPCL/BPCL/IOCL gift card distributions against employer-funded subsidy pools.
 
 ---
 

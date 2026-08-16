@@ -152,8 +152,8 @@ CREATE TABLE public.users (
     dl_verified BOOLEAN DEFAULT FALSE,
     dl_photo_url TEXT,
     profile_photo_url TEXT,
-    auto_accept_colleagues BOOLEAN DEFAULT FALSE, -- Feature: Auto-accept verified coworkers
-    auto_accept_max_detour_m INT DEFAULT 100, -- Maximum detour for auto-accept
+    auto_accept_colleagues BOOLEAN DEFAULT FALSE,
+    auto_accept_max_detour_m INT DEFAULT 100,
     emergency_contacts JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -506,8 +506,31 @@ $$\text{Total Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\t
 
 ### 8.2 2-Tier Driver Review Screen (`requests_screen.dart`)
 
-1. **Default Summary Card View:** Rider profile, verified company badge (`@infosys.com`), Aadhaar badge, rating, coins to earn, and mini map preview.
-2. **Maximized Full-Screen Map View:** Tapping the map expands full-screen, showing the driver's **Blue Route Polyline**, **Green Pickup Pin**, and **Red Drop Pin** with floating action buttons.
+The Driver review interface provides two distinct inspection modes:
+
+#### 1. Default Mode: Rider Summary Card
+```
++-------------------------------------------------------------------+
+|                     NEW COMMUTE RIDE REQUEST                      |
++-------------------------------------------------------------------+
+|  👤 Rahul Sharma  ⭐ 4.9 (42 Rides)                               |
+|  🏢 Verified: Infosys (@infosys.com) | 🆔 Aadhaar Verified        |
+|                                                                   |
+|  📍 Pickup: Manyata Tech Park, Gate 2 Bus Stop                    |
+|  🏁 Drop:   Hinjewadi Phase 1, Main Circle                        |
+|  🪙 You Earn: +24 Karma Coins                                     |
+|                                                                   |
+|  +-------------------------------------------------------------+  |
+|  | [🗺️ Mini Map Preview - Tap to Maximize Full Screen]        |  |
+|  |  🔵 Your Route Line  ──────►  🟢 Rider Pickup Pin           |  |
+|  +-------------------------------------------------------------+  |
+|                                                                   |
+|         [ ❌ DECLINE ]              [ ✅ ACCEPT RIDE ]            |
++-------------------------------------------------------------------+
+```
+
+#### 2. Maximized Mode: Full-Screen Interactive Road Overlay
+* Tapping the map expands it full-screen, showing the driver's **Blue Route Polyline**, the **Green Pickup Pin**, and the **Red Drop Pin** with floating action buttons.
 
 ---
 
@@ -522,6 +545,21 @@ $$\text{Total Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\t
 ---
 
 ### 8.4 Driver Arrival (50m Geofence) & Synchronized 5-Minute Wait Timer
+
+```
+[ Phase 1: 500m Nudge ] ──► Rider receives: "Driver is 2 mins away, head to pickup!"
+            │
+            ▼
+[ Phase 2: 50m Geofence Arrival ] ──► Driver reaches 50m radius ➔ Status: "ARRIVED"
+            │
+            ▼
+[ Phase 3: Synchronized 5-Min Timer ] ──► Live 05:00 countdown ticks on BOTH screens
+            │
+            ├──► 🟢 If Rider Boards before 00:00 ──► 4-Level Boarding verified ➔ Trip Starts!
+            │
+            └──► 🔴 If Timer hits 00:00 (No-Show) ──► Driver taps "Start Solo" ➔ Seats recycled
+```
+
 * **500m Pre-Arrival Nudge:** Automated push alert nudging rider to walk to the gate.
 * **50m Arrival Geofence:** When driver enters 50m radius, `driver_arrived = true` is set.
 * **Synchronized 5-Minute Timer:** Live countdown (`05:00 ➔ 00:00`) displays on both Driver and Rider screens with real-time sync.
@@ -529,15 +567,37 @@ $$\text{Total Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\t
 ---
 
 ### 8.5 Friendly Zero-Deduction No-Show Flow & Solo Ride Continuation
-* **Default Zero Coin Penalty ($0\text{ Coins}$):** 100% of escrow coins are refunded to the rider during platform launch.
-* **Driver Choice A ("Wait a bit more"):** Driver can voluntarily extend waiting time if communicated via chat/call.
-* **Driver Choice B ("Start Solo"):** Driver continues commute; ride status becomes `in_progress`.
-* **Seat Recycling for Live Matching:** Vacated seat is immediately reopened for **Phase 2 (150m) live on-route matching**.
-* **1-Hour Trip-Level Cooldown:** Dropped rider is blocked from re-requesting this specific driver for 1 hour.
+
+When the 5-minute wait timer reaches `00:00` and the rider has not boarded:
+
+```
++-------------------------------------------------------------------+
+|                     ⏳ 5-MINUTE WAIT COMPLETED                    |
++-------------------------------------------------------------------+
+|  Rider has not boarded yet.                                       |
+|                                                                   |
+|  What would you like to do?                                       |
+|                                                                   |
+|  [ ⏳ WAIT A FEW MORE MINS ]       [ 🚀 START SOLO (DEPART) ]     |
+|  (If you spoke to rider and       (Continue your commute; seats   |
+|   agreed to wait)                  will open for on-route riders) |
++-------------------------------------------------------------------+
+```
+
+#### No-Show Rules:
+1. **Default Zero Coin Penalty ($0\text{ Coins}$):** 100% of escrow coins are refunded to the rider during platform launch.
+2. **Driver Choice A ("Wait a bit more"):** Driver can voluntarily extend waiting time if communicated via chat/call.
+3. **Driver Choice B ("Start Solo"):** Driver continues commute; ride status becomes `in_progress`.
+4. **Seat Recycling for Live Matching:** The vacated seat is immediately reopened for **Phase 2 (150m) live on-route matching**, allowing other commuters ahead on the road to hop in.
+5. **1-Hour Trip-Level Cooldown:** The dropped rider is blocked from re-requesting this specific driver for 1 hour, preventing awkward spam.
 
 ---
 
 ### 8.6 The Color-Coded Commute Calendar System
+
+Both riders and drivers manage recurring monthly commutes through an interactive calendar interface.
+
+#### 🎨 Universal Calendar Color Legend:
 * 🟢 **GREEN (Confirmed):** Ride accepted and seat locked for this calendar date.
 * 🟡 **YELLOW (Pending):** Request sent, awaiting driver confirmation.
 * ⚪ **GRAY (Skipped / WFH):** Work-From-Home day, holiday, or weekend.
@@ -546,19 +606,52 @@ $$\text{Total Score} = S_{\text{proximity}} (40) + S_{\text{trust}} (30) + S_{\t
 ---
 
 ### 8.7 1-Month Bulk Recurring Booking (`rider_calendar_screen.dart`)
+
+```
++-------------------------------------------------------------------+
+|                     MY AUGUST COMMUTE CALENDAR                    |
++-------------------------------------------------------------------+
+|  [‹ July]                     AUGUST 2026                 [Sept ›]|
+|                                                                   |
+|   MON       TUE       WED       THU       FRI       SAT   SUN     |
+|  [ 03 🟢]  [ 04 🟢]  [ 05 🟢]  [ 06 🟢]  [ 07 🟢]  [ 08 ] [ 09 ]  |
+|  [ 10 🟢]  [ 11 🟢]  [ 12 ⚪]  [ 13 🟢]  [ 14 🟢]  [ 15 ] [ 16 ]  |
+|  [ 17 🟡]  [ 18 🟡]  [ 19 🟡]  [ 20 🟡]  [ 21 🟡]  [ 22 ] [ 23 ]  |
+|                                                                   |
+|  🟢 Confirmed with Rahul (Infosys)  |  ⚪ Aug 12: WFH (Skipped)    |
+|  🟡 Aug 17–21: Pending Approval                                   |
+|                                                                   |
+|         [ 🗓️ REQUEST NEXT 30 DAYS ]    [ ⚪ SKIP A DATE ]         |
++-------------------------------------------------------------------+
+```
+
 * **Bulk 30-Day Requests:** Riders can select up to 30 days of Mon–Fri commute dates and dispatch a single recurring booking request.
 * **Driver 1-Tap Bulk Approval (`driver_calendar_screen.dart`):** Drivers can accept or decline the entire monthly schedule with 1 tap.
-* **Skip Date Feature:** Commuters can tap "Skip This Day" before 8:00 PM on any date to mark it in `skip_dates[]` without cancelling remaining dates.
+* **Skip Date Feature:** Commuters can tap "Skip This Day" before 8:00 PM on any date to mark it in `skip_dates[]` without cancelling their remaining month.
 
 ---
 
 ### 8.8 Anti-Spam Rejection Cooling-Off Rule (7-Day Cooldown)
-* If a driver rejects a specific rider **3 times in 7 days**:
-* System activates a **7-Day Mutual Cooldown**, hiding that driver from that rider's search results to prevent workplace spam.
+
+```
+[ Rider sends Request to Driver ] ──► Driver Rejects (Strike 1)
+                │
+[ Rider sends Request next day ]   ──► Driver Rejects (Strike 2)
+                │
+[ Rider sends 3rd Request ]        ──► Driver Rejects (Strike 3)
+                │
+                ▼
+[ 🔴 7-DAY MUTUAL COOLING-OFF LOCKOUT ACTIVATED ]
+• System hides that driver from the rider's search results for 7 Days.
+• The rider sees: "Driver is unavailable for your schedule. Please select other matching colleagues."
+• After 7 days, the lock automatically resets!
+```
 
 ---
 
 ### 8.9 Driver Late Cancellation 3-Strike Penalty System
+
+To protect riders from morning abandonment:
 * **Cancellation $< 30\text{ mins}$ before departure:**
   * **Strike 1:** Formal in-app warning notification.
   * **Strike 2:** 7-day suspension from posting rides.

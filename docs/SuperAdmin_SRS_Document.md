@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.12 | August 2026 | Dedicated Admin Portal
+### Version 2.13 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -177,9 +177,33 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ---
 
-## 9. Security, Access Control & Audit Logging
+## 9. In-App Communication & Chat Governance
+*(Corresponds to Main SRS Section 15: Per-Ride Chat, Masked Calling & Company Workspace Groups)*
 
-### 9.1 Role-Based Access Control (RBAC)
+```
++-------------------------------------------------------------------+
+|       Super Admin Console: Chat & In-App Calling Governance       |
++-------------------------------------------------------------------+
+|  Per-Ride Commute Communication Controls:                         |
+|  - [X] REQUIRE_DRIVER_ACCEPTANCE_FOR_COMMUNICATION (Strict Gate)  |
+|  - [X] ENABLE_AGORA_MASKED_VOIP_CALLS              (Zero SIM leak)|
+|  - AUTO_CLOSE_RIDE_CHAT_ON_DROPOFF:                [X] TRUE       |
+|                                                                   |
+|  Company Workspace Chat Controls:                                 |
+|  - [X] ENFORCE_SAME_COMPANY_DOMAIN_ISOLATION       (Strict Gate)  |
+|  - MAX_MEMBERS_PER_ROUTE_GROUP:                    [ 50  ] members|
+|  - [X] ENABLE_HR_OFFICIAL_BROADCAST_CHANNELS                      |
+|  - [X] ENABLE_AUTOMATED_PROFANITY_FILTERING                       |
+|                                                                   |
+|              [ ⚡ VIEW LIVE CHAT AUDIT LOGS ]   [ SAVE CONFIG ]    |
++-------------------------------------------------------------------+
+```
+
+---
+
+## 10. Security, Access Control & Audit Logging
+
+### 10.1 Role-Based Access Control (RBAC)
 
 | Admin Role | Permissions & Scope |
 |---|---|
@@ -187,6 +211,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 | **`support_officer`** | Dispute resolution, manual KYC review, escrow unlock tool, SOS emergency monitor. |
 | **`finance_admin`** | Corporate invoice generation, Karma Coin minting/burning audits, fuel voucher reconciliation. |
 
-### 9.2 Audit Logging
+### 10.2 Audit Logging
 - Mandatory Multi-Factor Authentication (MFA / TOTP) on all admin accounts.
 - Granular Audit Logging: Every parameter change, user ban, or escrow release is immutably logged in `admin_audit_logs`.

@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.14 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.15 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -19,6 +19,7 @@
 12. [Wallet & Cashless Karma Economy (No Fiat Exchange)](#12-wallet--cashless-karma-economy-no-fiat-exchange)
 13. [Presence & Soft Attendance System](#13-presence--soft-attendance-system)
 14. [Company & Enterprise Features (B2B SaaS Subscriptions, Monthly Coin Grants & ESG Engine)](#14-company--enterprise-features-b2b-saas-subscriptions-monthly-coin-grants--esg-engine)
+15. [In-App Chat & Communication System](#15-in-app-chat--communication-system)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -1723,3 +1724,171 @@ Employees configure their baseline commute preferences:
 * Usual morning departure time (e.g. `08:00 AM`).
 * Usual evening departure time (e.g. `06:30 PM`).
 * **Intelligent Auto-Fill:** The system automatically uses these preferences to pre-populate search chips in `RiderTimePickerScreen` and automatically derive `week_off` attendance states.
+
+---
+
+## 15. In-App Chat & Communication System
+
+**Primary Modules:** `lib/services/chat_service.dart`, `lib/screens/chat/ride_chat_screen.dart`, `lib/screens/chat/company_workspace_chat_screen.dart`, Supabase Realtime Engine
+
+Section 15 defines the communication architecture across two isolated systems: the transient **Per-Ride Commute Chat & Masked Calling** (unlocked strictly upon driver acceptance) and the permanent **Home Page Company Workspace Chat** (restricted strictly to verified colleagues of the same company).
+
+---
+
+### 15.1 Dual-Ecosystem Communication Architecture
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SYSTEM 1: 🚗 PER-RIDE COMMUTE CHAT & MASKED CALLING (Transient - Post-Acceptance Only)                │
+│ • Driver UI: Chat & Call icons appear on the specific ride card ONLY once Driver taps "Accept".       │
+│ • Rider UI: Chat & Call icons unlock on the requested trip card/tab ONLY once Driver taps "Accept".   │
+│ • Purpose: Trip pickup spot coordination, live delays & in-app masked Agora VoIP voice calling.       │
+│ • Lifecycle: Strictly per-ride; auto-closes and archives upon trip drop-off. Zero phone numbers shown!│
+├───────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ SYSTEM 2: 🏢 DEDICATED COMPANY WORKSPACE CHAT (Home Screen Icon - Same-Company Colleagues Only)       │
+│ • Dedicated "💬 Company Chat" Icon on the Home Screen Navbar for verified corporate employees.        │
+│ • STRICT VERIFICATION GATE: Employees can ONLY search, message & join groups with SAME company peers. │
+│ • Structure: HR/Admin Official Broadcasts + Employee Route Channels + 1:1 Colleague Direct Chats.    │
+│ • 100% Privacy: Displays Full Name + Department + Office Block — Zero personal phone numbers exposed! │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 15.2 Per-Ride Commute Chat & Masked Calling (Post-Acceptance Flow)
+
+```
+[ Rider Sends Request (status = 'pending') ] ──► 🚫 ZERO CHAT & 🚫 ZERO CALL (Locked)
+                                                 (Prevents unsolicited spamming)
+                                                 │
+                                                 ▼ (Driver Taps "Accept" ➔ status = 'accepted')
+[ 🟢 DRIVER & RIDER SCREENS UNLOCK SIMULTANEOUSLY ]
+  ├──► Driver Side UI: Accepted Request Card displays 💬 [Chat] and 📞 [Call] action buttons.
+  └──► Rider Side UI: Requested Ride Tab displays 💬 [Chat] and 📞 [Call] action buttons.
+```
+
+#### 1. In-App Masked Voice Calling (Agora VoIP Audio):
+* Tapping **📞 [ Call ]** does **NOT** expose personal SIM phone numbers.
+* Connects via in-app encrypted VoIP audio:
+  * **Driver Cockpit Displays:** *"Incoming Call from Priya (Rider - Gate 2)"*
+  * **Rider Screen Displays:** *"Calling Rahul (Driver - Honda City KA01MJ5521)"*
+  * **Privacy Guarantee:** Neither party ever sees the other person's private 10-digit mobile number.
+
+#### 2. Driving-Friendly 1-Tap Quick Action Chips:
+Drivers cannot type text while navigating morning highway traffic:
+* Prominent 1-tap quick response chips sit directly above the keyboard:
+  * **Driver Quick Chips:** `[ 🚗 On My Way ]` `[ 📍 At Pickup Gate ]` `[ 🚦 5 min Traffic Delay ]`
+  * **Rider Quick Chips:** `[ 🏃‍♂️ In Elevator ]` `[ 🚪 Reaching in 1 min ]` `[ 📍 Near Security Booth ]`
+
+#### 3. Ride Completion & Chat Archive Lifecycle:
+* The exact millisecond passenger drop-off is verified (Section 10), the per-ride chat is closed and archived, preventing unwanted post-ride contact.
+
+---
+
+### 15.3 Home Page Company Workspace Chat (Dedicated Home Icon & Same-Company Gate)
+
+On the **Home Screen Navbar**, a dedicated **"💬 Company Chat"** icon is unlocked for users with `role = 'corporate_employee'`:
+
+```
++-------------------------------------------------------------------+
+| 🏢 INFOSYS HINJEWADI - WORKSPACE CHAT                             |
+| 🔒 Verified Company Network (@infosys.com Only)                   |
++-------------------------------------------------------------------+
+|  📢 Official HR Announcements                                     |
+|     HR Admin: "Gate 2 closed today for metro work. Use Gate 4."   |
+|                                                                   |
+|  👥 Whitefield ➔ Hinjewadi Daily Carpoolers                       |
+|     Rahul S.: "Leaving at 8:30 AM today, 2 seats open."           |
+|                                                                   |
+|  👥 Electronic City Commuters                                     |
+|     Priya P.: "Anyone leaving Electronic City around 6:00 PM?"    |
+|                                                                   |
+|  💬 1:1 DIRECT COLLEAGUE CHATS:                                   |
+|  • Amit Kumar (Backend Team • Block 3)                            |
+|  • Sneha Sharma (Product Design • Block 1)                        |
+|                                                                   |
+|  [ + CREATE NEW ROUTE GROUP ]        [ 🔍 SEARCH COLLEAGUES ]     |
++-------------------------------------------------------------------+
+```
+
+#### Strict Same-Company Security & Privacy Rules:
+1. **Cryptographic Domain Gate:** Employees can **ONLY** discover, message, and form groups with peers sharing the **exact same `company_id`**:
+   $$\text{Access Allowed IF: } \text{RequestingUser.company\_id} == \text{TargetUser.company\_id}$$
+   * External public users or employees of other companies are cryptographically blocked from seeing or joining company channels.
+2. **100% Identity Masking:** In all company channels and 1:1 colleague chats, profiles display:
+   * **Full Name** (e.g. `Amit Kumar`)
+   * **Department / Designation** (e.g. `QA Engineer • Block 2`)
+   * **Verified Corporate Badge** (`@infosys.com ✅`)
+   * **Personal phone numbers are strictly hidden.**
+3. **Channel Categories:**
+   * **Official Broadcasts:** Read-only announcements posted by Company HR / Admin.
+   * **Employee Route Groups:** Community carpool groups created by employees for specific commute corridors (e.g. *"Koramangala to Manyata Carpoolers"*).
+   * **1:1 Colleague Direct Chats:** Private direct chat between two coworkers of the same company.
+
+---
+
+### 15.4 WhatsApp-Style Realtime Experience & Supabase Schema
+
+```
++-------------------------------------------------------------------+
+| 💬 RIDE CHAT: INFOSYS COMMUTE (8:30 AM)                           |
+| 👥 Rahul (Driver), Priya (Rider), Amit (Rider)                    |
++-------------------------------------------------------------------+
+|                                                                   |
+|  [ Rahul (Driver) ]                                   08:24 AM    |
+|  🚗 Starting now from HSR Layout. See you at Gate 2!              |
+|                                                                   |
+|                                         [ You (Priya) ] 08:26 AM  |
+|                                   🏃‍♂️ In elevator, reaching now! 🔵🔵|
+|                                                                   |
+|  [ Amit (Rider) ]                                     08:28 AM    |
+|  📍 Waiting near the security booth.                              |
+|                                                                   |
+|  [ Type a message...                                        ] [➤] |
++-------------------------------------------------------------------+
+```
+
+* **Message Status Ticks:** ⚪ Sent to Server $\rightarrow$ ⚪⚪ Delivered to Device $\rightarrow$ 🔵🔵 Read by Recipient.
+* **Sub-50ms Speed:** Uses Supabase Realtime Channels (`supabase.channel('room:id')`).
+
+```sql
+CREATE TABLE public.chat_rooms (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_type VARCHAR(20) NOT NULL, -- 'ride', 'company_broadcast', 'company_route_group', 'colleague_direct'
+    ride_id UUID REFERENCES public.rides(id) ON DELETE CASCADE,
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
+    name VARCHAR(100), -- Group Name for Route Groups
+    created_by UUID REFERENCES public.users(id),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE public.chat_room_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_id UUID NOT NULL REFERENCES public.chat_rooms(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    joined_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(room_id, user_id)
+);
+
+CREATE TABLE public.chat_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_id UUID NOT NULL REFERENCES public.chat_rooms(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    message_text TEXT NOT NULL,
+    message_type VARCHAR(20) DEFAULT 'text', -- 'text', 'quick_chip', 'system_alert'
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_chat_messages_room_created ON public.chat_messages(room_id, created_at DESC);
+CREATE INDEX idx_chat_room_members_user ON public.chat_room_members(user_id);
+```
+
+---
+
+### 15.5 Push Notifications & FCM Deep-Linking
+
+* **Background Delivery:** If the app is minimized or phone locked, Firebase Cloud Messaging (FCM) sounds a high-priority sound chime:
+  > *"💬 Rahul S. (Driver): On my way, reaching Gate 2 in 2 mins."*
+* **1-Tap Deep Link:** Tapping the notification opens the Flutter app and routes directly into the specific active chat room.

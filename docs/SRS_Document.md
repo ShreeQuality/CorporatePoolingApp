@@ -2059,3 +2059,64 @@ Every push notification sent by our backend includes structured JSON data payloa
 ```
 
 * **1-Tap Routing:** When the user taps the notification banner on their locked phone screen, the Flutter app launches and immediately routes directly into the target screen (`/live_cockpit`, `/chat`, `/wallet`, or `/admin_sos`) with zero manual menu navigation!
+
+---
+
+### 16.6 UI/UX Notification Presentation Styles & In-App Rendering Engine
+
+To ensure an intuitive, non-intrusive, and safety-focused user experience across all mobile states, the platform implements **6 distinct visual notification presentation styles**:
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| NOTIFICATION PRESENTATION STYLE     | WHERE IT APPEARS                     | BEST USE CASE / TRIGGER              |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. 🔔 System Lock Screen Banner     | Phone Lock Screen / Status Bar       | When phone is locked / App in pocket |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 2. 🪟 In-App Top Floating Banner    | Slides down from top of active screen| When user is ALREADY inside the app  |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 3. 🔴 App Icon & Bell Badge Counter | Red dot (`🔴 3`) on app icon & navbar | Unread chat messages & coin credits  |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 4. ⚡ Actionable Bottom Sheet Popup  | Slides up from bottom with buttons   | Driver incoming request (Accept/Pass)|
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 5. 🚗 Sticky Ongoing Commute Bar    | Pinned in Android notification shade | Live Ride in Progress (Live ETA HUD) |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 6. 📜 In-App Notification Center    | Dedicated Inbox Screen (`/inbox`)    | Past receipts, history & B2B updates |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 1. 🪟 In-App Top Floating Banner (Active App State):
+* When the user is actively viewing a map or browsing profiles:
+* A glassmorphic card slides down from the top edge for 4 seconds without interrupting ongoing navigation:
+  ```
+  +-------------------------------------------------------------------+
+  | 💬 Rahul S. (Driver): "At Gate 2 now!"                 [ Reply ➤ ] |
+  +-------------------------------------------------------------------+
+  ```
+
+#### 2. ⚡ Actionable Modal / Bottom Sheet Popup (Time-Sensitive Actions):
+* Triggered when an immediate response is required (e.g. Driver incoming ride request):
+* Displays a **30-second circular countdown timer**:
+  ```
+  +-------------------------------------------------------------------+
+  |               🔔 NEW RIDE REQUEST (8:30 AM COMMUTE)               |
+  +-------------------------------------------------------------------+
+  |  Priya Patel (Infosys • Verified Aadhaar ✅)                      |
+  |  Route: HSR Gate ➔ Manyata Gate 2                                 |
+  |  Detour: +150 meters (+2 mins) | Fare: +24 Karma Coins            |
+  |                                                                   |
+  |  [ ✅ ACCEPT REQUEST (24s) ]          [ ❌ DECLINE ]              |
+  +-------------------------------------------------------------------+
+  ```
+
+#### 3. 🚗 Sticky Ongoing Commute Notification (Android Notification Shade):
+* While a commute is in progress, a persistent, non-dismissible status card remains pinned in the notification bar showing live ETA and quick safety actions:
+  ```
+  +-------------------------------------------------------------------+
+  | 🚗 CorporatePooling: In Trip with Rahul                           |
+  | Destination: Manyata Tech Park | ETA: 8:42 AM (3.2 km left)       |
+  | [ 📞 Call Driver (Masked) ]               [ 🚨 Emergency SOS ]     |
+  +-------------------------------------------------------------------+
+  ```
+
+#### 4. 📜 In-App Notification Center / Inbox Screen (`/notifications`):
+* A persistent activity tray with 4 filter tabs (`All`, `Rides`, `Wallet`, `Company`) allowing commuters to review historical pickup confirmations, coin credit receipts, and official HR announcements.

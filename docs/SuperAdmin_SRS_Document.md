@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.14 | August 2026 | Dedicated Admin Portal
+### Version 2.15 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -172,7 +172,7 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 1. **Ledger Monitor:** Real-time audit of total platform Karma Coins in circulation, locked escrow volume, and historical burn/mint rates.
 
 ### 8.2 Corporate Prepaid Commute Pools & Invoicing
-1. **Prepaid Pool Management:** Monitor employer prepaid wallet balances and generate automated **18% GST B2B Tax Invoices** (SAC 9984).
+1. **Prepaid Pool Management:** Monitor employer prepaid wallet balances and generate clean **Tax-Exempt B2B Commercial Invoices** (Sec 22 CGST Act - Turnover < ₹20L).
 2. **Fuel Voucher Reconciliation:** Reconcile HPCL/BPCL/IOCL gift card distributions against employer-funded subsidy pools.
 
 ---

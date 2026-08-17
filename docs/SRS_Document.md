@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.21 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.22 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -2811,6 +2811,32 @@ Tapping any trip card in the Past tab opens the detailed audit screen:
 |  [ 🔁 REPEAT THIS COMMUTE ]            [ 📄 DOWNLOAD PDF RECEIPT ]|
 +-------------------------------------------------------------------+
 ```
+
+---
+
+#### 19.3.1 Multi-Role Historical Trip Visibility & Permission Matrix
+
+To enforce strict DPDP data privacy while providing full transparency for corporate ESG accounting and administrative governance:
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| AUDIT DATA FIELD / CAPABILITY        | PUBLIC COMMUTERS    | CORPORATE EMPLOYEES | EMPLOYERS / HR DESK | SUPER ADMIN CONSOLE |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. Full Recorded GPS Breadcrumb Map  | 🟢 Own Trip Route   | 🟢 Own Trip Route   | 🟡 Anonymized Line  | 🟢 Full Raw GPS Pins|
+| 2. Co-Commuter Profile & Rating      | 🟢 Name & Plate Only| 🟢 Name, Dept & Co. | 🟢 Employee Name/Dept| 🟢 Full KYC & Phone|
+| 3. SIM Phone Numbers                 | 🚫 100% Masked      | 🚫 100% Masked      | 🚫 Masked           | 🟢 Unmasked (Audit) |
+| 4. Coin Waterfall Breakdown          | 🟢 Personal Balance | 🟢 Corp Grant + Own | 🟢 Corp Pool Impact | 🟢 Double-Entry DDL |
+| 5. Soft Attendance Arrival Timestamp | ⚪ N/A (Not Tracked)| 🟢 Gate Timestamp   | 🟢 HR Roster Sync   | 🟢 Geofence Audit   |
+| 6. Scope 3 ESG Carbon Certificate    | 🟢 Personal (kg CO₂)| 🟢 Personal + Co.   | 🟢 Corp Report (PDF)| 🟢 Platform Total   |
+| 7. Telematics Driving Score          | 🟢 Smoothness Score | 🟢 Smoothness Score | ⚪ N/A              | 🟢 Raw G-Force Logs |
+| 8. Dispute & Escrow Intervention     | 🟡 Raise Ticket     | 🟡 Raise Ticket     | ⚪ N/A              | 🟢 1-Click Settle/Ban|
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+* **1. 🚗 Public Commuters:** View their personal trip route, masked driver/rider profiles, vehicle plate number, personal coin deductions, and personal CO₂ savings. Zero phone numbers are ever exposed.
+* **2. 🏢 Corporate Employees:** View verified company badges, department names, exact corporate grant coin waterfall splits, campus arrival timestamps, and verifiable SEBI BRSR ESG certificates.
+* **3. 👥 Employers & HR Desks:** View aggregated corporate commuter metrics, employee names, department carpooling rates, company master coin pool deductions, campus attendance timestamps, and 1-click Scope 3 ESG audit PDF exports. Personal weekend rides remain 100% invisible to employers.
+* **4. 👑 Super Admin Console:** Complete, unrestricted audit visibility including unmasked raw GPS coordinates, unmasked phone numbers, device battery levels, telematics G-force logs, and 1-click escrow dispute intervention tools.
 
 ---
 

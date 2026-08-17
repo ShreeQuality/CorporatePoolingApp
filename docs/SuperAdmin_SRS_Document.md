@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.22 | August 2026 | Dedicated Admin Portal
+### Version 2.23 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -45,6 +45,30 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 |       [ ❌ REJECT (FRAUD BAN) ]       [ ✅ APPROVE & WHITELIST DOMAIN ]            |
 +-----------------------------------------------------------------------------------+
 ```
+
+---
+
+### 2.3 Employer Pending Employee Join Queue & Super Admin Override Console
+
+Super Admin has complete, real-time visibility into **how many employees are in pending status across every corporate client**:
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| COMPANY NAME       | DOMAIN           | ACTIVE EMPLOYEES | PENDING APPROVALS | HR MANAGER CONTACT | ACTION            |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. Infosys Limited | @infosys.com     | 342 Verified     | 🔴 14 Pending     | hr@infosys.com     | [ 🔍 VIEW QUEUE ] |
+| 2. TCS Bangalore   | @tcs.com         | 512 Verified     | 🟡 6 Pending      | admin.blr@tcs.com  | [ 🔍 VIEW QUEUE ] |
+| 3. Wipro Sarjapur  | @wipro.com       | 180 Verified     | 🟢 0 Pending      | mobility@wipro.com | [ 🔍 VIEW QUEUE ] |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### Inside the Pending Join Inspector (`AdminCompanyManagerScreen`):
+When Super Admin clicks **`[ 🔍 VIEW QUEUE ]`** on any company:
+* **Pending Details:** Displays Employee Full Name, Work Email (`amit.k@infosys.com`), Employee ID (`#INF-8842`), Joined Via (Deep-Link / Code), and Pending Duration (e.g. *Pending for 48 hours*).
+* **Super Admin Intervention Actions:**
+  * `[ 🔔 SEND URGENT HR APPROVAL REMINDER ]`: Dispatches automated high-priority push notification and email to HR Manager to approve pending employees.
+  * `[ ⚡ SUPER ADMIN FORCE APPROVE ]`: If HR Manager is unresponsive or on leave, Super Admin can emergency-approve verified domain employees with 1 click!
+  * `[ ❌ SUPER ADMIN FORCE REJECT ]`: Removes fraudulent or terminated employees from the queue.
 
 ---
 
@@ -339,6 +363,8 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 | 5. | `AdminCompanyManagerScreen`    | `lib/screens/admin/admin_company_mgr.dart`  | • B2B Employer Onboarding.       |
 |    |                                |                                             | • Set Domain (@infosys.com).     |
 |    |                                |                                             | • 1-Click Bank UTR Pool Recharge.|
+|    |                                |                                             | • Real-Time Pending Join Queue   |
+|    |                                |                                             |   (View & Force-Approve Staff).  |
 |----|--------------------------------|---------------------------------------------|----------------------------------|
 | 6. | `AdminDisputeEscrowScreen`     | `lib/screens/admin/admin_disputes.dart`     | • Force Refund Escrow to Rider.  |
 |    |                                |                                             | • Force Settle Fare to Driver.   |

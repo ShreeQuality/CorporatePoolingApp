@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.25 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.27 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -335,6 +335,33 @@ CREATE INDEX idx_rides_from_location ON public.rides USING GIST(from_location);
 CREATE INDEX idx_rides_to_location ON public.rides USING GIST(to_location);
 CREATE INDEX idx_rides_route_geometry ON public.rides USING GIST(route_geometry);
 ```
+
+---
+
+### 4.8 Driver Detour Appreciation, Fair Coin Compensation & "Extra Mile" Rewards
+
+In corporate carpooling, drivers are working professionals sharing their commute. When a driver voluntarily accepts a rider whose pickup requires an off-corridor detour, the platform actively **appreciates, incentivizes, and rewards the driver**:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1. 🪙 DETOUR KARMA COMPENSATION: Extra Karma Coins automatically calculated and awarded to driver      │
+│ 2. 🎖️ "EXTRA MILE HERO" BADGE:   Special glowing badge & +5 Trust Score boost on driver's profile    │
+│ 3. 💖 RIDER APPRECIATION CHIP:   1-Tap "Thank You for Going the Extra Mile!" prompt upon boarding     │
+│ 4. 🏢 CORPORATE LEADERBOARD:     Company recognizes "Top Commute Heroes" who help stranded colleagues │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+1. **Automated Detour Fare Compensation Formula:**
+   * When a rider requests a pickup point requiring a detour $> 500	ext{ meters}$, the system automatically calculates extra Karma Coins added to the driver's settlement:
+   $\text{Detour Compensation} = \left\lceil \frac{\text{Detour Distance (meters)}}{500\text{m}} \right\rceil \times 3.0\text{ Karma Coins}$
+   * **Rider Receipt Transparency:** The rider sees: *"Doorstep Detour Compensation: +4.0 Coins (Credited to Driver for fuel & detour time)"*.
+2. **"Extra Mile Champion" Profile Badge & Trust Boost:**
+   * Drivers who complete $\ge 10$ detour pickups earn the prestigious **`[ 🌟 Extra Mile Champion ]`** Gold Badge on their profile.
+   * Awards a permanent **$+5\text{ Safety Trust Score boost}$**, elevating their 8:00 PM matching priority.
+3. **1-Tap Rider Appreciation & Confetti Celebration:**
+   * Upon drop-off, the rider rating modal highlights the **`[ 💖 Went the Extra Mile for Pickup ]`** compliment chip. When selected, the driver's screen receives an instant celebration toast: *"🎉 Priya sent you a special Extra Mile Thank You!"*.
+4. **Corporate Commute Heroes Recognition:**
+   * The top 5 drivers with the highest detour assistance scores are featured on the company's internal **Monthly Eco-Heroes Leaderboard** in the Corporate Portal.
 
 ---
 

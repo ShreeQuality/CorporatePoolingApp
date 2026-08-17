@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.17 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.18 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -22,6 +22,7 @@
 15. [In-App Chat & Communication System](#15-in-app-chat--communication-system)
 16. [Push Notification Engine & Multi-Role Notification Matrix](#16-push-notification-engine--multi-role-notification-matrix)
 17. [Admin Panel, Multi-Tier 2FA Security & Dynamic Remote Theme System](#17-admin-panel-multi-tier-2fa-security--dynamic-remote-theme-system)
+18. [Complete UI Screen Catalogue & Component Inventory (The 37 Application Flows)](#18-complete-ui-screen-catalogue--component-inventory-the-37-application-flows)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -2283,3 +2284,277 @@ When any commuter taps the **🚨 SOS Button** during an active trip:
    * **Driver:** Name, Vehicle Model, License Plate Number (`KA-01-MJ-5521`).
    * **Live Breadcrumb GPS:** Live coordinates with real-time speed and heading.
    * **1-Tap Dispatch:** Direct link to local Police Control Room (112) with pre-generated incident tokens.
+
+---
+
+## 18. Complete UI Screen Catalogue & Component Inventory (The 37 Application Flows)
+
+**Primary Directories:** `lib/screens/auth/`, `lib/screens/home/`, `lib/screens/driver/`, `lib/screens/rider/`, `lib/screens/chat/`, `lib/screens/wallet/`, `lib/screens/rides/`, `lib/screens/safety/`, `lib/screens/hr/`
+
+Section 18 provides the exhaustive, screen-by-screen architectural blueprint and UI component inventory for all **37 dedicated application flows across Commuters, Corporate Employees, Drivers, Riders, and Employer HR Desks**.
+
+---
+
+### 18.1 Master Architecture Hierarchy Matrix
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🔑 MODULE A: Authentication, Onboarding & Corporate Verification (6 Screens)                         │
+│ 🏠 MODULE B: Master Home, Activity Inbox & Dynamic Remote Theme (2 Screens)                           │
+│ 🚗 MODULE C: Driver Commute Cockpit & Boarding Flow (6 Screens)                                       │
+│ 🚶 MODULE D: Rider Commute Cockpit & Ride Booking Flow (6 Screens)                                    │
+│ 💬 MODULE E: In-App Chat & Masked Agora VoIP Calling (3 Screens)                                      │
+│ 🪙 MODULE F: Wallet, Double-Entry Ledger & ESG Carbon Dashboard (3 Screens)                           │
+│ 📅 MODULE G: "My Rides" Commute History & Calendar Roster (2 Screens)                                 │
+│ 🛡️ MODULE H: Personal Safety, SOS Emergency & User Profile (3 Screens)                                │
+│ 🏢 MODULE I: Employer & HR Manager B2B SaaS Web Portal (6 Screens)                                    │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 🚀 TOTAL DETAILED PRODUCTION FLOWS: EXACTLY 37 SCREENS                                                │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 18.2 Module-by-Module Detailed Screen Inventory
+
+#### 🔑 MODULE A: Authentication, Onboarding & Corporate Verification (6 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. Splash Screen             | `lib/screens/auth/splash_screen.dart`       | • Animated Karma Logo & pulse shader.|
+|                              |                                             | • Fast session validator (0.2s auto- |
+|                              |                                             |   route if 90-day JWT token valid).  |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 2. Onboarding Carousel       | `lib/screens/auth/onboarding_screen.dart`   | • 3 Value Prop Cards (Save Fuel,     |
+|                              |                                             |   Green Commute, Verified Peers).    |
+|                              |                                             | • [ Get Started ] action button.     |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 3. Phone Login & OTP Screen  | `lib/screens/auth/login_phone_screen.dart`  | • +91 Phone input + Country picker.  |
+|                              |                                             | • 6-Digit SMS OTP input box with     |
+|                              |                                             |   auto-sms listener & 30s resend.    |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 4. Role Selection Screen     | `lib/screens/auth/role_selection_screen.dart`| • Dual selection cards: "Corporate   |
+|                              |                                             |   Employee" vs "Public Commuter".    |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 5. Corporate Verification    | `lib/screens/auth/corporate_verify_screen.dart`| • Work Email input (`@infosys.com`).|
+|                              |                                             | • 6-Digit Magic Link OTP validator.  |
+|                              |                                             | • Corporate Badge locked animation.  |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 6. Driver KYC Upload Screen  | `lib/screens/auth/driver_kyc_screen.dart`   | • On-Device Compression (1280x960).  |
+|                              |                                             | • Driving License (DL), RC & Aadhaar |
+|                              |                                             |   card document pickers + 380 DPI.   |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 🏠 MODULE B: Master Home, Activity Inbox & Dynamic Remote Theme (2 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 7. Master Home Screen        | `lib/screens/home/home_screen.dart`         | • Dynamic Remote Wallpaper Engine.   |
+|                              |                                             | • Glassmorphic Quick Action Cards:   |
+|                              |                                             |   [ 🚗 Offer Ride ] [ 🔍 Find Ride ] |
+|                              |                                             |   [ 🔁 Recurring Mon-Fri Setup ]     |
+|                              |                                             | • Karma Coin HUD (`🪙 380 Coins`).   |
+|                              |                                             | • 💬 Company Chat Navbar Icon.       |
+|                              |                                             | • 🏢 Soft Attendance 1-Tap Check-In. |
+|                              |                                             | • Active Festival Campaign Banner.   |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 8. Notification Center Inbox | `lib/screens/notifications/inbox_screen.dart`| • 4 Filter Tabs: `All`, `Rides`,       |
+|                              |                                             |   `Wallet`, `Company`. Swipe-dismiss.|
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 🚗 MODULE C: Driver Commute Cockpit & Boarding Flow (6 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 9. Offer a Ride Screen       | `lib/screens/driver/offer_ride_screen.dart` | • Origin & Destination search boxes. |
+|                              |                                             | • Corridor Waypoint selector.        |
+|                              |                                             | • Time selector: Leave Now, Schedule.|
+|                              |                                             | • Seat Capacity Selector (1 to 4).   |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 10. Recurring Commute Setup  | `lib/screens/driver/recurring_setup_screen.dart`| • Day-wise Checklist (Mon to Fri).  |
+|                              |                                             | • Recurring Departure Time & Auto-   |
+|                              |                                             |   Match Nightly Cron toggle.         |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 11. Driver Requests Screen   | `lib/screens/driver/driver_requests_screen.dart`| • Incoming Request Cards showing:    |
+|                              |                                             |   Detour Distance (+150m), Detour    |
+|                              |                                             |   Time (+2 mins), Rider Company &    |
+|                              |                                             |   Earned Coins (+24).                |
+|                              |                                             | • [ Accept ] [ Decline ] (30s timer).|
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 12. Driver Live Cockpit HUD  | `lib/screens/driver/driver_live_cockpit.dart`| • Real-Time Turn-by-Turn Navigation. |
+|                              |                                             | • Passenger Occupancy HUD (`2/3`).   |
+|                              |                                             | • 1-Tap Driving Chips (`[ At Gate ]`).|
+|                              |                                             | • 📞 In-App Masked VoIP Call button. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 13. Boarding Verify Screen   | `lib/screens/driver/boarding_verify_screen.dart`| • 4-Digit PIN Keypad Validator.    |
+|                              |                                             | • BLE Radar Auto-Detector & QR Scan. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 14. Driver Ride Summary      | `lib/screens/driver/ride_summary_screen.dart`| • Instant Coin Credit Animation (+24)|
+|                              |                                             | • Trip Distance, Time & Ratings.     |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 🚶 MODULE D: Rider Commute Cockpit & Ride Booking Flow (6 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 15. Find a Ride Screen       | `lib/screens/rider/find_ride_screen.dart`   | • Pickup & Drop Search Autocomplete. |
+|                              |                                             | • Gender Filter (Women-Only toggle). |
+|                              |                                             | • Same-Company Colleague Filter.     |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 16. Route Preview Screen     | `lib/screens/rider/route_preview_screen.dart`| • Map displaying matching driver poly|
+|                              |                                             | • Walking Distance to pickup (80m).  |
+|                              |                                             | • Driver vehicle plate & star rating.|
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 17. Booking Status Screen    | `lib/screens/rider/booking_status_screen.dart`| • "Waiting for driver..." countdown. |
+|                              |                                             | • 5-Minute Auto-Expiry ring & Cancel.|
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 18. Rider Live Cockpit       | `lib/screens/rider/rider_live_cockpit.dart` | • Live Driver Car moving on map.     |
+|                              |                                             | • Real-Time ETA Countdown (4 mins).  |
+|                              |                                             | • 📞 Masked Call & 🚨 SOS buttons.   |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 19. Rider Boarding PIN Screen| `lib/screens/rider/boarding_pin_screen.dart`| • Giant 4-Digit Boarding PIN (4821). |
+|                              |                                             | • Dynamic Boarding QR Code.          |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 20. Rider Receipt & Rating   | `lib/screens/rider/receipt_rating_screen.dart`| • 24 Karma Coins transfer receipt.  |
+|                              |                                             | • 1.8 kg CO₂ Saved Green Badge 🌱.   |
+|                              |                                             | • 5-Star Rating & Compliment Chips.  |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 💬 MODULE E: In-App Chat & Masked Calling (3 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 21. Per-Ride Commute Chat    | `lib/screens/chat/ride_chat_screen.dart`    | • Unlocked post-driver acceptance.   |
+|                              |                                             | • Group chat (Driver + Co-Riders).   |
+|                              |                                             | • 1-Tap Driving Action Chips.        |
+|                              |                                             | • Auto-archives on trip drop-off.    |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 22. Company Workspace Chat   | `lib/screens/chat/company_workspace_screen.dart`| • HR Official Announcements.     |
+|                              |                                             | • Employee Carpool Route Groups.     |
+|                              |                                             | • 1:1 Colleague Direct Chats.        |
+|                              |                                             | • Strictly same-company verified.    |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 23. In-App Masked Call Screen| `lib/screens/chat/masked_call_screen.dart`  | • Full-screen Agora VoIP voice call. |
+|                              |                                             | • 100% Masked phone numbers.         |
+|                              |                                             | • Mute, Speakerphone & End Call.     |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 🪙 MODULE F: Wallet, Payments & ESG Impact (3 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 24. Master Wallet Screen     | `lib/screens/wallet/wallet_screen.dart`     | • Total Balance (`🪙 380 Coins`).    |
+|                              |                                             | • Balance Waterfall: Corporate Grant,|
+|                              |                                             |   Personal Earned & Family Pool.     |
+|                              |                                             | • 1-Tap Fuel Voucher Redeem Card.    |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 25. Transaction Ledger Screen| `lib/screens/wallet/transactions_screen.dart`| • Double-entry immutable ledger.    |
+|                              |                                             | • Credit & Debit receipt receipts.   |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 26. ESG Carbon Dashboard     | `lib/screens/esg/esg_dashboard_screen.dart` | • Total CO₂ Saved (kg), Fuel Saved.  |
+|                              |                                             | • Tree planting equivalent badge.    |
+|                              |                                             | • Company Green Commute Leaderboard. |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 📅 MODULE G: Commute Calendar & History (2 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 27. "My Rides" Screen        | `lib/screens/rides/my_rides_screen.dart`    | • 4 Tabs: Active, Upcoming,          |
+|                              |                                             |   Recurring & Past Trips.            |
+|                              |                                             | • 1-Tap "Repeat Commute" & "Skip".   |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 28. Trip Details Screen      | `lib/screens/rides/ride_details_screen.dart`| • Full breadcrumb route map.         |
+|                              |                                             | • Co-riders list, escrow receipt.    |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 🛡️ MODULE H: Personal Safety, SOS & Profile (3 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 29. Emergency SOS Screen     | `lib/screens/safety/sos_screen.dart`        | • High-frequency audio siren.        |
+|                              |                                             | • 1-Tap Police 112 Dispatch link.    |
+|                              |                                             | • Family Live Tracking Webhook.      |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 30. User Profile Screen      | `lib/screens/profile/profile_screen.dart`   | • Verified Aadhaar & Company Badges. |
+|                              |                                             | • Trust Score (0-100) & Star Rating. |
+|                              |                                             | • Registered Vehicles list.          |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 31. Edit Profile Screen      | `lib/screens/profile/edit_profile_screen.dart`| • Change Default Home / Work pins. |
+|                              |                                             | • Manage Emergency Contacts.         |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 🏢 MODULE I: Employer & HR Manager B2B SaaS Web Portal (6 Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 32. HR Login & 2FA Screen    | `lib/screens/hr/hr_login_screen.dart`       | • Work Email (`hr@infosys.com`).     |
+|                              |                                             | • 6-Digit Email Magic OTP field (₹0).|
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 33. HR Overview Dashboard    | `lib/screens/hr/hr_overview_screen.dart`    | • Daily Active Commuters Counter.    |
+|                              |                                             | • Master Coin Pool Balance Widget.   |
+|                              |                                             | • Monthly CO₂ Saved (Tons).          |
+|                              |                                             | • Quick Actions: Top-up, Broadcast.  |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 34. HR Employee Roster       | `lib/screens/hr/hr_roster_screen.dart`      | • Searchable Employee Directory.     |
+|                              |                                             | • Department / Office Block filters. |
+|                              |                                             | • Invite via CSV or Company Code.    |
+|                              |                                             | • 1-Click Revoke resigned employees. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 35. HR Coin Pool & Billing   | `lib/screens/hr/hr_billing_screen.dart`     | • Set 1st-of-month Grant Quota       |
+|                              |                                             |   (e.g. 400 Coins / employee).       |
+|                              |                                             | • 1-Click Pool Recharge (Gateway or  |
+|                              |                                             |   Bank NEFT UTR confirmation).       |
+|                              |                                             | • Download Clean Non-GST Invoices.   |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 36. HR SEBI BRSR ESG Report  | `lib/screens/hr/hr_esg_screen.dart`         | • SEBI BRSR Scope 3 GHG Compliance.  |
+|                              |                                             | • Total Vehicle KMs reduced.         |
+|                              |                                             | • 1-Click Statutory PDF & Excel exp. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 37. HR Official Broadcast    | `lib/screens/hr/hr_broadcast_screen.dart`   | • Compose official company alerts.   |
+|                              |                                             | • Broadcasts directly into employee  |
+|                              |                                             |   Workspace Chat channels!           |
++-------------------------------------------------------------------------------------------------------------------+
+```

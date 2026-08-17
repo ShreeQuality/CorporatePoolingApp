@@ -2275,15 +2275,81 @@ CREATE TABLE public.app_remote_config (
 
 ---
 
-### 17.6 Central Real-Time SOS Emergency Command
+### 17.6 Central Real-Time SOS Emergency Command (End-to-End Safety Protocol)
 
-When any commuter taps the **🚨 SOS Button** during an active trip:
-1. **Audible Persistent Siren:** Admin dashboard emits a continuous high-frequency alert.
-2. **Emergency Incident HUD:** Automatically pops up displaying:
-   * **Rider:** Name, Department, Emergency Contacts Alerted.
-   * **Driver:** Name, Vehicle Model, License Plate Number (`KA-01-MJ-5521`).
-   * **Live Breadcrumb GPS:** Live coordinates with real-time speed and heading.
-   * **1-Tap Dispatch:** Direct link to local Police Control Room (112) with pre-generated incident tokens.
+Section 17.6 defines the high-priority emergency command architecture, operating an instantaneous multi-channel safety protocol when a commuter triggers SOS during an active carpool:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1: Emergency Trigger (T+0.00s)     ──► 3s Cancel Ring ➔ Instant Multi-Channel Broadcast         │
+│ PHASE 2: Super Admin Command Console     ──► High-Frequency Audio Siren, Live Breadcrumbs & Telemetry │
+│ PHASE 3: Multi-Agency Dispatch           ──► Police 112 API, Family Live Link & Corporate Security    │
+│ PHASE 4: Incident Sealing & DPDP Archive ──► Cryptographic Evidence Lock & Mandatory Admin Report    │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 17.6.1 Commuter Emergency Trigger Flow & 3-Second Cancel Ring:
+* The commuter taps the floating **🚨 SOS Button** on the live cockpit or presses the physical phone power button 3 times.
+* A **3-second circular countdown ring** appears with haptic vibration, allowing instant cancellation if tapped accidentally in a bag or pocket.
+* If not cancelled within 3 seconds, the emergency sequence executes irreversibly.
+
+#### 17.6.2 Instant 4-Way Parallel Broadcast Dispatch:
+```
+[ 🚨 SOS TRIGGERED ]
+         │
+         ├──► 1. 📱 TO FAMILY CONTACTS: Automated SMS/WhatsApp with live GPS tracking link:
+         │       "🚨 EMERGENCY ALERT: Priya Patel triggered SOS on carpool with Rahul (KA-01-MJ-5521). Track live:..."
+         │
+         ├──► 2. 🚓 TO POLICE CONTROL (112): Pre-formatted emergency dispatch packet with live GPS Lat/Long,
+         │       current street address, vehicle plate number, driver identity, and incident token.
+         │
+         ├──► 3. 🏢 TO COMPANY HR SECURITY: Webhook alert sent directly to corporate campus security desk.
+         │
+         └──► 4. 👑 TO SUPER ADMIN CONSOLE: Real-time high-frequency audio siren and emergency HUD popup!
+```
+
+#### 17.6.3 Super Admin Central Emergency Command HUD (`lib/screens/admin/admin_sos_command.dart`):
+* The Super Admin web and mobile console instantly sounds a **continuous high-frequency audio siren** and displays the incident cockpit:
+  * **Commuter in Distress:** Full Name, Corporate Badge (`@infosys.com`), Verified Phone Number, Device Battery Level (`🔋 14%`).
+  * **Driver & Vehicle Profile:** Driver Full Name, Vehicle Make/Model, License Plate Number (`KA-01-MJ-5521`), Driver Phone.
+  * **Live Breadcrumb GPS Map:** Real-time marker updating every 2 seconds, vehicle heading, live speed (e.g. `52 km/h`), and last 15-minute trail highlighting off-route detours.
+  * **Admin 1-Click Action Hub:**
+    * `[ 🚓 1-TAP POLICE 112 DISPATCH ]` (Direct line with pre-populated incident token).
+    * `[ 📞 CALL COMMUTER (Direct / Masked VoIP) ]`.
+    * `[ 📞 CALL DRIVER (Direct / Masked VoIP) ]`.
+    * `[ 🔒 INSTANT DRIVER LOCK & ESCROW FREEZE ]` (Precautionary vehicle suspension).
+
+#### 17.6.4 Cryptographic Evidence Sealing & PostgreSQL Schema:
+All telemetry, GPS trails, audio recordings (if microphone was activated), and chat transcripts are permanently locked into `public.emergency_sos_incidents` for police investigation and legal defense:
+
+```sql
+CREATE TABLE public.emergency_sos_incidents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ride_id UUID NOT NULL REFERENCES public.rides(id),
+    triggered_by UUID NOT NULL REFERENCES public.users(id),
+    driver_id UUID NOT NULL REFERENCES public.users(id),
+    vehicle_plate VARCHAR(20) NOT NULL,
+    trigger_lat DOUBLE PRECISION NOT NULL,
+    trigger_lng DOUBLE PRECISION NOT NULL,
+    live_speed_kmh NUMERIC(5, 2),
+    battery_level_pct INT,
+    police_notified BOOLEAN DEFAULT FALSE,
+    family_notified_count INT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active', -- 'active', 'police_dispatched', 'resolved_safe', 'false_alarm'
+    resolution_category VARCHAR(50), -- 'false_alarm', 'breakdown_medical', 'driver_misbehavior', 'critical'
+    resolution_notes TEXT,
+    resolved_by UUID REFERENCES public.users(id),
+    resolved_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_sos_status ON public.emergency_sos_incidents(status, created_at DESC);
+```
+
+#### 17.6.5 Mandatory Super Admin Incident Resolution Protocol:
+* An active SOS incident **cannot be dismissed without a formal audit trail**.
+* The Super Admin or Support Officer must submit a verified resolution category and resolution notes (*"Resolved Safe by Local Police"*, *"Vehicle Breakdown Assistance Dispatched"*, or *"False Alarm by Commuter"*).
+* Evidence logs are cryptographically preserved for 7 years in compliance with the **Digital Personal Data Protection (DPDP) Act** and Indian transport safety regulations.
 
 ---
 

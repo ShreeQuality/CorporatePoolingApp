@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.11 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.12 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -16,6 +16,7 @@
 9. [Hardware-Agnostic 3-Level Boarding Verification & State Machine](#9-hardware-agnostic-3-level-boarding-verification--state-machine)
 10. [Ride Completion, Atomic Coin Transfer & ESG Engine](#10-ride-completion-atomic-coin-transfer--esg-engine)
 11. [Recurring Commute Engine — Full Logic Deep Dive](#11-recurring-commute-engine--full-logic-deep-dive)
+12. [Wallet & Cashless Karma Economy (No Fiat Exchange)](#12-wallet--cashless-karma-economy-no-fiat-exchange)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -1160,3 +1161,179 @@ WHERE id = p_ride_id;
 When the morning drop-off finishes:
 1. Today's date is appended to `completion_dates[]`.
 2. **Auto-Reset:** Master `ride_status` immediately resets back to `'posted'` for the next working day with zero manual setup.
+
+
+---
+
+## 12. Wallet & Cashless Karma Economy (No Fiat Exchange)
+
+**Primary Modules:** `lib/services/wallet_service.dart`, Supabase Ledger RPCs, `lib/screens/wallet/wallet_screen.dart`, `lib/screens/wallet/family_wallet_screen.dart`
+
+Section 12 defines the cashless, non-fiat peer-to-peer Karma Coin economy, the RTO white-plate legal shield, the 3-tier wallet waterfall, the immutable double-entry ledger architecture, family wallet fund retention rules, deterministic vehicle-tier fare calculation, and self-healing escrow reconciliation.
+
+---
+
+### 12.1 RTO Legal Shield & 100% Cashless Non-Fiat Framework
+
+A foundational differentiator of CorporatePoolingApp from commercial ride-hailing services (Ola/Uber) and commercialized carpooling apps is the **complete absence of direct cash or UPI exchange between drivers and riders**.
+
+* **The Law (Section 66 of Indian Motor Vehicles Act 1988):** Private white-plate vehicles (`non-transport vehicles`) are legally barred from plying for *"hire or reward"*. Apps that facilitate direct cash/UPI driver payouts face severe regulatory crackdowns, vehicle impoundments, and taxi union protests.
+* **Our Closed-Loop Legal Shield:**
+  * **Zero In-Ride Cash / Zero UPI:** Riders never hand cash or transfer UPI directly to drivers for a ride.
+  * **Non-Fiat Karma Coins:** Karma Coins are closed-loop cost-sharing utility tokens. Coins cannot be cashed out directly to bank accounts like commercial taxi fares.
+  * **Ecosystem Utility:** Drivers use earned coins to fund their own future rides, share with family members, or redeem for employer-sponsored green fuel cards / cafeteria credits.
+  * **Legal Status:** Classifies platform commutes as **100% genuine non-commercial peer carpooling and voluntary ride-sharing**.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 CORPORATEPOOLING CASHLESS COST-SHARING FLOW                 │
+│                                                                             │
+│  ┌───────────────────────────────┐     1. Posts Commute     ┌────────────┐  │
+│  │ Verified Driver (Car / Bike)  │ ───────────────────────> │ Platform   │  │
+│  │ (White Plate - Non-Commercial)│ <─────────────────────── │ Escrow &   │  │
+│  │ [Corporate or Public User]    │   Earns Karma Coins      │ Ledger     │  │
+│  └───────────────────────────────┘   (Auto-Credit on Drop)  └────────────┘  │
+│                                                                    ▲        │
+│                                                                    │        │
+│  ┌───────────────────────────────┐     2. Books Seat               │        │
+│  │ Verified Rider                │ ────────────────────────────────┘        │
+│  │ [Corporate or Public User]    │    Spends Karma Coins                    │
+│  └───────────────────────────────┘   (Locked at Req, Auto-Transferred on Drop)│
+│                                                                             │
+│  * ZERO CASH / ZERO UPI TRANSFERRED BETWEEN RIDER & DRIVER *                │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 12.2 Three Legitimate Coin Sources (Zero Arbitrary P2P Transfers)
+
+To eliminate illegal underground token trading and protect regulatory compliance, Karma Coins enter the ecosystem through **three legitimate channels only**:
+
+1. **Earning by Driving:** Offering empty seats on daily commutes is the primary way drivers earn Karma Coins.
+2. **Employer Monthly B2B Grants (Corporate Commute Subsidies):**
+   * Partnered enterprises purchase corporate commute packages.
+   * HR auto-airdrops **300 to 500 Karma Coins** on the 1st of every month to verified employee wallets.
+   * Employees use these corporate-funded coins to commute to the office without personal out-of-pocket expenses.
+3. **Linked Family Shared Wallet Pool:** Verified family members draw from the primary account owner's balance.
+
+> **Anti-Abuse Rule:** Direct arbitrary peer-to-peer coin transfers between random users are **strictly blocked**. Coins can only move during verified commute drop-offs, family pool sharing, or employer B2B grants.
+
+---
+
+### 12.3 Automated Atomic Escrow Transfer on Every Drop-Off
+
+* **Zero-Tap Driver Settlement:** The exact millisecond a passenger drop-off is verified (Section 10), Supabase executes an atomic database function (`complete_ride` RPC):
+  1. `coins_locked` in Escrow are **unlocked and credited directly to the driver's spendable wallet** in $< 0.05\text{ seconds}$.
+  2. The rider's locked balance is cleared.
+  3. An immutable transaction receipt is written to `public.coin_transactions`.
+  4. Both driver and rider receive instant push notifications and digital receipts.
+
+---
+
+### 12.4 Double-Entry PostgreSQL ACID Ledger Schema
+
+```sql
+CREATE TABLE public.wallets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID UNIQUE NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    available_balance NUMERIC(8, 2) DEFAULT 0.00,
+    locked_balance NUMERIC(8, 2) DEFAULT 0.00,
+    corporate_grant_balance NUMERIC(8, 2) DEFAULT 0.00,
+    lifetime_earned NUMERIC(8, 2) DEFAULT 0.00,
+    lifetime_spent NUMERIC(8, 2) DEFAULT 0.00,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE public.coin_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sender_id UUID REFERENCES public.users(id),
+    receiver_id UUID REFERENCES public.users(id),
+    amount NUMERIC(8, 2) NOT NULL,
+    transaction_type VARCHAR(35) NOT NULL, 
+    -- 'ride_earning', 'ride_fare', 'escrow_lock', 'escrow_refund', 'corporate_grant', 'overdraft_adjustment'
+    ride_id UUID REFERENCES public.rides(id),
+    request_id UUID REFERENCES public.ride_requests(id),
+    status VARCHAR(20) DEFAULT 'completed',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_wallets_user_id ON public.wallets(user_id);
+CREATE INDEX idx_coin_transactions_sender ON public.coin_transactions(sender_id);
+CREATE INDEX idx_coin_transactions_receiver ON public.coin_transactions(receiver_id);
+```
+
+---
+
+### 12.5 Family Shared Wallet & Member Exit Fund Protection
+
+```
++-------------------------------------------------------------------+
+|               👨‍👩‍👧 RAHUL'S FAMILY COMMUTE WALLET                   |
++-------------------------------------------------------------------+
+|  Master Family Balance: 380 Karma Coins                           |
+|  Primary Account Owner: Rahul Sharma (Family Admin)               |
+|                                                                   |
+|  Linked Verified Family Members (Max 4):                          |
+|  • 🟢 Priya Sharma (Spouse)    - Verified Aadhaar ✅ [ Active ]    |
+|  • 🟢 Anita Sharma (Mother)    - Verified Aadhaar ✅ [ Active ]    |
+|  • 🟢 Rohan Sharma (Brother)   - Verified DL ✅      [ Active ]    |
+|                                                                   |
+|  [ + LINK NEW FAMILY MEMBER ]         [ ⚙️ SET MONTHLY LIMITS ]   |
++-------------------------------------------------------------------+
+```
+
+#### Family Wallet Exit & Ownership Rules:
+1. **Fund Ownership:** The entire pooled balance belongs exclusively to the **Primary Account Owner (Family Admin)**.
+2. **Member Disconnection / Exit:** When a secondary family member leaves or disconnects from the family group:
+   * **0 coins leave the family.**
+   * The departing member departs with only their personal standalone account ($0\text{ family coins}$).
+   * The pooled balance **remains 100% intact with the Primary Family Owner**.
+
+---
+
+### 12.6 Vehicle-Tier Deterministic Fare Calculation Matrix
+
+Ride fares are calculated deterministically based on exact road polyline distance ($km$) and vehicle tier:
+
+$$\text{Ride Fare (Coins)} = \text{Exact Road Distance (km)} \times \text{Vehicle Tier Rate (Coins/km)}$$
+
+```
++-----------------------------------------------------------------------------------+
+| VEHICLE CATEGORY             | BASE RATE      | 15 KM COMMUTE FARE CALCULATION    |
++-----------------------------------------------------------------------------------+
+| 🛵 Motorcycle / Scooter      | 1.0 Coin / km  | 15 km × 1.0 = 15 Karma Coins      |
+| 🛺 Auto-Rickshaw             | 2.0 Coins / km | 15 km × 2.0 = 30 Karma Coins      |
+| 🚗 Hatchback / Sedan / SUV   | 2.0 Coins / km | 15 km × 2.0 = 30 Karma Coins      |
++-----------------------------------------------------------------------------------+
+```
+
+---
+
+### 12.7 Self-Healing Escrow Recovery Cron (`reconcile_stuck_escrow`)
+
+If an active commute is interrupted by sudden network loss, battery death, or app crash:
+* An automated Supabase `pg_cron` job executes hourly:
+
+```sql
+-- Automated Self-Healing Escrow Recovery for Orphaned Locks > 4 Hours
+CREATE OR REPLACE FUNCTION public.reconcile_stuck_escrow()
+RETURNS VOID AS $$
+BEGIN
+    -- Unlock coins for requests stuck in pending/accepted where ride never started
+    UPDATE public.wallets w
+    SET locked_balance = locked_balance - r.coins_locked,
+        available_balance = available_balance + r.coins_locked
+    FROM public.ride_requests r
+    WHERE w.user_id = r.rider_id
+      AND r.status IN ('pending', 'accepted')
+      AND r.created_at < NOW() - INTERVAL '4 hours';
+      
+    UPDATE public.ride_requests
+    SET status = 'expired', updated_at = NOW()
+    WHERE status IN ('pending', 'accepted')
+      AND created_at < NOW() - INTERVAL '4 hours';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```

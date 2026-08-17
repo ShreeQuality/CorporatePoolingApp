@@ -2194,29 +2194,59 @@ CREATE INDEX idx_admin_audit_logs_action ON public.admin_audit_logs(action_type,
 
 ---
 
-### 17.4 Core Operational Modules
+### 17.4 Core Operational Modules (The 6 Administrative Super-Tools)
+
+The Super Admin Console provides **6 dedicated administrative tools** for complete operational, legal, and financial platform governance:
 
 ```
-+-------------------------------------------------------------------+
-|               👑 SUPER ADMIN MASTER COMMAND CONSOLE               |
-+-------------------------------------------------------------------+
-|  1. 🗺️ LIVE CITY-WIDE COMMUTE MAP:                                 |
-|     Visual real-time map displaying all active in-progress rides, |
-|     pickup waypoints, and vehicle occupancy levels.               |
-|                                                                   |
-|  2. 🪪 DRIVER KYC VERIFICATION QUEUE:                             |
-|     Side-by-side high-res document inspector (DL, RC, Aadhaar).   |
-|     [ ✅ APPROVE DRIVER ]    [ ❌ REJECT (Select Reason) ]         |
-|     (Original user documents are immutable; zero admin editing).  |
-|                                                                   |
-|  3. 🏢 B2B COMPANY & COIN POOL MANAGER:                           |
-|     Onboard new employers, assign HR Managers, view headcount,    |
-|     and activate master coin pools via Razorpay or Bank UTR.      |
-|                                                                   |
-|  4. ⚖️ ESCROW DISPUTE & INTERVENTION CENTER:                       |
-|     [ ⚡ FORCE RELEASE ESCROW TO RIDER ] [ ⚡ FORCE SETTLE TO DRIVER] |
-+-------------------------------------------------------------------+
++-------------------------------------------------------------------------------------------------------+
+| 1. 🗺️ LIVE CITY-WIDE COMMUTE MAP        ──► Real-time visual bird's-eye fleet monitor across the city |
+| 2. 🪪 DRIVER KYC VERIFICATION QUEUE     ──► High-res side-by-side document review (DL, RC, Aadhaar)  |
+| 3. 🏢 B2B COMPANY & POOL MANAGER        ──► Add employers, assign HR admins, recharge coin pools     |
+| 4. ⚖️ ESCROW DISPUTE & RESOLUTION HUB    ──► 1-Click force refund to rider or force payout to driver  |
+| 5. 🚫 USER TRUST & BAN MANAGEMENT       ──► Warning strikes, 7-day suspension & permanent phone bans  |
+| 6. 🪙 PLATFORM COIN SUPPLY AUDIT        ──► Total coins minted, in circulation, locked & burned       |
++-------------------------------------------------------------------------------------------------------+
 ```
+
+#### 1. 🗺️ Live City-Wide Commute Map & Fleet Monitor:
+* Real-time vector map tracking all active in-progress carpools across metropolitan corridors:
+  * 🟢 **Green Vehicles:** On-track within 50m of planned route, normal speed ($< 60\text{ km/h}$).
+  * 🟡 **Yellow Vehicles:** Stuck in traffic congestion / delayed $> 10\text{ mins}$.
+  * 🔴 **Red Vehicles:** Off-route detour $> 1\text{ km}$ or stopped $> 10\text{ mins}$ without passenger drop-off.
+* Clicking any vehicle displays: Driver Name, Vehicle Plate Number, Verified Passenger List, Planned Route Polyline, and live speed.
+
+#### 2. 🪪 Driver KYC Verification Queue & Side-by-Side Inspector:
+* High-resolution split-screen document viewer for fast, accurate verification:
+  * **Applicant Details:** Name, Phone Number, Company, Vehicle Make/Model, Plate Number.
+  * **Zoomable Image Inspector:** Driving License (DL), Vehicle Registration Card (RC), Aadhaar Card, and Profile Selfie.
+  * **1-Click Approvals:** Sets `is_verified_driver = TRUE` and dispatches instant push notification.
+  * **Standard Rejection Presets:** `"DL photo blurry / dark"`, `"Vehicle RC is expired"`, `"Name mismatch on Aadhaar"`, or `"Custom Reason"`.
+  * **Integrity Guarantee:** User photos are 100% immutable; zero editing or modification by administrators.
+
+#### 3. 🏢 B2B Company & Master Coin Pool Manager:
+* **Client Onboarding:** Register new corporate clients (*e.g. Wipro Sarjapur*), define company email domains (`@wipro.com`), set campus geofence pins, and assign verified HR Manager logins.
+* **Master Coin Pool Recharge:** View real-time balance (*e.g. 85,400 Coins*) and 1-click activate prepaid pool top-ups upon verifying bank NEFT/RTGS UTR numbers.
+* **Subscription Management:** Upgrade employer plan tiers (Starter $\to$ Growth $\to$ Enterprise) and configure default monthly employee coin grant quotas.
+
+#### 4. ⚖️ Escrow Dispute & Mid-Route Intervention Center:
+* Resolves edge-case commuter disputes with complete audit transparency:
+  * **Premature Drop-Off Fraud:** Driver terminates trip 5km away from destination $\rightarrow$ Super Admin reviews GPS trail and clicks **`[ ⚡ FORCE REFUND ESCROW TO RIDER ]`**.
+  * **Rider Refuses Boarding PIN:** Driver legitimately transports passenger to campus but rider refuses to share PIN $\rightarrow$ Super Admin reviews overlapping GPS breadcrumbs and clicks **`[ ⚡ FORCE SETTLE FARE TO DRIVER ]`**.
+
+#### 5. 🚫 User Trust, Warning Strikes & 3-Tier Ban Discipline:
+* Commuter profile lookup by Phone Number, Full Name, or Corporate Email.
+* View Safety Trust Score (0–100), Star Ratings, and Telematics Rash Driving violations.
+* **Three Levels of Platform Discipline:**
+  1. 🟡 **Issue Formal Warning:** Dispatches high-priority warning push to user's device.
+  2. ⏸️ **Temporary 7-Day Suspension:** For chronic unannounced cancelers or rude behavior.
+  3. 🚫 **Permanent Blacklist Ban:** Instantly revokes JWT auth tokens, terminates active sessions, and blacklists phone number and Aadhaar hash from re-registering.
+
+#### 6. 🪙 Platform-Wide Karma Coin Supply & Ledger Audit:
+* Real-time financial health dashboard:
+  * **Total Platform Coins in Existence** (Minted via B2B subscriptions & system pools).
+  * **Active Coins Locked in Trip Escrows** (Escrows currently pending drop-off verification).
+  * **Monthly Burn vs. Mint Velocity** (Tracks coin circulation and economic stability).
 
 ---
 

@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.16 | August 2026 | Dedicated Admin Portal
+### Version 2.17 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -224,7 +224,38 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ---
 
-## 11. Super Admin 2FA Security, Access Control & Audit Logging
+## 11. Core Platform Operational Governance & Tools
+*(Corresponds to Main SRS Section 17.4: The 6 Administrative Super-Tools)*
+
+```
++-------------------------------------------------------------------+
+|       Super Admin Console: Core Operational Super-Tools           |
++-------------------------------------------------------------------+
+|  1. 🗺️ LIVE FLEET & COMMUTE MONITOR:                              |
+|     - [X] ENABLE_REALTIME_MAP_POLLING              (5s Refresh)   |
+|     - OFF_ROUTE_DETOUR_THRESHOLD:                  [ 1000 ] meters|
+|     - TRAFFIC_DELAY_ALERT_THRESHOLD:               [ 10   ] mins  |
+|                                                                   |
+|  2. 🪪 DRIVER KYC VERIFICATION PIPELINE:                          |
+|     - REQUIRE_380_DPI_MINIMUM_CLARITY:             [X] TRUE       |
+|     - [X] AUTO_DISPATCH_REUPLOAD_NOTIFICATION_ON_REJECT           |
+|                                                                   |
+|  3. ⚖️ ESCROW DISPUTE & INTERVENTION HUB:                          |
+|     - MAX_DISPUTE_RESOLUTION_WINDOW:               [ 24   ] hours |
+|     - [X] REQUIRE_GPS_BREADCRUMB_AUDIT_BEFORE_FORCE_SETTLE        |
+|                                                                   |
+|  4. 🚫 3-TIER DISCIPLINE & BAN MANAGEMENT:                         |
+|     - WARNING_STRIKES_BEFORE_SUSPENSION:           [ 3    ] strikes|
+|     - TEMPORARY_SUSPENSION_DURATION:               [ 7    ] days  |
+|     - [X] BLACKLIST_AADHAAR_HASH_ON_PERMANENT_BAN                 |
+|                                                                   |
+|              [ ⚡ VIEW LIVE DISPUTE QUEUE ]   [ SAVE CONFIG ]      |
++-------------------------------------------------------------------+
+```
+
+---
+
+## 12. Super Admin 2FA Security, Access Control & Audit Logging
 *(Corresponds to Main SRS Section 17: Admin Panel, 2FA Authentication & Remote Theme System)*
 
 ```

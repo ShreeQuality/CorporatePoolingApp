@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.12 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.13 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -17,6 +17,7 @@
 10. [Ride Completion, Atomic Coin Transfer & ESG Engine](#10-ride-completion-atomic-coin-transfer--esg-engine)
 11. [Recurring Commute Engine — Full Logic Deep Dive](#11-recurring-commute-engine--full-logic-deep-dive)
 12. [Wallet & Cashless Karma Economy (No Fiat Exchange)](#12-wallet--cashless-karma-economy-no-fiat-exchange)
+13. [Presence & Soft Attendance System](#13-presence--soft-attendance-system)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -1337,3 +1338,147 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
+
+
+---
+
+## 13. Presence & Soft Attendance System
+
+**Primary Modules:** `lib/services/presence_service.dart`, Supabase Attendance RPCs, `lib/screens/presence/presence_status_screen.dart`, `lib/screens/dashboard/hr_attendance_dashboard.dart`
+
+Section 13 defines the Presence and Soft Attendance System, governing commute availability, leave synchronization (eliminating ghost riders), multi-modal campus arrival logging, zero-cron dynamic status derivation, and enterprise HRMS/ESG integration.
+
+---
+
+### 13.1 Philosophy & Role-Based Presence Architecture
+
+Presence serves two distinct operational objectives based on the user's role:
+
+```
++-------------------------------------------------------------------------------------------------------+
+| USER ROLE             | PRESENCE CAPABILITIES                                                         |
++-------------------------------------------------------------------------------------------------------+
+| 🏢 CORPORATE EMPLOYEE  | • Commute Availability & WFH/Leave Schedule Sync                              |
+|                       | • Automated Campus Soft Attendance on Morning Arrival (6:00 AM – 11:00 AM)    |
+|                       | • Corporate Scope 3 ESG Carbon Commute Logging & Employer HRMS Sync           |
+|-----------------------|-------------------------------------------------------------------------------|
+| 🌐 PUBLIC / FAMILY    | • Commute Availability & Vacation/Sick Leave Sync (Unlinks recurring seat)   |
+|   COMMUTER            | • Green Commuter Carbon Badges on Personal Profile                            |
+|                       | • ZERO Corporate HR Reporting (100% Personal Privacy Isolation)               |
++-------------------------------------------------------------------------------------------------------+
+```
+
+#### Eliminating the "Ghost Commuter" Problem:
+* **The Problem:** When an employee takes Work-From-Home (WFH) or leave but forgets to notify their daily carpool driver, the driver wastes 5–10 minutes waiting at their pickup gate.
+* **The Solution:** Tapping *"On Leave Today"* or scheduling a vacation range in Presence **automatically unlinks their recurring seat** and reopens it for colleagues, saving drivers from wasted trips.
+
+---
+
+### 13.2 The Four Presence States & Dynamic Read-Time Resolution
+
+```
++-----------------------------------------------------------------------------------+
+| STATE       | OPERATIONAL MEANING                | RESOLUTION PRIORITY & TRIGGER  |
++-----------------------------------------------------------------------------------+
+| available   | Working today, no commute logged   | Default state for active days  |
+| present     | Confirmed on campus working today  | Auto on morning arrival / tap  |
+| week_off    | Scheduled non-working day          | Derived from working_days[]    |
+| on_leave    | Approved leave / WFH / Vacation    | Manual chip / Vacation picker  |
++-----------------------------------------------------------------------------------+
+```
+
+#### Smart Read-Time Resolution (Zero Midnight Cron Overhead):
+To eliminate heavy scheduled midnight cron jobs scanning thousands of user rows:
+* Presence status is **dynamically computed at read time** against `CURRENT_DATE`:
+  1. A stale `presence_date` from yesterday automatically reads as `'available'` today.
+  2. If today is Sunday and Sunday is not in `working_days[]`, it dynamically reads as `'week_off'`.
+  3. If a 5-day leave ended yesterday, it automatically reads as `'available'` today.
+
+```dart
+// lib/services/presence_service.dart
+String resolveTodayPresence(Map<String, dynamic>? userData) {
+  if (userData == null) return 'available';
+  final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+  final currentWeekday = DateTime.now().weekday; // 1 = Mon, 7 = Sun
+
+  // Priority 1: Explicit same-day status
+  if (userData['presence_date'] == todayStr) {
+    return userData['presence_status'] ?? 'available';
+  }
+
+  // Priority 2: Multi-day Vacation / Leave range
+  if (userData['leave_from'] != null && userData['leave_to'] != null) {
+    if (todayStr.compareTo(userData['leave_from']) >= 0 &&
+        todayStr.compareTo(userData['leave_to']) <= 0) {
+      return 'on_leave';
+    }
+  }
+
+  // Priority 3: Commute Schedule (working_days check)
+  final List<dynamic> workingDays = userData['working_days'] ?? [1, 2, 3, 4, 5];
+  if (!workingDays.contains(currentWeekday)) {
+    return 'week_off';
+  }
+
+  return 'available';
+}
+```
+
+---
+
+### 13.3 Multi-Modal Attendance Ingestion Streams & Fail-Safe Architecture
+
+To ensure 100% employee coverage regardless of how an individual travels to work:
+
+```
+[ Employee Arrives at Workplace ]
+               │
+   ┌───────────┼───────────────────────────────────────────────┐
+   ▼           ▼                                               ▼
+[ STREAM A: Green Carpool ]   [ STREAM B: Bus / Metro / Shuttle ]   [ STREAM C: Office Turnstile (Fail-Safe) ]
+• 100% Automated Ingress.     • 1-Tap Geofence Check-In.            • If employee forgot their phone / app,
+• Drop-off verified at        • App detects inside 500m Tech Park   • Swipes physical RFID company ID card
+  campus gate (0 taps).         boundary ➔ Shows "Campus Check-In".  at building lobby turnstile as normal.
+• Logged: 'carpool'           • Logged: 'public_transit' (+5 Karma) • Logged: 'turnstile_backup'
+               │                               │                               │
+               └───────────────────────────────┼───────────────────────────────┘
+                                               ▼
+                         [ Consolidated HR Attendance Stream ]
+                         • Earliest timestamp accepted ("Rule of First Touch")
+                         • Zero accidental absenteeism penalties!
+```
+
+---
+
+### 13.4 Database Schema (`public.corporate_attendance`)
+
+```sql
+CREATE TABLE public.corporate_attendance (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    company_id UUID NOT NULL REFERENCES public.companies(id),
+    building_id UUID NOT NULL REFERENCES public.buildings(id),
+    commute_role VARCHAR(20) NOT NULL, -- 'driver', 'rider', 'public_transit', 'solo'
+    transport_mode VARCHAR(30) NOT NULL, -- 'carpool', 'bike_pool', 'bus', 'metro', 'turnstile_backup'
+    attendance_status VARCHAR(20) DEFAULT 'present',
+    arrival_time TIMESTAMPTZ DEFAULT NOW(),
+    date DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(employee_id, date)
+);
+
+CREATE INDEX idx_attendance_company_date ON public.corporate_attendance(company_id, date);
+CREATE INDEX idx_attendance_employee ON public.corporate_attendance(employee_id);
+```
+
+---
+
+### 13.5 Enterprise HRMS Export & SEBI BRSR ESG Reporting
+
+1. **Automated HRMS Webhook Integration:** Real-time event dispatch to enterprise HR platforms (Darwinbox, Workday, Keka, SAP SuccessFactors) upon campus arrival.
+2. **SEBI BRSR Scope 3 Commute Carbon Reports:**
+   * Generates monthly corporate audits displaying:
+     * Total employee carpool commutes vs solo transit.
+     * Total Net $\text{CO}_2$ emissions avoided (kg).
+     * Single-occupancy vehicles eliminated from city roads.
+   * Direct 1-click CSV/PDF export for corporate sustainability compliance filings.

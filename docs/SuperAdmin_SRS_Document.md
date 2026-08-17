@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.9 | August 2026 | Dedicated Admin Portal
+### Version 2.10 | August 2026 | Dedicated Admin Portal
 
 ---
 

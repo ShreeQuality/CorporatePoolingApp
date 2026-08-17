@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.19 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.20 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -23,6 +23,7 @@
 16. [Push Notification Engine & Multi-Role Notification Matrix](#16-push-notification-engine--multi-role-notification-matrix)
 17. [Admin Panel, Multi-Tier 2FA Security & Dynamic Remote Theme System](#17-admin-panel-multi-tier-2fa-security--dynamic-remote-theme-system)
 18. [Complete UI Screen Catalogue & Component Inventory (The 37 Application Flows)](#18-complete-ui-screen-catalogue--component-inventory-the-37-application-flows)
+19. ["My Rides" Screen, Commute History & Active Booking Tabs](#19-my-rides-screen-commute-history--active-booking-tabs)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -2670,3 +2671,154 @@ Section 18 provides the exhaustive, screen-by-screen architectural blueprint and
 | 🚀 GRAND TOTAL ACROSS THE COMPLETE ECOSYSTEM                        | **EXACTLY 47 PRODUCTION SCREENS**|
 +-------------------------------------------------------------------------------------------------------+
 ```
+
+---
+
+## 19. "My Rides" Screen, Commute History & Active Booking Tabs
+
+**Primary Modules:** `lib/screens/rides/my_rides_screen.dart`, `lib/screens/rides/ride_details_screen.dart`, `lib/services/ride_service.dart`, Supabase Realtime Engine
+
+Section 19 defines the comprehensive commute management dashboard across 4 segmented tabs (`Active`, `Upcoming`, `Recurring`, `Past`), commute lifecycle actions ("Skip Today", Vacation Pause Mode, 1-Tap Repeat Commute), the immutable ESG receipt view, and sub-20ms database query optimizations.
+
+---
+
+### 19.1 The 4 Segmented Tab Architecture & Real-Time Status Engine
+
+```
++-------------------------------------------------------------------------------------------------------+
+|  [ 🟢 ACTIVE (1) ]    [ 🟡 UPCOMING (2) ]    [ 🔁 RECURRING (1) ]    [ 📜 PAST (24) ]                 |
++-------------------------------------------------------------------------------------------------------+
+| • Dynamic unread badges with instant sub-20ms tab switching.                                          |
+| • Listens to Supabase Realtime for automatic status transitions without manual page refreshes.        |
++-------------------------------------------------------------------------------------------------------+
+```
+
+#### 1. 🟢 TAB 1: `ACTIVE` Commutes (Happening Right Now!):
+* **State Trigger:** Displays commutes in state `accepted`, `driver_en_route`, `arrived_at_pickup`, or `in_trip`.
+* **Rider Active Card:**
+  * Driver Name, Photo, Corporate Badge (`@infosys.com ✅`), Star Rating (`⭐ 4.9`), Vehicle Make/Model & License Plate (`KA-01-MJ-5521`).
+  * Live ETA Countdown HUD (*"Driver 4 mins away"* or *"In Trip: Arriving Gate 2 at 8:42 AM"*).
+  * Action Hub: `[ 📍 OPEN LIVE MAP HUD ]`, `[ 🔑 BOARDING PIN: 4821 ]`, `[ 💬 CHAT ]`, `[ 🚨 SOS ]`.
+* **Driver Active Card:**
+  * Passenger Roster with Boarding Checkmarks (e.g. `Priya Patel - Boarded ✅`, `Amit Kumar - Waiting at Gate 2 ⏳`).
+  * Action Hub: `[ 🧭 RESUME TURN-BY-TURN NAVIGATION ]`, `[ 💬 GROUP CHAT ]`.
+
+#### 2. 🟡 TAB 2: `UPCOMING` Commutes (Scheduled for Today / Tomorrow):
+* **State Trigger:** Displays confirmed one-time future bookings (`status = 'accepted'`, `departure_time > NOW()`).
+* **Card Information:**
+  * Route corridor (*"Electronic City Phase 1 ➔ Manyata Tech Park"*).
+  * Departure Date & Time (*"Tomorrow, 8:30 AM"*).
+  * Escrow Status (*"24 Karma Coins locked in secure escrow"*).
+  * Actions: `[ 💬 CHAT WITH DRIVER ]`, `[ ❌ CANCEL RIDE (Free Cancellation Window) ]`.
+
+#### 3. 🔁 TAB 3: `RECURRING` Commutes (Daily Monday-to-Friday Office Carpools):
+* **State Trigger:** Displays persistent weekly commute schedules (`time_type = 'recurring'`).
+* **Card Information:**
+  * Schedule Pill: `[ MON | TUE | WED | THU | FRI ]` (Active days highlighted).
+  * Morning Pickup Time (`8:30 AM`) & Evening Return Time (`6:00 PM`).
+  * Regular Carpool Partner Roster (`Rahul S. (Driver), Priya P. (Rider)`).
+  * Today's Commute Status (`🟢 Confirmed for Today • 24 coins in micro-escrow`).
+  * Actions: `[ ⚪ SKIP TODAY (WFH / Leave) ]`, `[ ⏸️ VACATION PAUSE ]`, `[ ⚙️ EDIT SCHEDULE ]`.
+
+#### 4. 📜 TAB 4: `PAST / HISTORY` (Completed & Cancelled Trips):
+* **State Trigger:** Displays historical rides (`status = 'completed'`, `'cancelled_by_user'`, `'cancelled_by_driver'`).
+* **Card Information:**
+  * Departure Timestamp (*"Yesterday, 8:30 AM"*).
+  * Status Badge: `🟢 COMPLETED`, `⚪ CANCELLED BY USER`, `🔴 CANCELLED BY DRIVER (Refunded)`.
+  * Double-Entry Coin Receipt (`-24 Karma Coins transferred to Rahul`).
+  * Environmental Impact Badge (`🌱 1.8 kg CO₂ Saved | 0.8L Fuel Saved`).
+  * Rating Stars & Compliments (`⭐⭐⭐⭐⭐ "Punctual & Clean Car"`).
+  * Actions: `[ 🔁 1-TAP REPEAT COMMUTE ]`, `[ 📄 VIEW FULL ESG RECEIPT ]`.
+
+---
+
+### 19.2 Commute Lifecycle Management Actions (Topic 2 Deep-Dive)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| LIFECYCLE ACTION                     | HOW IT WORKS & SYSTEM BEHAVIOR      | FINANCIAL & NOTIFICATION IMPACT      |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. ⚪ "Skip Today" (WFH / Leave)     | • 1-Tap on the Recurring Card skips | • Instantly refunds today's 24 Karma |
+|                                      |   today's single ride only.         |   coins from micro-escrow to wallet. |
+|                                      | • Tomorrow's schedule stays intact! | • Pushes polite alert to driver:     |
+|                                      | • Re-opens seat for other commuters.|   "⚪ Priya is WFH today. Seat open."|
+|--------------------------------------|-------------------------------------|--------------------------------------|
+| 2. ⏸️ "Vacation Pause Mode"          | • Commuter picks date range         | • Zero coins deducted during vacation|
+|                                      |   (*e.g. Dec 24 to Jan 2*).         |   dates.                             |
+|                                      | • Automatically suspends nightly    | • Auto-resumes on return date without|
+|                                      |   8:00 PM matching during vacation. |   re-configuring recurring schedule. |
+|--------------------------------------|-------------------------------------|--------------------------------------|
+| 3. 🔁 "1-Tap Repeat Commute"         | • Tapping "Repeat" on any past trip | • Validates wallet balance and       |
+|                                      |   clones origin, destination, time, |   submits ride request in < 1 second!|
+|                                      |   and preferred colleague driver.   |                                      |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+### 19.3 Historical Trip Details & ESG Receipt Breakdown (`lib/screens/rides/ride_details_screen.dart`)
+
+Tapping any trip card in the Past tab opens the detailed audit screen:
+
+```
++-------------------------------------------------------------------+
+| 📜 COMMUTE RECEIPT & AUDIT: TRIP #RD-8842                         |
++-------------------------------------------------------------------+
+|  Route: HSR Layout Gate ➔ Manyata Tech Park Gate 2 (18.4 km)      |
+|  Departure: Monday, Aug 17, 2026 at 08:30 AM (Duration: 42 mins)  |
+|                                                                   |
+|  🗺️ INTERACTIVE BREADCRUMB ROUTE REPLAY:                          |
+|  [ Full recorded GPS polyline trail with pickup/drop pins ]       |
+|                                                                   |
+|  👥 COMMUTE COMPANIONS:                                           |
+|  • Driver: Rahul Sharma (Infosys • KA-01-MJ-5521)                 |
+|  • Co-Rider: Amit Kumar (Infosys • QA Team)                       |
+|                                                                   |
+|  🪙 FINANCIAL TRANSACTION LEDGER:                                 |
+|  • Base Distance Rate (18.4 km @ 1.3 Coins/km):       24.00 Coins |
+|  • Escrow Lock Timestamp:                    08:00 PM (Night Prior)|
+|  • Escrow Settlement Timestamp:              09:12 AM (Drop-Off)   |
+|  • Net Wallet Deduction:                             -24.00 Coins |
+|                                                                   |
+|  🌱 STATUTORY SEBI BRSR ESG CERTIFICATE:                          |
+|  • Carbon Emissions Avoided:                         1.84 kg CO₂  |
+|  • Fossil Fuel Conserved:                            0.82 Litres  |
+|  • Scope 3 Commuter Transit Decarbonization Certified ✅           |
+|                                                                   |
+|  [ 🔁 REPEAT THIS COMMUTE ]            [ 📄 DOWNLOAD PDF RECEIPT ]|
++-------------------------------------------------------------------+
+```
+
+---
+
+### 19.4 PostgreSQL Query Architecture, Indexes & Real-Time Tab Badges
+
+To guarantee sub-20ms query latency when loading all 4 tabs on user devices:
+
+```sql
+-- Composite index for instant Active & Upcoming tab retrieval
+CREATE INDEX idx_rides_user_status_time ON public.rides(driver_id, status, departure_time);
+CREATE INDEX idx_ride_requests_rider_status ON public.ride_requests(rider_id, status, created_at DESC);
+
+-- Composite index for instant Recurring schedule lookups
+CREATE INDEX idx_rides_recurring ON public.rides(driver_id, time_type) WHERE time_type = 'recurring';
+
+-- PostgreSQL View for Unified Commuter Ride History
+CREATE OR REPLACE VIEW public.view_my_rides AS
+SELECT 
+    r.id AS ride_id,
+    r.driver_id,
+    req.rider_id,
+    r.origin_address,
+    r.dest_address,
+    r.departure_time,
+    r.time_type,
+    r.recurring_days,
+    COALESCE(req.status, r.status) AS commute_status,
+    r.fare_coins,
+    r.created_at
+FROM public.rides r
+LEFT JOIN public.ride_requests req ON r.id = req.ride_id;
+```
+
+* **Sub-20ms Realtime Tab Sync:** The Flutter app subscribes to `supabase.channel('my_rides:' + auth.uid())`. When a driver accepts a request or begins a trip, the corresponding tab badges (`🔴 1 Active`, `🟡 2 Upcoming`) update dynamically across the screen in real-time!

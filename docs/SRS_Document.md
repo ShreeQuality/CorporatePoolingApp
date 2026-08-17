@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.13 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.14 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -18,6 +18,7 @@
 11. [Recurring Commute Engine — Full Logic Deep Dive](#11-recurring-commute-engine--full-logic-deep-dive)
 12. [Wallet & Cashless Karma Economy (No Fiat Exchange)](#12-wallet--cashless-karma-economy-no-fiat-exchange)
 13. [Presence & Soft Attendance System](#13-presence--soft-attendance-system)
+14. [Company & Enterprise Features (B2B SaaS Subscriptions, Monthly Coin Grants & ESG Engine)](#14-company--enterprise-features-b2b-saas-subscriptions-monthly-coin-grants--esg-engine)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -1482,3 +1483,189 @@ CREATE INDEX idx_attendance_employee ON public.corporate_attendance(employee_id)
      * Total Net $\text{CO}_2$ emissions avoided (kg).
      * Single-occupancy vehicles eliminated from city roads.
    * Direct 1-click CSV/PDF export for corporate sustainability compliance filings.
+
+
+---
+
+## 14. Company & Enterprise Features (B2B SaaS Subscriptions, Monthly Coin Grants & ESG Engine)
+
+**Primary Modules:** `lib/services/corporate_service.dart`, Supabase Corporate RPCs, `lib/screens/dashboard/manager_dashboard_screen.dart`, `lib/screens/corporate/corporate_schedule_screen.dart`
+
+Section 14 defines the B2B enterprise subscription architecture, employee headcount-dependent pricing tiers, 18% GST invoicing (SAC 9984), automated 1st-of-the-month coin grant distribution, the graceful fallback to normal user mode when a company skips recharge, the HR Manager portal, and the official SEBI BRSR Scope 3 ESG carbon reporting engine.
+
+---
+
+### 14.1 Headcount-Based B2B Subscription Tiers & 18% GST Invoicing (SAC 9984)
+
+Our platform operates a high-margin **B2B Employer SaaS Model**:
+* Corporate employers (e.g. Infosys, TCS, Wipro) subscribe to monthly or annual packages strictly tied to **Employee Headcount Tiers**:
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SUBSCRIPTION PLAN       | EMPLOYEE HEADCOUNT TIER | MONTHLY FEE (EXCL. GST) | INCLUDED MONTHLY COIN POOL | PER-EMPLOYEE COIN QUOTA |
++-------------------------------------------------------------------------------------------------------------------+
+| 🌱 Starter Tier         | 1 to 50 Employees       | ₹4,999 / month          | Up to 20,000 Coins / month | 400 Coins / employee    |
+|-------------------------|-------------------------|-------------------------|----------------------------|-------------------------|
+| 🌿 Growth Tier          | 51 to 250 Employees     | ₹19,999 / month         | Up to 100,000 Coins / month| 400 Coins / employee    |
+|-------------------------|-------------------------|-------------------------|----------------------------|-------------------------|
+| 🌳 Enterprise Tier      | 251 to 1,000+ Employees | Custom Contract         | Dynamic Sizing             | 400–600 Coins (Custom)  |
+|                         |                         | (₹89 / seat / month)    | (Headcount × Quota)        | (Configured by HR)      |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### Required Monthly Pool Sizing Formula:
+$$\text{Required Monthly Pool Size} = \text{Total Active Verified Employees} \times \text{Monthly Quota Per Employee (e.g., 400 Coins)}$$
+
+* **Tax Compliance (SAC 9984):** Every corporate subscription and prepaid pool purchase automatically generates an official **18% GST B2B Tax Invoice** (SAC Code 9984: Software / IT SaaS Services) with automated Company GSTIN validation and downloadable PDF receipt.
+
+---
+
+### 14.2 The 1st-of-the-Month Automated Employee Coin Grant Engine
+
+On the **1st day of every calendar month at 00:01 AM IST**, an automated Supabase database cron executes:
+
+```sql
+-- 1st-of-the-Month Automated Employee Coin Grant Distribution
+CREATE OR REPLACE FUNCTION public.distribute_monthly_corporate_grants()
+RETURNS VOID AS $$
+DECLARE
+    v_company RECORD;
+    v_emp RECORD;
+    v_grant_per_user NUMERIC(8,2);
+BEGIN
+    FOR v_company IN 
+        SELECT id, name, total_coins_pool, default_monthly_grant_per_employee 
+        FROM public.companies 
+        WHERE is_active = TRUE AND total_coins_pool > 0
+    LOOP
+        v_grant_per_user := v_company.default_monthly_grant_per_employee; -- e.g. 400 Coins
+
+        FOR v_emp IN 
+            SELECT id FROM public.users 
+            WHERE company_id = v_company.id AND is_active = TRUE AND role = 'corporate_employee'
+        LOOP
+            IF v_company.total_coins_pool >= v_grant_per_user THEN
+                -- 1. Deduct from Company Master Pool
+                UPDATE public.companies 
+                SET total_coins_pool = total_coins_pool - v_grant_per_user 
+                WHERE id = v_company.id;
+
+                -- 2. Credit Employee's Corporate Grant Wallet
+                UPDATE public.wallets 
+                SET corporate_grant_balance = corporate_grant_balance + v_grant_per_user,
+                    available_balance = available_balance + v_grant_per_user
+                WHERE user_id = v_emp.id;
+
+                -- 3. Log Immutable Audit Ledger Entry
+                INSERT INTO public.coin_transactions (receiver_id, amount, transaction_type, status)
+                VALUES (v_emp.id, v_grant_per_user, 'corporate_grant', 'completed');
+            END IF;
+        END LOOP;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+* **Morning Push Notification (07:00 AM):** Every verified employee wakes up to a morning alert:
+  > *"🎉 Happy 1st of the Month! Infosys has granted you 400 Karma Coins for your monthly office commute!"*
+
+---
+
+### 14.3 Unrecharged / Skipped Company Policy (Graceful Normal User Fallback)
+
+```
+[ 1st of the Month: System Checks Company Coin Pool ]
+                          │
+         ┌────────────────┴────────────────────────┐
+         ▼ (Pool Has Funds)                        ▼ (Company Skipped / Empty Pool)
+[ SENDS 400 MONTHLY GRANT COINS ]        [ 0 COINS SENT TO EMPLOYEES ]
+• Employer funds commute subsidy.        • No free corporate grant coins issued.
+• Wallet corporate grant credited.       • Employees are NOT blocked or suspended!
+• Commutes for free via employer.        • Seamlessly treated like NORMAL USERS:
+                                           ├──► Drivers earn coins by giving rides.
+                                           ├──► Riders spend earned coins or family pool.
+                                           └──► App remains 100% functional & active!
+```
+
+#### The Core Operating Rules:
+1. **Zero Coins Sent:** If a company skips renewal or its master pool is empty, **the platform does not send any monthly grant coins to its employees**.
+2. **Graceful Normal User Mode:** Employees are **never blocked or locked out** of the app:
+   * They continue to give rides as drivers to earn Karma Coins.
+   * They take rides as riders using their personal earned balance or linked family pool.
+   * The carpool network stays 100% operational for peer commuting!
+
+---
+
+### 14.4 Multi-Tenant Enterprise Database Schema
+
+```sql
+CREATE TABLE public.companies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    domain VARCHAR(100) UNIQUE NOT NULL, -- e.g. 'infosys.com'
+    gstin VARCHAR(15), -- 18% GST Tax Identification
+    manager_id UUID REFERENCES public.users(id),
+    total_coins_pool NUMERIC(10, 2) DEFAULT 0.00,
+    default_monthly_grant_per_employee NUMERIC(6, 2) DEFAULT 400.00,
+    subscription_plan VARCHAR(30) DEFAULT 'starter', -- 'starter', 'growth', 'enterprise'
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE public.corporate_invoices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES public.companies(id),
+    invoice_number VARCHAR(50) UNIQUE NOT NULL,
+    base_amount NUMERIC(10, 2) NOT NULL,
+    gst_amount NUMERIC(10, 2) NOT NULL, -- 18% GST
+    total_amount NUMERIC(10, 2) NOT NULL,
+    sac_code VARCHAR(10) DEFAULT '9984',
+    status VARCHAR(20) DEFAULT 'paid', -- 'pending', 'paid', 'failed'
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+### 14.5 HR & Facility Manager Portal (`ManagerDashboardScreen.dart`)
+
+```
++-------------------------------------------------------------------+
+|               🏢 INFOSYS HINJEWADI - HR COMMUTE PORTAL            |
++-------------------------------------------------------------------+
+|  Active Enrolled Employees: 1,420     |  Company Pool: 85,400 Coins|
+|  Today's Carpool Commuters: 612       |  Today's CO2 Saved: 918 kg |
+|                                                                   |
+|  Quick Actions:                                                   |
+|  [ ➕ RECHARGE COIN POOL ]               [ 👥 INVITE EMPLOYEES ]   |
+|  [ 📄 EXPORT SEBI ESG REPORT (PDF) ]     [ 📊 ATTENDANCE CSV ]     |
++-------------------------------------------------------------------+
+```
+
+* **Employee Onboarding System:**
+  1. **Domain Auto-Verification:** Anyone signing up with `@infosys.com` is auto-linked to the company.
+  2. **HR Invite Codes:** For contractors/vendors without corporate emails, HR generates an **8-character secure invite code** (e.g. `INFY-2026`).
+* **Company Broadcast Messages:** HR can broadcast announcements (e.g. *"Manyata Gate 2 closed due to metro work — please use Gate 4"*).
+
+---
+
+### 14.6 Official Scope 3 ESG Sustainability Engine & SEBI BRSR Compliance
+
+Under **SEBI BRSR (Business Responsibility and Sustainability Reporting)** mandates in India, top listed companies must disclose their Scope 3 greenhouse gas emissions.
+
+$$\text{Monthly Net }\text{CO}_2\text{ Saved (kg)} = \sum (\text{Trip KM} \times 0.15\text{ kg} \times \text{Carpool Passengers})$$
+
+$$\text{Equivalent Trees Planted} = \frac{\text{Monthly }\text{CO}_2\text{ Saved (kg)}}{20.0\text{ kg CO}_2\text{ / tree / year}}$$
+
+* **1-Click Audit Export:** HR downloads a branded, auditor-ready ESG certificate showing exact carbon offsets, fuel liters saved, and single-occupancy highway vehicles eliminated.
+
+---
+
+### 14.7 Enterprise Commute Schedule Setup (`CorporateScheduleScreen.dart`)
+
+Employees configure their baseline commute preferences:
+* Working days of week (toggles for Mon–Sun, default: Mon–Fri).
+* Usual morning departure time (e.g. `08:00 AM`).
+* Usual evening departure time (e.g. `06:30 PM`).
+* **Intelligent Auto-Fill:** The system automatically uses these preferences to pre-populate search chips in `RiderTimePickerScreen` and automatically derive `week_off` attendance states.

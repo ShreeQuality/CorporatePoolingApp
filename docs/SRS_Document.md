@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.24 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.25 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -106,14 +106,42 @@ Corporate Employer / HR Manager Flow:
 ### 3.2 Detailed Verification Specifications
 
 #### A. Corporate Employees (`corporate_signup_screen.dart`)
-To ensure total safety and community trust, corporate commuters complete **Dual-Shield Verification**:
-1. **Employment Verification (Choice of 2 Methods):**
-   - **Method 1 (Instant):** Corporate Work Email OTP (`@company.com`). System validates domain against `public.companies` whitelist.
-   - **Method 2 (Firewall Fallback):** Physical Office ID Card photo upload (for employees in banks or defense companies where firewalls block external OTPs). Verified via on-device OCR / Super Admin review.
-2. **Legal Identity Verification (Mandatory Aadhaar KYC):**
+To ensure total safety and community trust, corporate commuters complete **Dual-Shield Verification with Mandatory Employer Approval**:
+
+```
+[ STEP 1: INVITATION DELIVERY ]
+• Primary: Universal Smart Deep-Link (https://join.corporatepooling.com/infy2026) via Slack / Teams / Email.
+• Fallback: 6-Character Company Invite Code (e.g. "INFY26") entered manually on signup screen.
+                          │
+                          ▼
+[ STEP 2: WORK EMAIL OTP & DOMAIN MATCH ]
+• Employee enters work email (@infosys.com) ➔ Validates domain ➔ Submits 6-digit OTP.
+                          │
+                          ▼
+[ STEP 3: EMPLOYER / HR REAL-TIME APPROVAL GATE (Pending State) ]
+• Employee placed in "pending_approval" status.
+• Real-time Popup / Alert appears on Employer HR Portal:
+  "🔔 Amit Kumar (amit.k@infosys.com • #INF-8842) wants to join your carpool workspace."
+                          │
+         ┌────────────────┴────────────────────────┐
+         ▼ (Option A: HR Clicks [ ✅ APPROVE ])     ▼ (Option B: HR Clicks [ ❌ REJECT ])
+[ VERIFIED CORPORATE MEMBER ACTIVATED ]     [ REJECTED / PUBLIC MODE ]
+• Status updated to "active".               • User restricted from company roster & funds.
+• "Verified Corporate Citizen" Badge awarded.• Gracefully operates in Public Commuter mode.
+• 100 Welcome Karma Coins airdropped!       • Zero access to company master coin pool.
+• Internal company carpool roster unlocked!
+```
+
+1. **Invitation & Onboarding Channels:**
+   - **Method 1 (Primary - Smart Deep-Link):** HR Manager copies the company's unique deep-link (`https://join.corporatepooling.com/infy2026`) and posts it in company Slack, Microsoft Teams, or internal intranet. Clicking the link auto-installs the app and pre-fills company details.
+   - **Method 2 (Fallback - 6-Character Invite Code):** If firewall/MDM policies block deep-links, the employee manually enters the company code (e.g. `INFY26`) on the signup screen.
+2. **Real-Time Employer / HR Approval Gate:**
+   - When an employee signs up, their profile is held in a `pending_approval` state.
+   - The Employer HR Manager receives an instant **Real-Time Popup / Banner Alert** in the Corporate Portal.
+   - **Strict Governance Rule:** ONLY when the Employer/HR clicks **`[ ✅ APPROVE ]`** is the employee officially admitted into the corporate workspace, awarded the corporate badge, granted **100 Welcome Karma Coins**, and linked to the monthly prepaid coin grant pool.
+3. **Legal Identity Verification (Mandatory Aadhaar KYC):**
    - **Phase 1 (₹0 Launch):** On-Device Aadhaar Secure QR Code scan / Google ML Kit text extraction with Verhoeff mathematical checksum + photo upload.
    - **Phase 2 (Scale):** Optional automated DigiLocker API (Setu / Cashfree) for instant 2-second Govt OTP KYC.
-3. **Result:** Employee gets the **"Verified Corporate Citizen"** badge, mapping them to their `company_id` and `building_id`.
 
 #### B. Public & Family Users (`public_signup_screen.dart`)
 1. **Primary Phone Auth:** SMS OTP via Supabase Auth + Fast2SMS/MSG91.

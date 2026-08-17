@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.16 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.17 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -21,6 +21,7 @@
 14. [Company & Enterprise Features (B2B SaaS Subscriptions, Monthly Coin Grants & ESG Engine)](#14-company--enterprise-features-b2b-saas-subscriptions-monthly-coin-grants--esg-engine)
 15. [In-App Chat & Communication System](#15-in-app-chat--communication-system)
 16. [Push Notification Engine & Multi-Role Notification Matrix](#16-push-notification-engine--multi-role-notification-matrix)
+17. [Admin Panel, Multi-Tier 2FA Security & Dynamic Remote Theme System](#17-admin-panel-multi-tier-2fa-security--dynamic-remote-theme-system)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -2120,3 +2121,135 @@ To ensure an intuitive, non-intrusive, and safety-focused user experience across
 
 #### 4. 📜 In-App Notification Center / Inbox Screen (`/notifications`):
 * A persistent activity tray with 4 filter tabs (`All`, `Rides`, `Wallet`, `Company`) allowing commuters to review historical pickup confirmations, coin credit receipts, and official HR announcements.
+
+---
+
+## 17. Admin Panel, Multi-Tier 2FA Security & Dynamic Remote Theme System
+
+**Primary Modules:** `lib/screens/admin/admin_dashboard_screen.dart`, `lib/screens/admin/admin_theme_editor_screen.dart`, `lib/services/admin_service.dart`, Supabase Auth MFA (`local_auth` & TOTP)
+
+Section 17 defines the administrative command architecture, including ₹0 cost dual access (Desktop Web Portal + Mobile Executive Mode), role-based two-factor authentication (2FA), immutable admin audit logging, core operational modules (Live Ride Map, Driver KYC Review, B2B Invoicing, Escrow Disputes), the Dynamic Remote Theme Engine, and the Central Real-Time SOS Emergency Command.
+
+---
+
+### 17.1 Dual Access Architecture (Desktop Web + Mobile Executive at ₹0 Cost)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| ACCESS FORM FACTOR                  | PLATFORM / TECHNOLOGY                | HOW IT WORKS & RUNNING COST          |
++-------------------------------------------------------------------------------------------------------------------+
+| 🖥️ 1. Desktop Web Admin Portal       | Flutter Web (`flutter build web`)   | • Hosted on Cloudflare Pages / Vercel|
+|    (`admin.corporatepooling.com`)  | Compiled from same Flutter codebase  |   for **₹0.00 / month (Free Tier)**! |
+|                                     |                                      | • Best for side-by-side KYC reviews, |
+|                                     |                                      |   city carpool maps & B2B ledgers.   |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 📱 2. Mobile Executive Mode         | Role-Gated Screen inside Mobile APK  | • Uses existing mobile app on phone  |
+|    (In-App Super Admin Tab)         | (`if (user.role == 'super_admin')`)  |   for **₹0.00 / month**.             |
+|                                     |                                      | • Instant 🚨 SOS sirens & 1-tap KYC  |
+|                                     |                                      |   document approvals on-the-go!      |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+### 17.2 Multi-Tier Two-Factor Authentication (2FA) Architecture
+
+To provide bank-grade security for administrative and enterprise access while maintaining zero friction for daily commuters:
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| USER ROLE                           | 2FA METHOD USED                      | OPERATIONAL RATIONALE       | RUNNING COST|
++-------------------------------------------------------------------------------------------------------------------+
+| 👑 1. Super Admin & Platform Staff  | 📱 **Google Authenticator (TOTP)**    | Maximum unhackable security | **₹0.00**   |
+|    (`super_admin`, `support_officer`) | (6-digit rotating app code)          | for master control. Zero SMS| (100% Free) |
+|-------------------------------------|--------------------------------------|-----------------------------|-------------|
+| 🏢 2. Company HR / Facility Managers| 📧 **Work Email 6-Digit Magic OTP**   | Verifies corporate identity | **₹0.00**   |
+|    (`role = 'company_manager'`)     | (Sent to verified corporate inbox)   | without personal phone SMS. | (100% Free) |
+|-------------------------------------|--------------------------------------|-----------------------------|-------------|
+| 🚗 3. Everyday Commuters            | 👆 **Phone Biometrics (Face/Touch ID)**| Daily commuters must open   | **₹0.00**   |
+|    (Drivers & Riders)               | + 90-Day Secure Persistent Session   | app in 1 sec without typing!| (100% Free) |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+### 17.3 Role-Based Access Control (RBAC) & Immutable Audit Logging
+
+```sql
+CREATE TYPE admin_role_enum AS ENUM ('super_admin', 'support_officer', 'finance_admin');
+
+CREATE TABLE public.admin_audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    admin_id UUID NOT NULL REFERENCES public.users(id),
+    action_type VARCHAR(50) NOT NULL, 
+    -- 'driver_approved', 'driver_rejected', 'escrow_force_settled', 'company_created', 'theme_updated', 'user_banned'
+    target_id UUID,
+    details JSONB DEFAULT '{}'::jsonb,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_admin_audit_logs_action ON public.admin_audit_logs(action_type, created_at DESC);
+```
+
+---
+
+### 17.4 Core Operational Modules
+
+```
++-------------------------------------------------------------------+
+|               👑 SUPER ADMIN MASTER COMMAND CONSOLE               |
++-------------------------------------------------------------------+
+|  1. 🗺️ LIVE CITY-WIDE COMMUTE MAP:                                 |
+|     Visual real-time map displaying all active in-progress rides, |
+|     pickup waypoints, and vehicle occupancy levels.               |
+|                                                                   |
+|  2. 🪪 DRIVER KYC VERIFICATION QUEUE:                             |
+|     Side-by-side high-res document inspector (DL, RC, Aadhaar).   |
+|     [ ✅ APPROVE DRIVER ]    [ ❌ REJECT (Select Reason) ]         |
+|     (Original user documents are immutable; zero admin editing).  |
+|                                                                   |
+|  3. 🏢 B2B COMPANY & COIN POOL MANAGER:                           |
+|     Onboard new employers, assign HR Managers, view headcount,    |
+|     and activate master coin pools via Razorpay or Bank UTR.      |
+|                                                                   |
+|  4. ⚖️ ESCROW DISPUTE & INTERVENTION CENTER:                       |
+|     [ ⚡ FORCE RELEASE ESCROW TO RIDER ] [ ⚡ FORCE SETTLE TO DRIVER] |
++-------------------------------------------------------------------+
+```
+
+---
+
+### 17.5 Dynamic Remote Theme & Home Screen Editor
+
+The platform includes a **Remote Theme Engine** that allows Super Admin to modify visual styling, festival campaigns, and promotional taglines across **all user mobile phones in real-time without requiring a Google Play Store or Apple App Store update**:
+
+```sql
+CREATE TABLE public.app_remote_config (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    wallpaper_url TEXT DEFAULT 'https://assets.corporatepooling.internal/default_bg.webp',
+    wallpaper_opacity NUMERIC(3, 2) DEFAULT 0.85,
+    glass_card_color VARCHAR(20) DEFAULT 'rgba(20,25,35,0.75)',
+    accent_color VARCHAR(10) DEFAULT '#FF6B00', -- Saffron / Green / Custom Accent
+    active_festival_banner_url TEXT, -- Diwali, New Year, Independence Day Campaigns
+    banner_action_route VARCHAR(50) DEFAULT '/offer_ride',
+    tagline_primary VARCHAR(150) DEFAULT 'Share the Ride, Multiply the Karma',
+    tagline_secondary VARCHAR(150) DEFAULT 'Join 10,000+ Corporate Colleagues Commuting Green',
+    is_active BOOLEAN DEFAULT TRUE,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+* **Realtime Propagation:** Flutter clients listen to Supabase Realtime changes on `app_remote_config` and instantly re-render the Home Screen theme dynamically!
+
+---
+
+### 17.6 Central Real-Time SOS Emergency Command
+
+When any commuter taps the **🚨 SOS Button** during an active trip:
+1. **Audible Persistent Siren:** Admin dashboard emits a continuous high-frequency alert.
+2. **Emergency Incident HUD:** Automatically pops up displaying:
+   * **Rider:** Name, Department, Emergency Contacts Alerted.
+   * **Driver:** Name, Vehicle Model, License Plate Number (`KA-01-MJ-5521`).
+   * **Live Breadcrumb GPS:** Live coordinates with real-time speed and heading.
+   * **1-Tap Dispatch:** Direct link to local Police Control Room (112) with pre-generated incident tokens.

@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.15 | August 2026 | Dedicated Admin Portal
+### Version 2.16 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -224,7 +224,30 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ---
 
-## 11. Security, Access Control & Audit Logging
+## 11. Super Admin 2FA Security, Access Control & Audit Logging
+*(Corresponds to Main SRS Section 17: Admin Panel, 2FA Authentication & Remote Theme System)*
+
+```
++-------------------------------------------------------------------+
+|       Super Admin Console: Security & Multi-Factor Auth (2FA)     |
++-------------------------------------------------------------------+
+|  Authentication & Access Policies:                                |
+|  - Super Admin 2FA Method:                     [ Google Authenticator TOTP ] |
+|  - Company HR 2FA Method:                      [ Work Email Magic OTP ]      |
+|  - Commuter Session Persistence:               [ 90  ] days       |
+|  - Admin Session Inactivity Timeout:           [ 15  ] minutes    |
+|                                                                   |
+|  Dual Access Form Factors:                                        |
+|  - [X] ENABLE_DESKTOP_WEB_PORTAL               (Cloudflare Pages ₹0) |
+|  - [X] ENABLE_MOBILE_EXECUTIVE_MODE            (In-App Admin Tab ₹0) |
+|                                                                   |
+|  Remote Dynamic Theme Controls:                                   |
+|  - [X] ENABLE_DYNAMIC_REMOTE_THEME_ENGINE                          |
+|  - [X] PROPAGATE_REALTIME_THEME_CHANGES                           |
+|                                                                   |
+|              [ ⚡ EDIT HOME THEME & WALLPAPER ]   [ SAVE CONFIG ]  |
++-------------------------------------------------------------------+
+```
 
 ### 11.1 Role-Based Access Control (RBAC)
 

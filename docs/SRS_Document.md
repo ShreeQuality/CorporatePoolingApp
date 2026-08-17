@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.10 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.11 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -15,6 +15,7 @@
 8. [Ride Request, Acceptance Flow, Wait Timers & Commute Calendar](#8-ride-request-acceptance-flow-wait-timers--commute-calendar)
 9. [Hardware-Agnostic 3-Level Boarding Verification & State Machine](#9-hardware-agnostic-3-level-boarding-verification--state-machine)
 10. [Ride Completion, Atomic Coin Transfer & ESG Engine](#10-ride-completion-atomic-coin-transfer--esg-engine)
+11. [Recurring Commute Engine — Full Logic Deep Dive](#11-recurring-commute-engine--full-logic-deep-dive)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -958,3 +959,204 @@ If a verified corporate employee completes a morning carpool between **6:00 AM �
   * `arrival_time`: `08:42 AM`
   * `transport_mode`: `'carpool'`
 * Enables HR Managers to view real-time morning presence on their dashboard without biometric card lines.
+
+
+---
+
+## 11. Recurring Commute Engine — Full Logic Deep Dive
+
+**Primary Modules:** `lib/services/recurring_commute_service.dart`, Supabase `pg_cron` Engine, `lib/screens/rider/rider_calendar_screen.dart`
+
+Section 11 defines the complete operational, financial, and lifecycle architecture for daily Monday-through-Friday recurring commutes for both Corporate Employees and Verified Public Users.
+
+---
+
+### 11.1 Universal Single-Row Recurring Master Architecture (`time_type = 'recurring'`)
+
+To eliminate database bloat, indexing degradation, and duplicate matching conflicts:
+* A recurring commute exists as **ONE single master record** in `public.rides`.
+* **Universal Access:** Open to both **Corporate Employees** and **Verified Public Commuters** (e.g. students, daily neighborhood commuters).
+* **Key Columns:**
+  * `time_type: 'recurring'`
+  * `recurring_days: INT[] DEFAULT '{1,2,3,4,5}'` (1 = Monday, 5 = Friday).
+  * `completion_dates: DATE[]` (Array tracking completed commute dates).
+  * `skip_dates: DATE[]` (Array tracking skipped WFH / leave dates).
+  * `valid_until: DATE` (Expiry of recurring schedule, e.g., 90 days out).
+
+---
+
+### 11.2 The 8:00 PM Nightly Auto-Pairing Cron Engine (`process_nightly_recurring_rides`)
+
+Commuters require certainty before sleeping without daily manual searching. Every evening at **8:00 PM IST**, Supabase `pg_cron` executes the automated recurring matcher:
+
+```sql
+-- Nightly 8:00 PM Recurring Commute Matcher & Micro-Escrow
+CREATE OR REPLACE FUNCTION public.process_nightly_recurring_rides()
+RETURNS VOID AS $$
+DECLARE
+    v_ride RECORD;
+    v_tomorrow_day INT := EXTRACT(ISODOW FROM (CURRENT_DATE + INTERVAL '1 day'));
+    v_tomorrow_date DATE := CURRENT_DATE + INTERVAL '1 day';
+    v_wallet RECORD;
+    v_max_overdraft NUMERIC(6,2);
+BEGIN
+    -- Fetch dynamic Super Admin Overdraft Limit (Default: 30.00 Coins)
+    SELECT COALESCE(setting_value::NUMERIC, 30.00) INTO v_max_overdraft 
+    FROM public.system_settings 
+    WHERE setting_key = 'MAX_RECURRING_OVERDRAFT_COINS';
+
+    FOR v_ride IN 
+        SELECT r.id, r.driver_id, r.time_type, r.recurring_days, r.skip_dates, 
+               req.id AS request_id, req.rider_id, req.coins_locked, u.full_name AS rider_name
+        FROM public.rides r
+        JOIN public.ride_requests req ON req.ride_id = r.id
+        JOIN public.users u ON u.id = req.rider_id
+        WHERE r.time_type = 'recurring'
+          AND v_tomorrow_day = ANY(r.recurring_days)
+          AND NOT (v_tomorrow_date = ANY(r.skip_dates))
+          AND req.status = 'accepted'
+    LOOP
+        -- 1. Check 3-Tier Wallet Waterfall (Corporate Grant -> Personal Earned -> Family Pool)
+        SELECT * INTO v_wallet FROM public.wallets WHERE user_id = v_ride.rider_id;
+
+        IF v_wallet.available_balance >= v_ride.coins_locked THEN
+            -- Balance Sufficient: Lock Daily Micro-Escrow
+            UPDATE public.wallets 
+            SET locked_balance = locked_balance + v_ride.coins_locked,
+                available_balance = available_balance - v_ride.coins_locked
+            WHERE user_id = v_ride.rider_id;
+
+            -- 8:05 PM Evening Push Confirmation
+            PERFORM net.http_post(
+                url := 'https://api.corporatepooling.internal/notify-recurring-confirmed',
+                body := jsonb_build_object('rider_id', v_ride.rider_id, 'driver_id', v_ride.driver_id, 'date', v_tomorrow_date)
+            );
+        ELSIF (v_wallet.available_balance + v_max_overdraft) >= v_ride.coins_locked THEN
+            -- Apply Super Admin Configured Emergency Overdraft Buffer (Section 11.3)
+            UPDATE public.wallets 
+            SET locked_balance = locked_balance + v_ride.coins_locked,
+                available_balance = available_balance - v_ride.coins_locked
+            WHERE user_id = v_ride.rider_id;
+
+            -- 8:05 PM Overdraft Confirmation & Notice
+            PERFORM net.http_post(
+                url := 'https://api.corporatepooling.internal/notify-recurring-overdraft-applied',
+                body := jsonb_build_object('rider_id', v_ride.rider_id, 'driver_id', v_ride.driver_id, 'date', v_tomorrow_date, 'new_balance', (v_wallet.available_balance - v_ride.coins_locked))
+            );
+        ELSE
+            -- Balance Beyond Overdraft Limit: Trigger 2-Hour Grace Period Alert (Section 11.3)
+            PERFORM net.http_post(
+                url := 'https://api.corporatepooling.internal/notify-recurring-low-balance',
+                body := jsonb_build_object('rider_id', v_ride.rider_id, 'request_id', v_ride.request_id, 'needed_coins', v_ride.coins_locked, 'current_balance', v_wallet.available_balance)
+            );
+        END IF;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+---
+
+### 11.3 Cashless Low-Balance Protocol & Emergency Overdraft Leeway
+
+Because Karma Coins **cannot be purchased directly with fiat cash or UPI** (to legally protect private white-plate vehicles from commercial taxi laws) and **peer-to-peer arbitrary transfers between colleagues are disallowed**, low balance situations are governed strictly by the following rules:
+
+```
++-------------------------------------------------------------------------------------------------------+
+| RIDE MODE         | OVERDRAFT ALLOWED? | MAX NEGATIVE BALANCE ALLOWED | REASON / LOGIC                |
++-------------------------------------------------------------------------------------------------------+
+| ⚡ NOW            | ❌ NO               | 0 Coins (Strict 0 Overdraft)  | Instant booking. Rider must   |
+| (Real-time Ride)  |                    | (Must have 100% fare upfront) | have full coins to request.   |
+|-------------------|--------------------|-------------------------------|-------------------------------|
+| 🕐 SCHEDULED       | ❌ NO               | 0 Coins (Strict 0 Overdraft)  | Planned one-off trip. Must    |
+| (One-time Future) |                    | (Must have 100% fare upfront) | have full balance upfront.    |
+|-------------------|--------------------|-------------------------------|-------------------------------|
+| 🔄 RECURRING      | ✅ YES (Emergency) | Up to -30 Coins (Default)     | Configurable by Super Admin.  |
+| (Mon–Fri Commute) |                    | (Editable: 0 to 100 Coins)    | Prevents 8:30 AM stranding.   |
++-------------------------------------------------------------------------------------------------------+
+```
+
+```
+[ 8:00 PM Nightly Cron Runs for Tomorrow's Commute ]
+                         │
+                         ▼
+[ 1. Check 3-Tier Wallet Waterfall ]
+  ├──► Check 1: Employer Corporate Monthly Grant Coins (Corporate only)
+  ├──► Check 2: Personal Earned Karma Balance (from Driving)
+  └──► Check 3: Linked Family Shared Wallet Pool
+                         │
+                         ▼ (If Total Balance < Ride Fare, e.g., Has 5 Coins, Needs 24 Coins)
+[ 2. Emergency Overdraft Check (Super Admin Configured Limit, Default: -30 Coins) ]
+  ├──► 🟢 If Deficit <= Max Overdraft:
+  │      • Wallet moves to negative balance (e.g. -19 Coins).
+  │      • Commute is 100% CONFIRMED for morning 8:30 AM!
+  │      • Anti-Abuse Lock: Rider CANNOT book a 2nd subsequent ride until restored >= 0.
+  │
+  └──► 🔴 If Deficit Exceeds Overdraft Limit:
+         • 8:00 PM Push Alert: "⚠️ Low Karma Coins: Needed: 24, Available: 5. 
+           Please switch to Family Wallet or skip tomorrow before 10:00 PM."
+         • 10:00 PM Driver Protection Cutoff: Tomorrow's seat is unlinked & reopened for colleagues.
+         • Future recurring days (Wed, Thu, Fri) remain intact on the calendar!
+```
+
+#### 👨‍👩‍👧 Family Wallet Exit Rule:
+* **The Rule:** The shared coin pool belongs to the **Primary Account Owner (Family Admin)**.
+* When a family member leaves or disconnects from the family group:
+  * **0 coins leave the family.**
+  * The departing member departs with only their personal standalone account (0 family coins).
+  * The pooled funds **remain 100% intact with the Primary Family Owner**.
+
+---
+
+### 11.4 Day-Wise "Skip Today" & Multi-Day Vacation Pause Mode
+
+```
++-------------------------------------------------------------------+
+|               🔄 TODAY'S RECURRING COMMUTE (8:30 AM)              |
++-------------------------------------------------------------------+
+|  Route: Home ➔ Manyata Tech Park                                  |
+|  Confirmed Passengers: 2 Colleagues (Rahul & Priya)               |
+|                                                                   |
+|  [ 🚀 START TODAY'S RIDE ]             [ ⚪ SKIP TODAY'S RIDE ]   |
+|                                        (If you are taking WFH or  |
+|                                         leave today)              |
++-------------------------------------------------------------------+
+```
+
+#### Skip & Vacation Mechanics:
+1. **1-Tap "Skip Today":** Tapping *"Skip Today"* in the morning appends today's date to `skip_dates[]`. Only today is skipped; tomorrow auto-resumes.
+2. **Multi-Day Vacation Pause Mode:**
+   * Commuters taking leave (e.g. *Aug 20 to Aug 27*) select start and end dates on the calendar and tap **"Pause Commute (Vacation)"**.
+   * System bulk-appends those dates to `skip_dates[]`, frees the driver's seats for temporary on-route co-riders, and auto-resumes on Aug 28 without manual setup.
+3. **Automated Backup Suggester:** Stranded riders instantly receive recommendations for alternative colleagues leaving at that exact time.
+
+---
+
+### 11.5 The 90-Day Array Auto-Pruning Rule (`pruneOldDates`)
+
+To prevent `completion_dates[]` and `skip_dates[]` arrays from growing without bound and degrading SQL performance over months of daily carpooling:
+* Any date older than **90 days** is automatically pruned whenever the arrays are updated:
+
+```sql
+-- Automated 90-Day Array Pruning
+UPDATE public.rides 
+SET completion_dates = ARRAY(
+        SELECT unnest(completion_dates) 
+        WHERE unnest >= CURRENT_DATE - INTERVAL '90 days'
+    ),
+    skip_dates = ARRAY(
+        SELECT unnest(skip_dates) 
+        WHERE unnest >= CURRENT_DATE - INTERVAL '90 days'
+    )
+WHERE id = p_ride_id;
+```
+
+* **Audit Integrity:** Lifetime ride records and financial ledger entries are permanently and immutably preserved in `public.ride_requests` and `public.coin_transactions`. The 90-day pruning applies **strictly to the live runtime cache array on active recurring rides**.
+
+---
+
+### 11.6 Next-Day Auto-Resume & Lifecycle Reset
+
+When the morning drop-off finishes:
+1. Today's date is appended to `completion_dates[]`.
+2. **Auto-Reset:** Master `ride_status` immediately resets back to `'posted'` for the next working day with zero manual setup.

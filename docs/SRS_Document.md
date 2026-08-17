@@ -1491,18 +1491,18 @@ CREATE INDEX idx_attendance_employee ON public.corporate_attendance(employee_id)
 
 **Primary Modules:** `lib/services/corporate_service.dart`, Supabase Corporate RPCs, `lib/screens/dashboard/manager_dashboard_screen.dart`, `lib/screens/corporate/corporate_schedule_screen.dart`
 
-Section 14 defines the B2B enterprise subscription architecture, employee headcount-dependent pricing tiers, 18% GST invoicing (SAC 9984), automated 1st-of-the-month coin grant distribution, the graceful fallback to normal user mode when a company skips recharge, the HR Manager portal, and the official SEBI BRSR Scope 3 ESG carbon reporting engine.
+Section 14 defines the B2B enterprise subscription architecture, employee headcount-dependent pricing tiers, the complete multi-channel payment processing system (Online Gateway + Corporate Bank Transfer), clean tax-exempt startup invoicing, automated 1st-of-the-month coin grants, graceful fallback to normal user mode when a company skips recharge, the HR Manager portal, and SEBI BRSR Scope 3 ESG carbon reporting.
 
 ---
 
-### 14.1 Headcount-Based B2B Subscription Tiers & 18% GST Invoicing (SAC 9984)
+### 14.1 Headcount-Based B2B Subscription Tiers & Payment Processing Architecture
 
 Our platform operates a high-margin **B2B Employer SaaS Model**:
-* Corporate employers (e.g. Infosys, TCS, Wipro) subscribe to monthly or annual packages strictly tied to **Employee Headcount Tiers**:
+* Corporate employers (e.g. Infosys, TCS, Wipro) subscribe to monthly packages tied directly to **Employee Headcount Tiers**:
 
 ```
 +-------------------------------------------------------------------------------------------------------------------+
-| SUBSCRIPTION PLAN       | EMPLOYEE HEADCOUNT TIER | MONTHLY FEE (EXCL. GST) | INCLUDED MONTHLY COIN POOL | PER-EMPLOYEE COIN QUOTA |
+| SUBSCRIPTION PLAN       | EMPLOYEE HEADCOUNT TIER | MONTHLY FLAT FEE        | INCLUDED MONTHLY COIN POOL | PER-EMPLOYEE COIN QUOTA |
 +-------------------------------------------------------------------------------------------------------------------+
 | 🌱 Starter Tier         | 1 to 50 Employees       | ₹4,999 / month          | Up to 20,000 Coins / month | 400 Coins / employee    |
 |-------------------------|-------------------------|-------------------------|----------------------------|-------------------------|
@@ -1514,13 +1514,67 @@ Our platform operates a high-margin **B2B Employer SaaS Model**:
 ```
 
 #### Required Monthly Pool Sizing Formula:
-$$\text{Required Monthly Pool Size} = \text{Total Active Verified Employees} \times \text{Monthly Quota Per Employee (e.g., 400 Coins)}$$
-
-* **Tax Compliance (SAC 9984):** Every corporate subscription and prepaid pool purchase automatically generates an official **18% GST B2B Tax Invoice** (SAC Code 9984: Software / IT SaaS Services) with automated Company GSTIN validation and downloadable PDF receipt.
+$\text{Required Monthly Pool Size} = \text{Total Active Verified Employees} \times \text{Monthly Quota Per Employee (e.g., 400 Coins)}$
 
 ---
 
-### 14.2 The 1st-of-the-Month Automated Employee Coin Grant Engine
+### 14.2 Multi-Channel B2B Payment Processing Workflow (Company ➔ Us)
+
+To support both instant online checkouts and large corporate enterprise procurement:
+
+```
+[ STEP 1: HR MANAGER SELECTS A PACKAGE IN PORTAL ]
+• Infosys HR selects "Growth Plan: 100 Employees (40,000 Coins) - ₹10,000 / month".
+                         │
+                         ▼
+[ STEP 2: COMPANY CHOOSES PAYMENT METHOD ]
+                         │
+        ┌────────────────┴────────────────────────┐
+        ▼ (Option A: Instant Online Gateway)       ▼ (Option B: Corporate Bank Transfer / NEFT)
+[ RAZORPAY / CASHFREE CHECKOUT ]          [ CORPORATE INVOICE GENERATION ]
+• Corporate Credit Card / UPI / NetBanking.• System generates digital invoice with our
+• Payment completes in 10 seconds.         Bank Account, IFSC, & UPI ID.
+• Webhook fires to `POST /api/payment`:   • Infosys Finance executes NEFT/RTGS transfer.
+  verifies HMAC signature & auto-activates.• Money arrives in our business bank account.
+                         │                                │
+                         │                                ▼
+                         │                 [ SUPER ADMIN 1-CLICK VERIFICATION ]
+                         │                 • Super Admin enters Bank UTR / Txn ID.
+                         │                 • Clicks: [ ⚡ ACTIVATE COIN POOL ].
+                         │                                │
+                         └────────────────────────────────┘
+                                          ▼
+[ STEP 3: INSTANT MASTER COIN POOL ACTIVATION ]
+• Database sets: `companies.total_coins_pool = 40,000`.
+• Automated payment receipt generated and emailed to HR.
+• On the 1st of next month, 400 coins are automatically airdropped to every employee!
+```
+
+#### Startup Clean & Tax-Exempt Invoicing:
+* As an early-stage startup under the statutory ₹20 Lakhs turnover threshold (Section 22 of CGST Act), all B2B invoices are issued cleanly as **Tax-Exempt Commercial Invoices** (Zero GST):
+
+```
++-------------------------------------------------------------------+
+|                     CORPORATEPOOLING B2B INVOICE                  |
++-------------------------------------------------------------------+
+|  Invoice No: INV-2026-0042        | Date: 17-Aug-2026             |
+|  Billed To: Infosys Limited       | Plan: Growth Tier (100 Seats) |
+|                                                                   |
+|  Item Description                           Qty       Amount      |
+|  ---------------------------------------------------------------  |
+|  Corporate Commute Software Subscription     1        ₹10,000.00  |
+|  (Includes 40,000 Master Karma Coin Pool)                         |
+|  ---------------------------------------------------------------  |
+|  GST (Exempt under Sec 22 of CGST Act):               ₹0.00       |
+|  TOTAL PAYABLE:                                       ₹10,000.00  |
+|                                                                   |
+|  Bank Details: HDFC Bank | A/C: 50200012345678 | IFSC: HDFC0001234 |
++-------------------------------------------------------------------+
+```
+
+---
+
+### 14.3 The 1st-of-the-Month Automated Employee Coin Grant Engine
 
 On the **1st day of every calendar month at 00:01 AM IST**, an automated Supabase database cron executes:
 
@@ -1571,7 +1625,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ---
 
-### 14.3 Unrecharged / Skipped Company Policy (Graceful Normal User Fallback)
+### 14.4 Unrecharged / Skipped Company Policy (Graceful Normal User Fallback)
 
 ```
 [ 1st of the Month: System Checks Company Coin Pool ]
@@ -1596,7 +1650,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ---
 
-### 14.4 Multi-Tenant Enterprise Database Schema
+### 14.5 Multi-Tenant Enterprise Database Schema
 
 ```sql
 CREATE TABLE public.companies (
@@ -1628,7 +1682,7 @@ CREATE TABLE public.corporate_invoices (
 
 ---
 
-### 14.5 HR & Facility Manager Portal (`ManagerDashboardScreen.dart`)
+### 14.6 HR & Facility Manager Portal (`ManagerDashboardScreen.dart`)
 
 ```
 +-------------------------------------------------------------------+
@@ -1650,7 +1704,7 @@ CREATE TABLE public.corporate_invoices (
 
 ---
 
-### 14.6 Official Scope 3 ESG Sustainability Engine & SEBI BRSR Compliance
+### 14.7 Official Scope 3 ESG Sustainability Engine & SEBI BRSR Compliance
 
 Under **SEBI BRSR (Business Responsibility and Sustainability Reporting)** mandates in India, top listed companies must disclose their Scope 3 greenhouse gas emissions.
 
@@ -1662,7 +1716,7 @@ $$\text{Equivalent Trees Planted} = \frac{\text{Monthly }\text{CO}_2\text{ Saved
 
 ---
 
-### 14.7 Enterprise Commute Schedule Setup (`CorporateScheduleScreen.dart`)
+### 14.8 Enterprise Commute Schedule Setup (`CorporateScheduleScreen.dart`)
 
 Employees configure their baseline commute preferences:
 * Working days of week (toggles for Mon–Sun, default: Mon–Fri).

@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.20 | August 2026 | Dedicated Admin Portal
+### Version 2.21 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -390,6 +390,13 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 |  - [X] ENABLE_DOUBLE_BLIND_REVIEW_LOCK         (Anti-Retaliation) |
 |  - [X] ENABLE_AUTOMATED_PROFANITY_FILTER                          |
 |                                                                   |
-|              [ ⚡ VIEW LIVE TELEMATICS AUDIT ]   [ SAVE CONFIG ]   |
+|  Trust Score & Badge Governance:                                  |
+|  - MIN_TRUST_SCORE_FOR_ELITE_BADGE:            [ 90    ] points   |
+|  - CRITICAL_TRUST_SCORE_LOCKOUT:               [ 50    ] points   |
+|  - DOUBLE_BLIND_EXPIRY_WINDOW:                 [ 24    ] hours    |
+|                                                                   |
+|  Review Moderation & Badge Tools:                                 |
+|  [ ⚡ DISMISS MALICIOUS 1-STAR REVIEW ]  [ ⚡ OVERRIDE TRUST SCORE ] |
+|  [ ⚡ MANUALLY AWARD / REVOKE BADGE ]   [ SAVE CONFIG ]            |
 +-------------------------------------------------------------------+
 ```

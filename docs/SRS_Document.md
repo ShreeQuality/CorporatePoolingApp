@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.23 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.24 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -2980,3 +2980,72 @@ CREATE TABLE public.telematics_violations (
 CREATE INDEX idx_ride_ratings_ratee ON public.ride_ratings(ratee_id, stars);
 CREATE INDEX idx_telematics_driver ON public.telematics_violations(driver_id, recorded_at DESC);
 ```
+
+---
+
+### 20.4 Safety Trust Score (0–100) & Corporate Badges System
+
+To establish a transparent, high-trust corporate carpooling culture, every commuter profile maintains a dynamically calculated **Safety Trust Score (0–100 Points)**:
+
+```
++-------------------------------------------------------------------------------------------------------+
+| 1. DYNAMIC TRUST FORMULA: Base score (50) + Verification Boosts + Commute Performance - Penalties     |
+| 2. 4 TRUST TIERS:         🟢 Elite (90-100), 🟡 Standard (70-89), 🟠 Low (50-69), 🔴 Critical (<50)  |
+| 3. 5 VISUAL BADGES:       Aadhaar Verified, Corporate Elite, Eco-Warrior, Smooth Driver, Punctual     |
++-------------------------------------------------------------------------------------------------------+
+```
+
+#### 1. Mathematical Trust Score Model:
+$$\text{Trust Score} = 50 + \text{Verifications} + \text{Performance} - \text{Safety Penalties}$$
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| COMPONENT                           | POINT VALUE                          | MAX CAP / LIFECYCLE                  |
++-------------------------------------------------------------------------------------------------------------------+
+| 📱 1. Phone OTP Verification        | +10 Points                           | Permanent                            |
+| 🏢 2. Corporate Work Email Verified | +20 Points                           | Active while employed at company     |
+| 🪪 3. Aadhaar / Govt ID Verified    | +20 Points                           | Permanent                            |
+| ⭐ 4. 5-Star Reviews Exchanged       | +1 Point per 5-Star Review           | Max +15 Points                       |
+| 🚗 5. High Telematics Smoothness    | +5 Points per 10 Smooth Trips (≥90%) | Max +15 Points                       |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| ⏱️ 6. Late Cancellation (<15 mins)  | -5 Points per late cancel            | 30-day decay window                  |
+| 🛑 7. Telematics Rash Driving Flag  | -5 Points per harsh event            | 30-day decay window                  |
+| ⚠️ 8. Low Rating (< 3 Stars)        | -10 Points per verified complaint    | 30-day decay window                  |
+| 🚨 9. Verified SOS Fault Violation  | -50 Points                           | Immediate Account Suspension         |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 2. The 4 Dynamic Trust Tiers:
+* 🟢 **Elite Trust (90 – 100 Points):** Displays a glowing **Gold Shield** on profile card; receives a **+25% Match Priority Boost** in the 8:00 PM matching algorithm.
+* 🟡 **Standard Trust (70 – 89 Points):** Regular verified corporate commuter.
+* 🟠 **Low Trust (50 – 69 Points):** Yellow warning banner on profile; algorithm matching priority reduced by 20%.
+* 🔴 **Critical Safety Risk (< 50 Points):** Account temporarily locked pending manual Super Admin KYC review.
+
+#### 3. Visual Commuter Badges:
+* `[ 🛡️ Aadhaar Verified ✅ ]`: Awarded on completing government document check.
+* `[ 🏢 Corporate Elite ]`: Awarded on verifying corporate domain (`@infosys.com`).
+* `[ 🌿 Eco-Warrior ]`: Awarded on preventing $> 500\text{ kg CO}_2$ through carpooling.
+* `[ 🚗 Smooth Master Driver ]`: Awarded on completing 50+ commutes with $\ge 90\%$ telematics smoothness.
+* `[ ⏱️ Punctuality Star ]`: Awarded on maintaining $> 95\%$ on-time gate arrival rate.
+
+---
+
+### 20.5 Anti-Retaliation "Double-Blind" Review Shield & Malicious Review Filter
+
+To eliminate retaliatory revenge 1-star reviews between co-commuters:
+
+```
+[ Commute Drop-Off Verified ]
+              │
+              ├──► 1. Rider Submits Review (⭐ 5.0) ──► 🔒 LOCKED IN DATABASE (Hidden from Driver)
+              │
+              └──► 2. Driver Submits Review (⭐ 5.0) ──► 🔒 LOCKED IN DATABASE (Hidden from Rider)
+                                       │
+                                       ▼
+[ 🔓 BOTH REVIEWS UNLOCK SIMULTANEOUSLY & BECOME PUBLIC! ]
+```
+
+* **1. Double-Blind Lock Protocol:** Ratings and feedback comments remain strictly private and encrypted in the database until **BOTH the driver and rider submit their ratings** (or **24 hours elapse**).
+* **2. Automatic 24-Hour Expiry:** If one party neglects to submit a review within 24 hours, the submitted review automatically unlocks and posts publicly.
+* **3. Malicious Review Anomaly Detection:** If a user awards 1-star ratings to $> 80\%$ of their commute partners, the algorithm flags their account for **"Review Sabotage Anomaly"**.
+* **4. Super Admin Review Intervention:** Super Admin console provides a 1-click **`[ ⚡ Dismiss Malicious Review ]`** tool to remove fraudulent reviews and restore the victim's rating!

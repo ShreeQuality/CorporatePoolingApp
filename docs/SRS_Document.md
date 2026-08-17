@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.27 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.28 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -1556,26 +1556,42 @@ Section 14 defines the B2B enterprise subscription architecture, employee headco
 
 ---
 
-### 14.1 Headcount-Based B2B Subscription Tiers & Payment Processing Architecture
+### 14.1 Launch Stage ₹0 Free Trial, Dynamic Super Admin Pricing & Dual Mobile/Web HR Access
 
-Our platform operates a high-margin **B2B Employer SaaS Model**:
-* Corporate employers (e.g. Infosys, TCS, Wipro) subscribe to monthly packages tied directly to **Employee Headcount Tiers**:
+To maximize corporate adoption during initial rollout, our platform operates a **Zero-Upfront ₹0 Launch Model with Dynamic Super Admin Governance**:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1. 🎁 ₹0 LAUNCH FREE TRIAL:     Every company gets an initial **90-Day 100% Free Trial** at launch!   │
+│ 2. 🎛️ DYNAMIC ADMIN PRICING:   All plans, seat quotas, fees & trial days are controlled by Super Admin │
+│ 3. 📱 DUAL ACCESS FOR HR:       Employers log in via **Desktop Web Portal AND Mobile App**!           │
+│ 4. 🪙 MONTHLY COIN AIRDROPS:    System airdrops monthly commute coins directly to verified staff       │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 1. Zero-Upfront ₹0 Launch & 90-Day Free Trial:
+* At initial launch stage, the platform charges **₹0 upfront to new employers**.
+* Every registering company immediately activates a **90-Day Free Trial** with full access to the HR Portal, employee verification queue, and Scope 3 ESG reporting.
+* **Super Admin Dynamic Control:** The trial duration (default: 90 days) is **100% dynamically configured and extendable by the Super Admin** in the central console.
+
+#### 2. Dynamic Subscription Tiers (Managed 100% by Super Admin):
+All subscription plans, pricing amounts, headcount limits, and included coin pools are **dynamically defined and updated by the Super Admin team** via `public.subscription_plans` without hardcoded limits:
 
 ```
 +-------------------------------------------------------------------------------------------------------------------+
-| SUBSCRIPTION PLAN       | EMPLOYEE HEADCOUNT TIER | MONTHLY FLAT FEE        | INCLUDED MONTHLY COIN POOL | PER-EMPLOYEE COIN QUOTA |
+| DYNAMIC PLAN NAME       | HEADCOUNT TIER (CONFIGURABLE) | PRICING (SET BY SUPER ADMIN) | INCLUDED COIN POOL / EMPLOYEE |
 +-------------------------------------------------------------------------------------------------------------------+
-| 🌱 Starter Tier         | 1 to 50 Employees       | ₹4,999 / month          | Up to 20,000 Coins / month | 400 Coins / employee    |
-|-------------------------|-------------------------|-------------------------|----------------------------|-------------------------|
-| 🌿 Growth Tier          | 51 to 250 Employees     | ₹19,999 / month         | Up to 100,000 Coins / month| 400 Coins / employee    |
-|-------------------------|-------------------------|-------------------------|----------------------------|-------------------------|
-| 🌳 Enterprise Tier      | 251 to 1,000+ Employees | Custom Contract         | Dynamic Sizing             | 400–600 Coins (Custom)  |
-|                         |                         | (₹89 / seat / month)    | (Headcount × Quota)        | (Configured by HR)      |
+| 🎁 Launch Free Trial    | Up to 500 Employees           | ₹0.00 (90 Days Free Trial)   | Platform Welcome Grants       |
+| 🌱 Starter Tier         | 1 to 50 Employees             | Configured by Super Admin    | Dynamic Coin Sizing           |
+| 🌿 Growth Tier          | 51 to 250 Employees           | Configured by Super Admin    | Dynamic Coin Sizing           |
+| 🌳 Enterprise Tier      | 251 to 1,000+ Employees       | Custom Super Admin Contract  | Configured by HR & Admin      |
 +-------------------------------------------------------------------------------------------------------------------+
 ```
 
-#### Required Monthly Pool Sizing Formula:
-$\text{Required Monthly Pool Size} = \text{Total Active Verified Employees} \times \text{Monthly Quota Per Employee (e.g., 400 Coins)}$
+#### 3. Dual Form Factor for Employers (Desktop Web + Mobile App):
+Company HR Managers and Facilities Leads have full access across two form factors at ₹0 extra cost:
+* **💻 Desktop Web Portal (`portal.corporatepooling.com`):** Full-screen dashboard for bulk employee approvals, HRMS CSV uploads, and annual ESG PDF exports.
+* **📱 Mobile App Executive Mode (`manager_dashboard_screen.dart`):** On-the-go mobile access inside the Flutter app allowing HR to approve pending employee join requests and view live commuter presence in 1 tap from their smartphone!
 
 ---
 

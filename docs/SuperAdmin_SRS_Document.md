@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.13 | August 2026 | Dedicated Admin Portal
+### Version 2.14 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -201,9 +201,32 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 
 ---
 
-## 10. Security, Access Control & Audit Logging
+## 10. Push Notification & Alert Engine Governance
+*(Corresponds to Main SRS Section 16: Multi-Role Push Notifications & FCM Engine)*
 
-### 10.1 Role-Based Access Control (RBAC)
+```
++-------------------------------------------------------------------+
+|       Super Admin Console: Push Notification & Dispatch Engine    |
++-------------------------------------------------------------------+
+|  FCM Dispatch & Channel Controls:                                 |
+|  - [X] ENABLE_HIGH_PRIORITY_URGENT_CHANNELS        (Sound & Vibrate)|
+|  - [X] ENABLE_AUTOMATED_DEEP_LINKING               (1-Tap Routing)  |
+|  - FCM_TOKEN_EXPIRY_DAYS:                          [ 60  ] days     |
+|  - [X] ENABLE_SUPER_ADMIN_SOS_SIREN_BROADCAST      (Emergency Alert)|
+|                                                                   |
+|  Dispatch Statistics:                                             |
+|  - Daily Push Dispatches:                          [ 18,420 ] msgs  |
+|  - Push Delivery Success Rate:                     [ 99.8%  ]       |
+|                                                                   |
+|              [ ⚡ BROADCAST SYSTEM-WIDE ALERT ]   [ SAVE CONFIG ]   |
++-------------------------------------------------------------------+
+```
+
+---
+
+## 11. Security, Access Control & Audit Logging
+
+### 11.1 Role-Based Access Control (RBAC)
 
 | Admin Role | Permissions & Scope |
 |---|---|
@@ -211,6 +234,6 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 | **`support_officer`** | Dispute resolution, manual KYC review, escrow unlock tool, SOS emergency monitor. |
 | **`finance_admin`** | Corporate invoice generation, Karma Coin minting/burning audits, fuel voucher reconciliation. |
 
-### 10.2 Audit Logging
+### 11.2 Audit Logging
 - Mandatory Multi-Factor Authentication (MFA / TOTP) on all admin accounts.
 - Granular Audit Logging: Every parameter change, user ban, or escrow release is immutably logged in `admin_audit_logs`.

@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.15 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.16 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -20,6 +20,7 @@
 13. [Presence & Soft Attendance System](#13-presence--soft-attendance-system)
 14. [Company & Enterprise Features (B2B SaaS Subscriptions, Monthly Coin Grants & ESG Engine)](#14-company--enterprise-features-b2b-saas-subscriptions-monthly-coin-grants--esg-engine)
 15. [In-App Chat & Communication System](#15-in-app-chat--communication-system)
+16. [Push Notification Engine & Multi-Role Notification Matrix](#16-push-notification-engine--multi-role-notification-matrix)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -1892,3 +1893,169 @@ CREATE INDEX idx_chat_room_members_user ON public.chat_room_members(user_id);
 * **Background Delivery:** If the app is minimized or phone locked, Firebase Cloud Messaging (FCM) sounds a high-priority sound chime:
   > *"💬 Rahul S. (Driver): On my way, reaching Gate 2 in 2 mins."*
 * **1-Tap Deep Link:** Tapping the notification opens the Flutter app and routes directly into the specific active chat room.
+
+---
+
+## 16. Push Notification Engine & Multi-Role Notification Matrix
+
+**Primary Modules:** `lib/services/notification_service.dart`, Firebase Cloud Messaging (`firebase_messaging`), Flutter Local Notifications (`flutter_local_notifications`), Supabase Edge Functions
+
+Section 16 defines the push notification delivery pipeline, operating via a hybrid architecture where Supabase database events trigger Google Firebase Cloud Messaging (FCM) at ₹0 cost to ring locked Android and iOS devices, complete with priority sound channels, FCM token lifecycle management, direct deep-linking, and a multi-role notification matrix covering Riders, Drivers, Employers/HR, and Super Admins.
+
+---
+
+### 16.1 Hybrid Architecture (Supabase Engine ➔ Firebase FCM Gateway)
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🗄️ SUPABASE DATABASE & BACKEND (Master Database & Business Logic)                                      │
+│ • Database triggers (e.g. Driver Arrival, Request Accepted, 8:00 PM Nightly Cron, Instant Drop Credit).│
+│ • Dispatches push payload via Supabase Edge Function to Google FCM API (100% Free / ₹0).             │
+└──────────────────────────────────────────────────┬────────────────────────────────────────────────────┘
+                                                   │
+                                                   ▼ (HTTPS Payload with Target Device Token)
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🔔 GOOGLE FIREBASE CLOUD MESSAGING (FCM) — The Free Mobile Delivery Pipeline (₹0)                    │
+│ • Encrypted push packet delivered directly through Android Google Play Services and Apple APNs.       │
+│ • Wakes up mobile OS when screen is locked or app is closed in user's pocket.                         │
+└──────────────────────────────────────────────────┬────────────────────────────────────────────────────┘
+                                                   │
+                                                   ▼
+                     [ 📱 User's Phone Sounds High-Priority Commute Chime & Vibrates! ]
+```
+
+---
+
+### 16.2 Complete Multi-Role Notification Event Matrix
+
+#### 1. 👤 Rider Notifications (Public Commuters & Corporate Employees):
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| EVENT TRIGGER                        | PRIORITY | PUSH NOTIFICATION MESSAGE TEXT & SOUND CHIME        | DEEP-LINK TARGET    |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. Request Accepted by Driver        | 🟢 HIGH   | "🎉 Rahul accepted your request! Pickup at 8:30 AM" | Live Ride Cockpit   |
+| 2. Request Rejected / Expired        | 🟡 NORMAL | "⚠️ Driver was full. Tap to find alternative rides" | Search Results      |
+| 3. Driver Started Trip (En Route)    | 🟢 HIGH   | "🚗 Rahul has started the ride (ETA: 10 mins away)" | Live GPS Map        |
+| 4. Driver Arrived at Pickup (50m)    | 🔴 URGENT | "📍 Driver is at your gate! Boarding PIN: 4821 ⏱️"   | Boarding PIN Card   |
+| 5. Drop-Off Completed & Receipt      | 🟢 HIGH   | "✅ Arrived! 24 Coins transferred. 1.8 kg CO2 saved 🌱"| Rating & Receipt    |
+| 6. 8:00 PM Nightly Recurring Confirm | 🟢 HIGH   | "🌙 Tomorrow's 8:30 AM ride confirmed (24 coins locked)"| Commute Calendar   |
+| 7. 8:00 PM Low-Balance Nudge (Grace) | 🔴 URGENT | "⚠️ Low Coins: Tomorrow needs 24. Tap to switch wallet"| Wallet Screen       |
+| 8. New Chat Message / Masked Call    | 🔴 URGENT | "💬 Rahul (Driver): Standing near Gate 2."          | Ride Chat Screen    |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 2. 🚗 Driver Notifications (Public Commuters & Corporate Employees):
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| EVENT TRIGGER                        | PRIORITY | PUSH NOTIFICATION MESSAGE TEXT & SOUND CHIME        | DEEP-LINK TARGET    |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. New Ride Request Received         | 🔴 URGENT | "🔔 Priya wants to join (Manyata). Detour: +2 mins"  | Request Accept Card |
+| 2. Rider Cancelled Request           | 🟡 NORMAL | "ℹ️ Priya cancelled her request for tomorrow."      | Ride Overview       |
+| 3. Rider Boarded Successfully        | 🟢 HIGH   | "✅ Priya boarded! Carpool Occupancy: 2/3 Seats."   | Driver Cockpit HUD  |
+| 4. Instant Drop-Off Coin Payout      | 🟢 HIGH   | "💰 +24 Karma Coins credited to your wallet!"       | Wallet Ledger       |
+| 5. 8:00 PM Nightly Partner Summary   | 🟢 HIGH   | "🌙 Tomorrow's ride has 2 confirmed colleagues."    | Driver Calendar     |
+| 6. Rider Skipped Today (WFH / Leave) | 🟡 NORMAL | "⚪ Priya skipped today. Your seat reopened."       | Seat Roster         |
+| 7. Driver KYC Verification Approved  | 🟢 HIGH   | "🎉 Vehicle KA01MJ5521 Approved! You can offer rides"| Post Ride Screen    |
+| 8. Driver KYC Rejected (Blurry Photo)| 🔴 URGENT | "⚠️ DL Photo Blurry: Tap here to re-take photo."    | Re-Upload KYC Screen|
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 3. 🏢 Employer & HR Manager Notifications (B2B SaaS Portal):
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| EVENT TRIGGER                        | PRIORITY | NOTIFICATION MESSAGE & DELIVERY CHANNEL             | TARGET SCREEN       |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. Low Coin Pool Alert (T-24h)       | 🔴 URGENT | "⚠️ Infosys Pool is at 15%. Recharge before 1st."   | HR Billing Screen   |
+| 2. Monthly Airdrop Execution (1st)   | 🟢 HIGH   | "✅ Grants Dispatched: 400 coins sent to 1,420 emp" | HR Employee Roster  |
+| 3. New Employee Domain Registration  | 🟡 NORMAL | "👤 12 new @infosys.com employees joined today."    | HR Commuter Roster  |
+| 4. Monthly SEBI BRSR ESG Report Ready| 🟢 HIGH   | "🌿 Monthly ESG Audit Ready: 14.2 Tons CO2 Saved."  | HR ESG Export       |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 4. 🛡️ Super Admin Notifications (Platform Governance & Emergency Response):
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| EVENT TRIGGER                        | PRIORITY | PUSH / SYSTEM ALERT MESSAGE (SIREN / BANNER)        | ADMIN ACTION SCREEN |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. 🚨 REAL-TIME SOS EMERGENCY        | 🚨 CRITICAL| "🚨 SOS ALERT: Priya triggered SOS on Ride #RD-8842| Live SOS Incident   |
+|                                      |          | near Silk Board! Driver: Rahul (KA01MJ5521)"        | Map & Dispatch Link |
+|--------------------------------------|----------|-----------------------------------------------------|---------------------|
+| 2. Pending Driver KYC Queue Alert    | 🟡 NORMAL | "📄 8 new drivers submitted DL & RC for review."    | Driver Review Queue |
+| 3. B2B Subscription Payment Received | 🟢 HIGH   | "💵 Infosys paid ₹19,999 (Growth Plan) via Gateway" | Financial Invoices  |
+| 4. Stuck Escrow Auto-Recovery Notice | 🟡 NORMAL | "🛡️ 3 orphaned rides > 4h auto-refunded to riders."| Escrow Audit Ledger |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+### 16.3 Custom Notification Channels & Sound Priority
+
+To prevent critical commute alerts from being missed or muted:
+
+```dart
+// lib/services/notification_service.dart
+const AndroidNotificationChannel commuteUrgentChannel = AndroidNotificationChannel(
+  'commute_urgent',
+  'Urgent Commute Alerts',
+  description: 'High-priority chimes for Driver Arrival, Boarding PINs, and SOS emergencies.',
+  importance: Importance.max,
+  playSound: true,
+  enableVibration: true,
+);
+
+const AndroidNotificationChannel commuteChatChannel = AndroidNotificationChannel(
+  'commute_chat',
+  'Chat & Messaging',
+  description: 'Subtle notification sound for new messages and quick chips.',
+  importance: Importance.high,
+  playSound: true,
+);
+
+const AndroidNotificationChannel commuteGeneralChannel = AndroidNotificationChannel(
+  'commute_general',
+  'General Reminders',
+  description: 'Standard notifications for 8:00 PM nightly confirmations and monthly coin grants.',
+  importance: Importance.defaultImportance,
+);
+```
+
+---
+
+### 16.4 FCM Device Token Lifecycle & Secure Database Storage
+
+```
+[ App Launch / Login ] ──► FirebaseMessaging.instance.getToken()
+                             │
+                             ▼
+[ Auto-Saved to public.users.fcm_token in Supabase PostgreSQL ]
+  • On Token Refresh: FirebaseMessaging.instance.onTokenRefresh updates DB immediately.
+  • On User Logout: UPDATE public.users SET fcm_token = NULL WHERE id = auth.uid();
+    (Guarantees zero notification leakage across shared mobile devices).
+```
+
+---
+
+### 16.5 Direct Deep-Linking Routing Architecture
+
+Every push notification sent by our backend includes structured JSON data payload:
+
+```json
+{
+  "notification": {
+    "title": "📍 Driver Arrived at Pickup!",
+    "body": "Rahul is waiting at Gate 2. Boarding PIN: 4821"
+  },
+  "data": {
+    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    "route": "/live_cockpit",
+    "ride_id": "b47c8a12-8821-4f10-911a-7821948123aa",
+    "screen_type": "boarding_pin"
+  }
+}
+```
+
+* **1-Tap Routing:** When the user taps the notification banner on their locked phone screen, the Flutter app launches and immediately routes directly into the target screen (`/live_cockpit`, `/chat`, `/wallet`, or `/admin_sos`) with zero manual menu navigation!

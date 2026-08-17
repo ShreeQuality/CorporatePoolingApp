@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.19 | August 2026 | Dedicated Admin Portal
+### Version 2.20 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -363,4 +363,33 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 |    |                                |                                             | • Live GPS Incident Telemetry.   |
 |    |                                |                                             | • 1-Tap Police 112 Dispatch Link.|
 +-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## 14. Ratings, Compliments & Telematics Safety Governance
+*(Corresponds to Main SRS Section 20: Ratings, Compliment Chips & Mobile Telematics Engine)*
+
+```
++-------------------------------------------------------------------+
+|       Super Admin Console: Telematics & Rating Governance         |
++-------------------------------------------------------------------+
+|  Mobile Telematics Sensor Thresholds:                             |
+|  - HARSH_BRAKING_G_FORCE_THRESHOLD:            [ -0.30 ] g        |
+|  - SWIFT_SWERVING_YAW_THRESHOLD:               [ 25.0  ] deg/sec  |
+|  - OVER_SPEEDING_CORRIDOR_BUFFER:              [ 15.0  ] km/h     |
+|  - BUTTERWORTH_FILTER_CUTOFF:                  [ 2.0   ] Hz       |
+|                                                                   |
+|  Smooth Driver Rewards & Penalties:                               |
+|  - MIN_SMOOTHNESS_SCORE_FOR_BONUS:             [ 90%   ]          |
+|  - SMOOTH_COMMUTE_BONUS_COINS:                 [ 2.0   ] Coins    |
+|  - RASH_DRIVING_DEMOTION_THRESHOLD:            [ 70%   ] avg/5ride|
+|                                                                   |
+|  Review & Anti-Fraud Policies:                                    |
+|  - AUTO_FLAG_LOW_STAR_REVIEWS:                 [ <= 2  ] stars    |
+|  - [X] ENABLE_DOUBLE_BLIND_REVIEW_LOCK         (Anti-Retaliation) |
+|  - [X] ENABLE_AUTOMATED_PROFANITY_FILTER                          |
+|                                                                   |
+|              [ ⚡ VIEW LIVE TELEMATICS AUDIT ]   [ SAVE CONFIG ]   |
++-------------------------------------------------------------------+
 ```

@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.22 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.23 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -24,6 +24,7 @@
 17. [Admin Panel, Multi-Tier 2FA Security & Dynamic Remote Theme System](#17-admin-panel-multi-tier-2fa-security--dynamic-remote-theme-system)
 18. [Complete UI Screen Catalogue & Component Inventory (The 37 Application Flows)](#18-complete-ui-screen-catalogue--component-inventory-the-37-application-flows)
 19. ["My Rides" Screen, Commute History & Active Booking Tabs](#19-my-rides-screen-commute-history--active-booking-tabs)
+20. [Ratings, Compliments, Badges & Automated Telematics Rash Driving Engine](#20-ratings-compliments-badges--automated-telematics-rash-driving-engine)
 
 *(Note: The Super Admin Application specification is maintained in a separate document: `SuperAdmin_SRS_Document.md`).*
 
@@ -2871,3 +2872,111 @@ LEFT JOIN public.ride_requests req ON r.id = req.ride_id;
 ```
 
 * **Sub-20ms Realtime Tab Sync:** The Flutter app subscribes to `supabase.channel('my_rides:' + auth.uid())`. When a driver accepts a request or begins a trip, the corresponding tab badges (`🔴 1 Active`, `🟡 2 Upcoming`) update dynamically across the screen in real-time!
+
+---
+
+## 20. Ratings, Compliments, Badges & Automated Telematics Rash Driving Engine
+
+**Primary Modules:** `lib/screens/rider/receipt_rating_screen.dart`, `lib/screens/driver/ride_summary_screen.dart`, `lib/services/telematics_service.dart`, Flutter Sensors Plus (`sensors_plus`), Geolocator (`geolocator`)
+
+Section 20 defines the commuter civility, trust evaluation, and zero-hardware smartphone telematics safety architecture, covering mutual 5-star reviews, 1-tap positive compliment chips, automated accelerometer/gyroscope rash driving detection, and dynamic Super Admin telematics governance.
+
+---
+
+### 20.1 Mutual 5-Star Rating Architecture & Positive Compliment Chips
+
+Upon verified trip completion (Section 10), a sleek modal review card opens simultaneously on both Rider and Driver screens:
+
+```
++-------------------------------------------------------------------------------------------------------+
+| 1. TRIGGER TIMING:       Appears instantly upon Drop-Off Verification as a sleek modal card           |
+| 2. MUTUAL REVIEW:        Rider rates Driver & Driver rates Rider (Both ways!)                         |
+| 3. 1-TAP CHIPS:          Zero typing required — instant 1-tap compliment or feedback chips            |
+| 4. CIVILITY INCENTIVE:   High ratings boost matching priority and unlock Karma Badges                 |
++-------------------------------------------------------------------------------------------------------+
+```
+
+#### 1. 📱 Rider Reviewing Driver (5-Star & Positive Compliment Chips):
+* **Rating Stars:** 1 to 5 Stars with gold fill animation.
+* **Positive 5-Star Chips (Tap to Highlight):**
+  * `[ 🏆 Super Punctual ]`
+  * `[ 🚗 Smooth & Safe Driving ]`
+  * `[ 🌟 Clean & Fresh Car ]`
+  * `[ 💬 Pleasant Conversation ]`
+  * `[ ❄️ Perfect AC & Music ]`
+  * `[ 🛡️ Felt 100% Safe ]`
+* **Constructive Low-Rating Chips (Triggered if $\le 3$ Stars):**
+  * `[ ⏱️ Late Arrival (>10m delay) ]`
+  * `[ 📱 Distracted Driving / On Phone ]`
+  * `[ 🚗 Rash Speeding / Sudden Brakes ]`
+  * `[ ❄️ AC Not Turned On / Unclean Car ]`
+  * `[ 🚫 Unprofessional / Rude Demeanor ]`
+
+#### 2. 📱 Driver Reviewing Rider:
+* **Positive Compliments:** `[ ⏱️ At Pickup Gate on Time ]`, `[ 🤝 Polite & Respectful ]`, `[ 🚪 Careful with Car Doors ]`, `[ 🌟 Great Co-Commuter ]`.
+* **Constructive Issues ($\le 3$ Stars):** `[ ⏱️ Made Driver Wait (>5m at gate) ]`, `[ 🍔 Eating / Messy in Car ]`, `[ 🚫 Slammed Door / Rude ]`, `[ 📍 Asked for Off-Route Drop ]`.
+
+---
+
+### 20.2 Automated Mobile Telematics & Rash Driving Engine (Zero Extra Hardware!)
+
+The platform monitors driving safety using the driver's smartphone IMU sensors (Accelerometer + Gyroscope + GPS) at **₹0 extra hardware cost**:
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1. 💰 ZERO HARDWARE COST: Uses the driver's phone's built-in sensors (Accelerometer + Gyroscope + GPS)│
+│ 2. 🛑 HARSH BRAKING:     Detects dangerous emergency brake slams (G-Force < -0.30g)                   │
+│ 3. 🔄 SWIFT SWERVING:    Detects erratic zig-zag lane cuts (Gyro Yaw Rate > 25°/sec)                  │
+│ 4. 🚀 OVER-SPEEDING:     Flags driving > 15 km/h above corridor speed limits                          │
+│ 5. 🏆 SMOOTHNESS SCORE:  Automated 0–100% Trip Score awarding bonus Karma Points for safe drivers!    │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 1. Sensor Trigger Thresholds & Mathematical Models:
+* **🛑 Harsh Braking Event:** Forward longitudinal deceleration $\mathbf{a_{\text{long}} < -0.30\text{g}}$ ($> 2.94\text{ m/s}^2$ in $< 1\text{ second}$). Detects panic braking due to tailgating or phone distraction.
+* **🔄 Swift Swerving Event:** Gyroscope Z-axis rotational yaw rate $\mathbf{\omega_{\text{yaw}} > 25.0^\circ/\text{second}}$ combined with lateral acceleration $> 0.25\text{g}$. Detects aggressive zig-zag highway lane cutting.
+* **🚀 Over-Speeding Event:** Sustained GPS velocity $\mathbf{v_{\text{gps}} > \text{SpeedLimit} + 15\text{ km/h}}$ for $> 10\text{ seconds}$.
+* **🛡️ Pothole & Speed-Bump Defense Filter:** Uses a digital 2nd-order Butterworth low-pass filter (Cutoff: $2.0\text{ Hz}$) to completely ignore physical road bumps, potholes, or dropping the phone inside the car.
+
+#### 2. Automated 0–100% Trip Smoothness Scorecard:
+Every commute starts with a default score of **100% Smoothness**:
+
+$$\text{Trip Smoothness} = 100 - (5 \times \text{HarshBrakes}) - (5 \times \text{Swerves}) - (10 \times \text{SpeedingEvents})$$
+
+* **🟢 Score $\ge 90\%$ (Safe & Smooth Commute):** Driver earns a **"Smooth Commute Bonus" (+2.0 Bonus Karma Coins / Green Points)** and displays the **"Verified Smooth Driver" Gold Badge**.
+* **🟡 Score $70\% - 89\%$ (Normal Commute):** Standard completion with regular fare payout.
+* **🔴 Score $< 70\%$ (Rash Driving Alert):** Triggers private in-app safety coaching. If average score remains $< 70\%$ over 5 consecutive commutes, the driver's algorithm matching priority is automatically downgraded.
+
+---
+
+### 20.3 PostgreSQL Schemas: `public.ride_ratings` & `public.telematics_violations`
+
+```sql
+CREATE TABLE public.ride_ratings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ride_id UUID NOT NULL REFERENCES public.rides(id) ON DELETE CASCADE,
+    rater_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    ratee_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    is_driver_rating BOOLEAN NOT NULL, -- TRUE if rider reviewing driver, FALSE if driver reviewing rider
+    stars INT NOT NULL CHECK (stars >= 1 AND stars <= 5),
+    compliment_chips TEXT[] DEFAULT '{}'::text[],
+    feedback_text VARCHAR(250),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(ride_id, rater_id, ratee_id)
+);
+
+CREATE TABLE public.telematics_violations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ride_id UUID NOT NULL REFERENCES public.rides(id) ON DELETE CASCADE,
+    driver_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    violation_type VARCHAR(30) NOT NULL, -- 'harsh_braking', 'swift_swerving', 'over_speeding'
+    g_force_magnitude NUMERIC(5, 3),
+    yaw_rate_dps NUMERIC(5, 2),
+    recorded_speed_kmh NUMERIC(5, 2),
+    location_geom geometry(Point, 4326),
+    recorded_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_ride_ratings_ratee ON public.ride_ratings(ratee_id, stars);
+CREATE INDEX idx_telematics_driver ON public.telematics_violations(driver_id, recorded_at DESC);
+```

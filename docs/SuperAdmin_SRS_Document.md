@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.17 | August 2026 | Dedicated Admin Portal
+### Version 2.18 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -280,7 +280,7 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 +-------------------------------------------------------------------+
 ```
 
-### 11.1 Role-Based Access Control (RBAC)
+### 12.1 Role-Based Access Control (RBAC)
 
 | Admin Role | Permissions & Scope |
 |---|---|
@@ -288,6 +288,79 @@ When an enterprise HR / Company Manager registers their company, Super Admin aud
 | **`support_officer`** | Dispute resolution, manual KYC review, escrow unlock tool, SOS emergency monitor. |
 | **`finance_admin`** | Corporate invoice generation, Karma Coin minting/burning audits, fuel voucher reconciliation. |
 
-### 11.2 Audit Logging
+### 12.2 Audit Logging
 - Mandatory Multi-Factor Authentication (MFA / TOTP) on all admin accounts.
 - Granular Audit Logging: Every parameter change, user ban, or escrow release is immutably logged in `admin_audit_logs`.
+
+---
+
+## 13. Complete Super Admin Screen Inventory (The 10 Administrative Screens)
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1. Admin Login & 2FA Screen          ──► Master login with Google Authenticator TOTP code             │
+│ 2. Executive KPI Dashboard           ──► Real-time platform health, active carpools & coin solvency   │
+│ 3. City-Wide Live Fleet Map          ──► Visual bird's-eye vector radar of all moving commutes        │
+│ 4. Driver KYC Verification Queue     ──► High-res side-by-side document inspector (DL, RC, Aadhaar)   │
+│ 5. B2B Company & Pool Manager        ──► Employer onboarding, HR assignment & Bank UTR pool top-ups   │
+│ 6. Escrow Dispute & Resolution Hub   ──► 1-Click force refund to rider or force payout to driver      │
+│ 7. User Trust & Ban Management       ──► Safety scores, 3-tier discipline (Warning, Suspend, Ban)    │
+│ 8. Financial Coin Supply Ledger      ──► Platform-wide double-entry balance sheet & fuel vouchers     │
+│ 9. Dynamic Remote Theme Editor       ──► Change wallpaper, festival banners & colors without app update│
+│ 10. 🚨 Central SOS Emergency Command ──► Audio siren map, live GPS telemetry & Police 112 dispatch    │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 👑 TOTAL CALCULATED SUPER ADMIN SCREENS: EXACTLY 10 DEDICATED COMMAND SCREENS                         │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 13.1 Detailed Screen Breakdown & Route Specifications
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| #  | SCREEN NAME                    | FILE PATH                                   | EXACT PURPOSE & KEY CAPABILITIES |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. | `AdminLoginScreen`             | `lib/screens/admin/admin_login_screen.dart` | • Admin Email + Strong Password. |
+|    |                                |                                             | • Google Authenticator 2FA TOTP. |
+|    |                                |                                             | • Rate-limited to 3 attempts (₹0)|
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 2. | `AdminDashboardScreen`         | `lib/screens/admin/admin_dashboard.dart`    | • Executive KPIs & Realtime HUD. |
+|    | (Executive Command Center)     |                                             | • Active Commutes & Coin Solvency|
+|    |                                |                                             | • Metric Tons of CO₂ Saved.      |
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 3. | `AdminLiveFleetScreen`         | `lib/screens/admin/admin_live_fleet.dart`   | • City-Wide Live Carpool Map.    |
+|    |                                |                                             | • Color-Coded Commute Markers    |
+|    |                                |                                             |   (Green On-Track / Red Detour). |
+|    |                                |                                             | • Click Car ➔ View Plate & Route.|
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 4. | `AdminKycReviewScreen`         | `lib/screens/admin/admin_kyc_review.dart`   | • Split-Screen 380 DPI Inspector.|
+|    |                                |                                             | • Driving License & RC Zoomable. |
+|    |                                |                                             | • 1-Click Approve / Reject Preset|
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 5. | `AdminCompanyManagerScreen`    | `lib/screens/admin/admin_company_mgr.dart`  | • B2B Employer Onboarding.       |
+|    |                                |                                             | • Set Domain (@infosys.com).     |
+|    |                                |                                             | • 1-Click Bank UTR Pool Recharge.|
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 6. | `AdminDisputeEscrowScreen`     | `lib/screens/admin/admin_disputes.dart`     | • Force Refund Escrow to Rider.  |
+|    |                                |                                             | • Force Settle Fare to Driver.   |
+|    |                                |                                             | • GPS Breadcrumb Replay Audit.   |
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 7. | `AdminUserTrustScreen`         | `lib/screens/admin/admin_user_trust.dart`   | • Commuter Safety Trust Lookup.  |
+|    |                                |                                             | • 3-Tier Discipline Action Hub:  |
+|    |                                |                                             |   1. Formal Warning Push         |
+|    |                                |                                             |   2. 7-Day Temporary Suspension  |
+|    |                                |                                             |   3. Permanent Blacklist Ban     |
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 8. | `AdminCoinLedgerScreen`        | `lib/screens/admin/admin_coin_ledger.dart`  | • Double-Entry Platform Balance. |
+|    |                                |                                             | • Minted vs Burned Coin Supply.  |
+|    |                                |                                             | • Fuel Voucher Claims Reconcile. |
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 9. | `AdminThemeEditorScreen`       | `lib/screens/admin/admin_theme_editor.dart` | • Live Remote Theme Editor.      |
+|    |                                |                                             | • Wallpaper URL & Opacity Slider.|
+|    |                                |                                             | • Festival Banner Uploader.      |
+|    |                                |                                             | • Instant 0.05s Cloud Publish!   |
+|----|--------------------------------|---------------------------------------------|----------------------------------|
+| 10.| `AdminSosCommandScreen`        | `lib/screens/admin/admin_sos_command.dart`  | • 🚨 Audible Continuous Siren.   |
+|    |                                |                                             | • Live GPS Incident Telemetry.   |
+|    |                                |                                             | • 1-Tap Police 112 Dispatch Link.|
++-------------------------------------------------------------------------------------------------------------------+
+```

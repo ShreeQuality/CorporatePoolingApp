@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.18 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.19 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -2557,4 +2557,50 @@ Section 18 provides the exhaustive, screen-by-screen architectural blueprint and
 |                              |                                             | • Broadcasts directly into employee  |
 |                              |                                             |   Workspace Chat channels!           |
 +-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+#### 👑 MODULE J: Super Admin Master Command Console (10 Dedicated Screens)
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| SCREEN NAME                  | FILE PATH                                   | KEY UI DETAILS, WIDGETS & STATE FLOW |
++-------------------------------------------------------------------------------------------------------------------+
+| 38. Admin Login & 2FA Screen | `lib/screens/admin/admin_login_screen.dart` | • Admin Email + Password + TOTP 2FA. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 39. Executive Dashboard      | `lib/screens/admin/admin_dashboard.dart`    | • Master KPIs, Active Commutes, ESG. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 40. Live Fleet Vector Map    | `lib/screens/admin/admin_live_fleet.dart`   | • City-Wide Live Carpool Radar.      |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 41. Driver KYC Review Queue  | `lib/screens/admin/admin_kyc_review.dart`   | • Split-Screen 380 DPI DL/RC Viewer. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 42. B2B Company Manager      | `lib/screens/admin/admin_company_mgr.dart`  | • Employer Setup & Bank UTR Top-up.  |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 43. Escrow Dispute Hub       | `lib/screens/admin/admin_disputes.dart`     | • Force Refund / Force Settle Fares. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 44. User Trust & Ban Hub     | `lib/screens/admin/admin_user_trust.dart`   | • 3-Tier Discipline (Warn/Suspend/Ban|
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 45. Coin Supply Ledger       | `lib/screens/admin/admin_coin_ledger.dart`  | • Double-Entry Platform Balance Sheet|
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 46. Dynamic Theme Editor     | `lib/screens/admin/admin_theme_editor.dart` | • Wallpaper, Banners & Color Picker. |
+|------------------------------|---------------------------------------------|--------------------------------------|
+| 47. 🚨 SOS Emergency Command | `lib/screens/admin/admin_sos_command.dart`  | • Audio Siren & Police 112 Dispatch. |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+### 18.3 Grand Total Screen Inventory Across Entire Platform
+
+```
++-------------------------------------------------------------------------------------------------------+
+| SYSTEM MODULE & USER ROLE                                           | TOTAL DEDICATED SCREENS         |
++-------------------------------------------------------------------------------------------------------+
+| 🚗 1. Commuter & Corporate Employee Flows (Riders & Drivers)        | **21 to 24 Screens**            |
+| 🏢 2. Employer & HR Manager B2B SaaS Portal (Client Companies)      | **6 Screens**                   |
+| 👑 3. Super Admin Master Command Console (Platform Operations)      | **10 Screens**                  |
++-------------------------------------------------------------------------------------------------------+
+| 🚀 GRAND TOTAL ACROSS THE COMPLETE ECOSYSTEM                        | **EXACTLY 47 PRODUCTION SCREENS**|
++-------------------------------------------------------------------------------------------------------+
 ```

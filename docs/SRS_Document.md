@@ -1,5 +1,5 @@
 # CorporatePoolingApp — Software Requirements Specification (SRS)
-### Version 3.20 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
+### Version 3.21 | August 2026 | Tech Stack: Flutter + Supabase (PostgreSQL & PostGIS)
 
 ---
 
@@ -2751,6 +2751,29 @@ Section 19 defines the comprehensive commute management dashboard across 4 segme
 | 3. 🔁 "1-Tap Repeat Commute"         | • Tapping "Repeat" on any past trip | • Validates wallet balance and       |
 |                                      |   clones origin, destination, time, |   submits ride request in < 1 second!|
 |                                      |   and preferred colleague driver.   |                                      |
++-------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 19.2.1 Cancellation Windows, Late Fees & Dynamic Super Admin Governance:
+All timings, courtesy fees, wait timers, and penalty thresholds are **100% dynamically controllable by the Super Admin via the central console** without requiring mobile app updates:
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| CANCELLATION SCENARIO               | DYNAMIC ADMIN CONFIG (DEFAULT)       | COIN & PENALTY SETTLEMENT            |
++-------------------------------------------------------------------------------------------------------------------+
+| 1. Free Cancellation Window         | Cancelled $> 30	ext{ mins}$ before  | • 100% Full Coin Refund to Rider.    |
+|                                     | pickup (FREE_CANCEL_MINS = 30).      | • Zero penalty to anyone.            |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 2. Rider Late Cancellation          | Cancelled $< 15	ext{ mins}$ before  | • 5 Karma Coins (RIDER_LATE_FEE = 5) |
+|                                     | pickup (LATE_CANCEL_MINS = 15).      |   credited to Driver for fuel/detour.|
+|                                     |                                      | • Remaining coins refunded to Rider. |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 3. Driver Late Cancellation         | Driver cancels $< 15	ext{ mins}$    | • 100% Full Refund to Rider +        |
+|                                     | before pickup time.                  |   5 Bonus Platform Apology Coins.    |
+|                                     |                                      | • Driver gets -5 Trust Score strike. |
+|-------------------------------------|--------------------------------------|--------------------------------------|
+| 4. Rider No-Show at Gate            | Driver waits 5 mins at gate          | • 100% of Trip Fare released to      |
+|                                     | (WAIT_TIMER_MINS = 5) & timer = 0:00.|   Driver for punctuality!            |
 +-------------------------------------------------------------------------------------------------------------------+
 ```
 

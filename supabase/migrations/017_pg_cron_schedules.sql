@@ -1,12 +1,68 @@
 -- ============================================================
 -- Migration 017: Scheduled Automation & pg_cron Jobs
--- Source of Truth: SRS_Document.md (§9.6, §11.2, §14.3, §20.5)
+-- Source of Truth: SRS_Document.md (§9.6, §11.2, §14.3, §20.5, §21.1)
 -- Date: 18-Aug-2026
 -- Run AFTER: 015_stored_procedures.sql & 016_database_triggers.sql
 -- ============================================================
 
 -- Enable pg_cron extension (requires superuser / Supabase SQL Editor)
 CREATE EXTENSION IF NOT EXISTS "pg_cron";
+
+-- ─── Helper Function: Reconcile Stuck Escrows (> 4h) (§21.1) ─
+CREATE OR REPLACE FUNCTION public.reconcile_stuck_escrow()
+RETURNS JSONB AS $$
+DECLARE
+    v_req RECORD;
+    v_reconciled_count INT := 0;
+    v_total_refunded NUMERIC(10,2) := 0.00;
+BEGIN
+    FOR v_req IN
+        SELECT rr.id, rr.rider_id, rr.coins_locked, rr.ride_id
+        FROM public.ride_requests rr
+        JOIN public.rides r ON r.id = rr.ride_id
+        WHERE rr.status = 'accepted'
+          AND rr.coins_locked > 0
+          AND (
+              (r.depart_date IS NOT NULL AND (r.depart_date + r.depart_time) < NOW() - INTERVAL '4 hours')
+              OR (r.depart_date IS NULL AND (r.created_at + INTERVAL '4 hours') < NOW())
+          )
+          AND r.ride_status NOT IN ('completed', 'in_progress')
+    LOOP
+        -- Refund locked balance to rider
+        UPDATE public.wallets
+        SET locked_balance    = GREATEST(0.00, locked_balance - v_req.coins_locked),
+            available_balance = available_balance + v_req.coins_locked,
+            updated_at        = NOW()
+        WHERE user_id = v_req.rider_id;
+
+        -- Mark request cancelled due to timeout
+        UPDATE public.ride_requests
+        SET status     = 'cancelled',
+            updated_at = NOW()
+        WHERE id = v_req.id;
+
+        -- Insert refund transaction
+        INSERT INTO public.coin_transactions (
+            receiver_id, amount, transaction_type,
+            ride_id, request_id, idempotency_key, status
+        ) VALUES (
+            v_req.rider_id, v_req.coins_locked, 'escrow_refund',
+            v_req.ride_id, v_req.id, 'auto_stuck_refund_' || v_req.id::text, 'completed'
+        ) ON CONFLICT (idempotency_key) DO NOTHING;
+
+        v_reconciled_count := v_reconciled_count + 1;
+        v_total_refunded := v_total_refunded + v_req.coins_locked;
+    END LOOP;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'reconciled_requests', v_reconciled_count,
+        'total_coins_refunded', v_total_refunded,
+        'timestamp', NOW()
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 
 -- ─── Helper Function: Auto-Unlock 24h Expired Ratings (§20.5) ─
 CREATE OR REPLACE FUNCTION public.auto_unlock_expired_ratings()

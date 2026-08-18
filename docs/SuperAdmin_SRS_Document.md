@@ -1,5 +1,5 @@
 # Super Admin Management System — Software Requirements Specification (SRS)
-### Version 2.25 | August 2026 | Dedicated Admin Portal
+### Version 2.26 | August 2026 | Dedicated Admin Portal
 
 ---
 
@@ -424,5 +424,92 @@ When Super Admin clicks **`[ 🔍 VIEW QUEUE ]`** on any company:
 |  Review Moderation & Badge Tools:                                 |
 |  [ ⚡ DISMISS MALICIOUS 1-STAR REVIEW ]  [ ⚡ OVERRIDE TRUST SCORE ] |
 |  [ ⚡ MANUALLY AWARD / REVOKE BADGE ]   [ SAVE CONFIG ]            |
++-------------------------------------------------------------------+
+```
+
+
+---
+
+## 15. Database Schema Audit Governance & System Settings Console
+*(Corresponds to Main SRS Section 21: Master PostgreSQL Schema Audit Fixes)*
+
+### 15.1 Dynamic System Settings Console
+
+All 15 business logic parameters from `public.system_settings` are editable by Super Admin via the admin console. Zero app store updates or code deployments needed:
+
+```
++-------------------------------------------------------------------+
+|       Super Admin Console: Dynamic Business Logic Settings        |
++-------------------------------------------------------------------+
+|  Coin Economy Parameters:                                         |
+|  - CAR_COIN_RATE_PER_KM:               [ 2.0  ] Coins            |
+|  - BIKE_COIN_RATE_PER_KM:              [ 1.0  ] Coins            |
+|  - DETOUR_COINS_PER_500M:              [ 3.0  ] Coins            |
+|  - SMOOTH_COMMUTE_BONUS_COINS:         [ 2.0  ] Coins            |
+|  - MIN_SMOOTHNESS_BONUS_PCT:           [ 90   ] %                |
+|                                                                   |
+|  Cancellation & Wait Timer Policies:                              |
+|  - FREE_CANCEL_MINS:                   [ 30   ] minutes          |
+|  - LATE_CANCEL_MINS:                   [ 15   ] minutes          |
+|  - RIDER_LATE_CANCEL_FEE:              [ 5    ] Coins            |
+|  - DRIVER_WAIT_TIMER_MINS:             [ 5    ] minutes          |
+|  - RIDER_NOSHOW_PENALTY_PCT:           [ 100  ] %                |
+|                                                                   |
+|  Limits & Overdraft Controls:                                     |
+|  - MAX_DAILY_RIDES_PER_USER:           [ 4    ] rides/day        |
+|  - MAX_CONCURRENT_REQUESTS:            [ 3    ] simultaneous     |
+|  - MAX_RECURRING_OVERDRAFT_COINS:      [ 30   ] Coins            |
+|                                                                   |
+|  Employer & Trial Governance:                                     |
+|  - COMPANY_FREE_TRIAL_DAYS:            [ 90   ] days             |
+|  - DOUBLE_BLIND_EXPIRY_HOURS:          [ 24   ] hours            |
+|                                                                   |
+|  [ SAVE ALL SETTINGS ]   [ RESET TO DEFAULTS ]                    |
++-------------------------------------------------------------------+
+```
+
+### 15.2 KYC Document Review Queue
+
+Super Admin can review all pending KYC documents across all users from a central queue:
+
+```
++-------------------------------------------------------------------+
+|         Super Admin: KYC Document Verification Queue             |
++-------------------------------------------------------------------+
+|  🔴 Pending Documents (requires review):       [ 24 Docs ]       |
+|  🟢 Approved Today:                            [ 18 Docs ]       |
+|  🟡 Rejected (awaiting resubmission):          [  3 Docs ]       |
+|                                                                   |
+|  Filters: [ All Types ▼ ] [ All Users ▼ ] [ All Companies ▼ ]    |
+|                                                                   |
+|  ┌───────────────────────────────────────────────────────────┐   |
+|  │ Rahul Sharma | driving_license | Uploaded: 18-Aug-2026    │   |
+|  │ [ 🖼 View Document ] [ ✅ Approve ] [ ❌ Reject + Reason ] │   |
+|  ├───────────────────────────────────────────────────────────┤   |
+|  │ Infosys Ltd  | company_gstin   | Uploaded: 18-Aug-2026    │   |
+|  │ [ 🖼 View Document ] [ ✅ Approve ] [ ❌ Reject + Reason ] │   |
+|  └───────────────────────────────────────────────────────────┘   |
++-------------------------------------------------------------------+
+```
+
+### 15.3 RLS Security Monitoring
+
+Super Admin dashboard shows live RLS compliance status for all tables:
+
+```
++-------------------------------------------------------------------+
+|         Super Admin: Row Level Security (RLS) Status Monitor      |
++-------------------------------------------------------------------+
+|  Table Name              | RLS Enabled | Active Policies | Status |
+|  ─────────────────────── | ─────────── | ─────────────── | ────── |
+|  public.users            | ✅ YES      | 2 policies      | SECURE |
+|  public.wallets          | ✅ YES      | 1 policy        | SECURE |
+|  public.coin_transactions| ✅ YES      | 1 policy        | SECURE |
+|  public.chat_messages    | ✅ YES      | 1 policy        | SECURE |
+|  public.vehicles         | ✅ YES      | 1 policy        | SECURE |
+|  public.kyc_documents    | ✅ YES      | 1 policy        | SECURE |
+|  public.system_settings  | ✅ YES      | 1 policy        | SECURE |
+|  public.rides            | ⚠️ Pending  | 0 policies      | REVIEW |
+|  public.ride_requests    | ⚠️ Pending  | 0 policies      | REVIEW |
 +-------------------------------------------------------------------+
 ```

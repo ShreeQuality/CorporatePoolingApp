@@ -9,6 +9,7 @@
 CREATE EXTENSION IF NOT EXISTS "pg_cron";
 
 -- ─── Helper Function: Reconcile Stuck Escrows (> 4h) (§21.1) ─
+DROP FUNCTION IF EXISTS public.reconcile_stuck_escrow() CASCADE;
 CREATE OR REPLACE FUNCTION public.reconcile_stuck_escrow()
 RETURNS JSONB AS $$
 DECLARE
@@ -65,6 +66,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- ─── Helper Function: Auto-Unlock 24h Expired Ratings (§20.5) ─
+DROP FUNCTION IF EXISTS public.auto_unlock_expired_ratings() CASCADE;
 CREATE OR REPLACE FUNCTION public.auto_unlock_expired_ratings()
 RETURNS JSONB AS $$
 DECLARE
@@ -86,6 +88,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- ─── Helper Function: Expire Old Search Alerts (§5.2) ────────
+DROP FUNCTION IF EXISTS public.cleanup_expired_search_alerts() CASCADE;
 CREATE OR REPLACE FUNCTION public.cleanup_expired_search_alerts()
 RETURNS JSONB AS $$
 DECLARE

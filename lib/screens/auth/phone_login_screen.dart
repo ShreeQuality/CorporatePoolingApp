@@ -188,7 +188,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final token = data['data']?['access_token'] ?? 'mock_token';
-        await SecureStorageService.setJwt(token);
+        await SecureStorageService.saveJwt(token);
 
         setState(() {
           _isLoading = false;
@@ -207,7 +207,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
     } catch (e) {
       // Dev fallback: accept 123456
       if (otp == '123456') {
-        await SecureStorageService.setJwt('mock_token_${DateTime.now().millisecondsSinceEpoch}');
+        await SecureStorageService.saveJwt('mock_token_${DateTime.now().millisecondsSinceEpoch}');
         setState(() {
           _isLoading = false;
         });

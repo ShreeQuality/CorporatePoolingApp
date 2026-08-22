@@ -19,6 +19,8 @@ class SecureStorageService {
 
   // ─── JWT Access Token ─────────────────────────────────────────
 
+  static Future<void> setJwt(String token) async => await saveJwt(token);
+
   static Future<void> saveJwt(String token) async {
     await _storage.write(key: _keyJwtToken, value: token);
   }

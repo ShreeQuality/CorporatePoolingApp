@@ -47,6 +47,12 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   int _remainingSeconds = 30;
   bool _isLockedOut = false;
 
+  // Max 3 Failed Attempts 60s Lockout (TC-36)
+  int _failedOtpAttempts = 0;
+  bool _isVerifyLockedOut = false;
+  Timer? _verifyLockoutTimer;
+  int _verifyLockoutRemainingSeconds = 60;
+
   // Ambient Glow Controller
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
@@ -96,6 +102,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
       f.dispose();
     }
     _countdownTimer?.cancel();
+    _verifyLockoutTimer?.cancel();
     _glowController.dispose();
     _shakeController.dispose();
     super.dispose();
@@ -244,7 +251,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
 
   Future<void> _handleVerifyOtp() async {
     final otp = _enteredOtp;
-    if (otp.length != 6 || _isLoading) return;
+    if (otp.length != 6 || _isLoading || _isVerifyLockedOut) return;
 
     setState(() {
       _isLoading = true;
@@ -268,6 +275,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         setState(() {
           _isLoading = false;
           _isOtpSuccess = true;
+          _failedOtpAttempts = 0;
         });
         HapticFeedback.heavyImpact();
 
@@ -283,6 +291,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         setState(() {
           _isLoading = false;
           _isOtpSuccess = true;
+          _failedOtpAttempts = 0;
         });
         HapticFeedback.heavyImpact();
         if (mounted) _showSuccessDialog();
@@ -295,20 +304,65 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   void _triggerOtpFailure(String message) {
     HapticFeedback.vibrate();
     _shakeController.forward(from: 0.0);
-    setState(() {
-      _isLoading = false;
-      _isOtpError = true;
-      _isOtpSuccess = false;
-      _errorMessage = message;
-    });
+    _failedOtpAttempts++;
+
+    if (_failedOtpAttempts >= 3) {
+      _startVerifyLockout();
+    } else {
+      final attemptsLeft = 3 - _failedOtpAttempts;
+      setState(() {
+        _isLoading = false;
+        _isOtpError = true;
+        _isOtpSuccess = false;
+        _errorMessage = '$message $attemptsLeft attempt(s) left.';
+      });
+    }
 
     // Auto-clear boxes and snap focus back to Box 1
     for (final c in _otpControllers) {
       c.clear();
     }
-    if (mounted) {
+    if (mounted && !_isVerifyLockedOut) {
       _otpFocusNodes[0].requestFocus();
     }
+  }
+
+  void _startVerifyLockout() {
+    _verifyLockoutTimer?.cancel();
+    setState(() {
+      _isVerifyLockedOut = true;
+      _isLoading = false;
+      _isOtpError = true;
+      _isOtpSuccess = false;
+      _verifyLockoutRemainingSeconds = 60;
+      _errorMessage = 'Too many failed attempts. Locked for 01:00 to prevent brute-force.';
+    });
+
+    final endTime = DateTime.now().add(const Duration(seconds: 60));
+    _verifyLockoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final diff = endTime.difference(DateTime.now()).inSeconds;
+      if (diff <= 0) {
+        timer.cancel();
+        setState(() {
+          _isVerifyLockedOut = false;
+          _failedOtpAttempts = 0;
+          _isOtpError = false;
+          _errorMessage = null;
+        });
+        if (mounted) {
+          _otpFocusNodes[0].requestFocus();
+        }
+      } else {
+        setState(() {
+          _verifyLockoutRemainingSeconds = diff;
+          _errorMessage = 'Too many failed attempts. Locked for 00:${diff.toString().padLeft(2, '0')}.';
+        });
+      }
+    });
   }
 
   // ─── WhatsApp / Call Modal (TC-28) ──────────────────────────────
@@ -774,20 +828,29 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
 
         const SizedBox(height: 18),
 
-        // Tiered Resend & Cooldown Row (TC-23 to TC-30)
+        // Tiered Resend & Cooldown Row (TC-23 to TC-30, TC-36)
         Center(
-          child: _remainingSeconds > 0
+          child: _isVerifyLockedOut
               ? Text(
-                  _isLockedOut
-                      ? 'Too many attempts. Locked for ${(_remainingSeconds ~/ 60).toString().padLeft(2, '0')}:${(_remainingSeconds % 60).toString().padLeft(2, '0')}'
-                      : 'Resend code in 00:${_remainingSeconds.toString().padLeft(2, '0')}',
-                  style: TextStyle(
-                    color: _isLockedOut ? const Color(0xFFEF4444) : Colors.white.withValues(alpha: 0.45),
+                  'Verification locked. Retry in 00:${_verifyLockoutRemainingSeconds.toString().padLeft(2, '0')}s',
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 )
-              : Row(
+              : _remainingSeconds > 0
+                  ? Text(
+                      _isLockedOut
+                          ? 'Too many attempts. Locked for ${(_remainingSeconds ~/ 60).toString().padLeft(2, '0')}:${(_remainingSeconds % 60).toString().padLeft(2, '0')}'
+                          : 'Resend code in 00:${_remainingSeconds.toString().padLeft(2, '0')}',
+                      style: TextStyle(
+                        color: _isLockedOut ? const Color(0xFFEF4444) : Colors.white.withValues(alpha: 0.45),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )
+                  : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
@@ -858,6 +921,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         child: TextField(
           controller: _otpControllers[index],
           focusNode: _otpFocusNodes[index],
+          enabled: !_isVerifyLockedOut,
           keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
           inputFormatters: [
@@ -1049,7 +1113,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   }
 
   Widget _buildVerifyButton() {
-    final enabled = _enteredOtp.length == 6 && !_isLoading;
+    final enabled = _enteredOtp.length == 6 && !_isLoading && !_isVerifyLockedOut;
 
     return Opacity(
       opacity: enabled ? 1.0 : 0.45,

@@ -4,9 +4,11 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 import '../../core/api_client.dart';
 import '../../core/secure_storage_service.dart';
 import '../../widgets/star_rain_1.dart';
+import 'role_selection_screen.dart';
 
 /// Screen 3: Phone Authentication & 6-Digit SMS OTP Verification
 /// 100% compliant with Screen 3 Specification & Exhaustive Test Suite
@@ -19,7 +21,7 @@ class PhoneLoginScreen extends StatefulWidget {
 }
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, CodeAutoFill {
   // Phase A: Phone Input Controllers & Focus
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
@@ -77,8 +79,21 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   late AnimationController _shakeController;
 
   @override
+  void codeUpdated() {
+    // Android SMS Retriever auto-fill (TC-20)
+    final incomingCode = code;
+    if (incomingCode != null && incomingCode.length == 6) {
+      for (int i = 0; i < 6; i++) {
+        _otpControllers[i].text = incomingCode[i];
+      }
+      _handleVerifyOtp();
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
+    listenForCode();
 
     _phoneFocusNode.addListener(() {
       setState(() {
@@ -109,6 +124,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
 
   @override
   void dispose() {
+    cancel();
     _phoneController.dispose();
     _phoneFocusNode.dispose();
     for (final c in _otpControllers) {
@@ -658,6 +674,15 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
+                        Navigator.of(context).pushReplacement(
+                          PageRouteBuilder(
+                            pageBuilder: (context, anim, secAnim) =>
+                                const RoleSelectionScreen(),
+                            transitionsBuilder: (context, anim, secAnim, child) =>
+                                FadeTransition(opacity: anim, child: child),
+                            transitionDuration: const Duration(milliseconds: 350),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
@@ -666,7 +691,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
                         ),
                       ),
                       child: const Text(
-                        'Continue to Dashboard',
+                        'Continue',
                         style: TextStyle(
                           color: Color(0xFF030712),
                           fontSize: 15,

@@ -102,6 +102,10 @@ class SecureStorageService {
 
   // ─── Onboarding State ─────────────────────────────────────────
 
+  static Future<void> setOnboardingSeen(bool seen) async => await setHasSeenOnboarding(seen);
+
+  static Future<bool> isOnboardingSeen() async => await hasSeenOnboarding();
+
   static Future<void> setHasSeenOnboarding(bool seen) async {
     try {
       await _storage.write(key: _keyHasSeenOnboarding, value: seen.toString());

@@ -37,8 +37,24 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   bool _isOtpError = false;
   bool _isOtpSuccess = false;
   String? _errorMessage;
+  String _selectedCountryCode = '+91';
+  String _selectedCountryFlag = '🇮🇳';
+  String _selectedCountryName = 'India';
+  int _selectedRequiredDigits = 10;
 
-  final String _countryCode = '+91';
+  final List<Map<String, dynamic>> _countries = const [
+    {'name': 'India', 'code': '+91', 'flag': '🇮🇳', 'digits': 10},
+    {'name': 'United States', 'code': '+1', 'flag': '🇺🇸', 'digits': 10},
+    {'name': 'United Kingdom', 'code': '+44', 'flag': '🇬🇧', 'digits': 10},
+    {'name': 'United Arab Emirates', 'code': '+971', 'flag': '🇦🇪', 'digits': 9},
+    {'name': 'Singapore', 'code': '+65', 'flag': '🇸🇬', 'digits': 8},
+    {'name': 'Germany', 'code': '+49', 'flag': '🇩🇪', 'digits': 10},
+    {'name': 'Canada', 'code': '+1', 'flag': '🇨🇦', 'digits': 10},
+    {'name': 'Australia', 'code': '+61', 'flag': '🇦🇺', 'digits': 9},
+    {'name': 'Netherlands', 'code': '+31', 'flag': '🇳🇱', 'digits': 9},
+    {'name': 'France', 'code': '+33', 'flag': '🇫🇷', 'digits': 9},
+    {'name': 'Japan', 'code': '+81', 'flag': '🇯🇵', 'digits': 10},
+  ];
 
   // Tiered Resend Cooldown Engine (TC-23 to TC-30)
   int _resendAttempt = 1;
@@ -113,22 +129,24 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   String get _rawPhoneNumber =>
       _phoneController.text.replaceAll(RegExp(r'\D'), '');
 
-  String get _fullPhoneNumber => '$_countryCode$_rawPhoneNumber';
+  String get _fullPhoneNumber => '$_selectedCountryCode$_rawPhoneNumber';
 
   String get _enteredOtp =>
       _otpControllers.map((c) => c.text.trim()).join();
 
   bool get _isPhoneValid {
     final raw = _rawPhoneNumber;
-    if (raw.length != 10) return false;
+    if (raw.length != _selectedRequiredDigits) return false;
 
-    // Carrier prefix check (Must start with 6, 7, 8, or 9 in India)
-    final firstDigit = raw[0];
-    if (!['6', '7', '8', '9'].contains(firstDigit)) return false;
+    if (_selectedCountryCode == '+91') {
+      // Carrier prefix check (Must start with 6, 7, 8, or 9 in India)
+      final firstDigit = raw[0];
+      if (!['6', '7', '8', '9'].contains(firstDigit)) return false;
 
-    // Dummy repetitive sequence blocker
-    if (RegExp(r'^(\d)\1{9}$').hasMatch(raw)) return false;
-    if (raw == '1234567890') return false;
+      // Dummy repetitive sequence blocker
+      if (RegExp(r'^(\d)\1{9}$').hasMatch(raw)) return false;
+      if (raw == '1234567890') return false;
+    }
 
     return true;
   }
@@ -136,12 +154,18 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   String? get _phoneValidationHint {
     final raw = _rawPhoneNumber;
     if (raw.isEmpty) return null;
-    if (raw.isNotEmpty && !['6', '7', '8', '9'].contains(raw[0])) {
-      return 'Indian mobile numbers must start with 6, 7, 8, or 9';
-    }
-    if (raw.length == 10) {
-      if (RegExp(r'^(\d)\1{9}$').hasMatch(raw) || raw == '1234567890') {
-        return 'Please enter a valid active mobile number';
+    if (_selectedCountryCode == '+91') {
+      if (raw.isNotEmpty && !['6', '7', '8', '9'].contains(raw[0])) {
+        return 'Indian mobile numbers must start with 6, 7, 8, or 9';
+      }
+      if (raw.length == 10) {
+        if (RegExp(r'^(\d)\1{9}$').hasMatch(raw) || raw == '1234567890') {
+          return 'Please enter a valid active mobile number';
+        }
+      }
+    } else {
+      if (raw.length < _selectedRequiredDigits) {
+        return 'Enter $_selectedRequiredDigits digits for $_selectedCountryName';
       }
     }
     return null;
@@ -363,6 +387,144 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         });
       }
     });
+  }
+
+  // ─── Country Code Selector Modal (TC-08) ────────────────────────
+
+  void _showCountryPickerModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0E1630),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = _countries.where((c) {
+              final name = (c['name'] as String).toLowerCase();
+              final code = (c['code'] as String).toLowerCase();
+              return name.contains(searchQuery.toLowerCase()) ||
+                  code.contains(searchQuery.toLowerCase());
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.65,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Select Country Code',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Search Bar with Screen 2 styling
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                    ),
+                    child: TextField(
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      cursorColor: const Color(0xFF00E5FF),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search_rounded,
+                            color: Color(0xFF00E5FF), size: 20),
+                        hintText: 'Search country or code...',
+                        hintStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            fontSize: 13.5),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                      ),
+                      onChanged: (val) {
+                        setModalState(() {
+                          searchQuery = val;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => Divider(
+                          color: Colors.white.withValues(alpha: 0.06), height: 1),
+                      itemBuilder: (context, index) {
+                        final item = filtered[index];
+                        final isSelected = item['code'] == _selectedCountryCode &&
+                            item['flag'] == _selectedCountryFlag;
+                        return ListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                          leading: Text(item['flag'] as String,
+                              style: const TextStyle(fontSize: 22)),
+                          title: Text(
+                            item['name'] as String,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFF00E5FF)
+                                  : Colors.white,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              fontSize: 14.5,
+                            ),
+                          ),
+                          trailing: Text(
+                            item['code'] as String,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFF00E5FF)
+                                  : Colors.white.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          tileColor: isSelected
+                              ? const Color(0xFF00E5FF).withValues(alpha: 0.08)
+                              : Colors.transparent,
+                          onTap: () {
+                            setState(() {
+                              _selectedCountryCode = item['code'] as String;
+                              _selectedCountryFlag = item['flag'] as String;
+                              _selectedCountryName = item['name'] as String;
+                              _selectedRequiredDigits = item['digits'] as int;
+                              _phoneController.clear();
+                            });
+                            Navigator.pop(context);
+                            _phoneFocusNode.requestFocus();
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   // ─── WhatsApp / Call Modal (TC-28) ──────────────────────────────
@@ -974,35 +1136,48 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-              ),
-              border: Border(
-                right: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.10),
-                  width: 1,
-                ),
-              ),
+          InkWell(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              bottomLeft: Radius.circular(16),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🇮🇳', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 6),
-                Text(
-                  _countryCode,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+            onTap: _showCountryPickerModal,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
+                border: Border(
+                  right: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    width: 1,
                   ),
                 ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_selectedCountryFlag, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 5),
+                  Text(
+                    _selectedCountryCode,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Color(0xFF00E5FF),
+                    size: 16,
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -1012,8 +1187,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
               keyboardType: TextInputType.phone,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-                _IndianPhoneFormatter(),
+                LengthLimitingTextInputFormatter(_selectedRequiredDigits),
+                if (_selectedCountryCode == '+91') _IndianPhoneFormatter(),
               ],
               style: const TextStyle(
                 color: Colors.white,
@@ -1023,7 +1198,9 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
               ),
               cursorColor: const Color(0xFF00E5FF),
               decoration: InputDecoration(
-                hintText: '98765 43210',
+                hintText: _selectedCountryCode == '+91'
+                    ? '98765 43210'
+                    : 'X' * _selectedRequiredDigits,
                 hintStyle: TextStyle(
                   color: Colors.white.withValues(alpha: 0.25),
                   fontSize: 15,

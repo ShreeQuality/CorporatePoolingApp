@@ -1,6 +1,6 @@
 class AppConfig {
   static const String appName = 'Corporate Pooling';
-  static const String apiBaseUrl = 'http://localhost:3000/api/v1'; // Node.js backend
+  static const String apiBaseUrl = 'http://10.137.109.81:3000/api/v1'; // Node.js backend
   
   // Supabase credentials
   static const String supabaseUrl = 'https://mluleqpqufjlldrdxpuy.supabase.co';

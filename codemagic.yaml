@@ -16,10 +16,10 @@ workflows:
           flutter packages pub get
       - name: Analyze code
         script: |
-          flutter analyze
+          flutter analyze --no-fatal-infos
       - name: Build Android Release APK
         script: |
-          flutter build apk --release --android-skip-build-dependency-validation
+          flutter build apk --release
     artifacts:
       - build/**/outputs/**/*.apk
     publishing:

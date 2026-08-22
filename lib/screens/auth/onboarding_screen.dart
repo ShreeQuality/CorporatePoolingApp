@@ -1,3 +1,4 @@
+import 'phone_login_screen.dart';
 ﻿import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -142,11 +143,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     await SecureStorageService.setOnboardingSeen(true);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Welcome to KarmaRide! Routing to Authentication...'),
-        backgroundColor: Color(0xFF0F172A),
-        duration: Duration(seconds: 1),
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const PhoneLoginScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
       ),
     );
   }

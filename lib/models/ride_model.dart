@@ -77,8 +77,12 @@ class RideModel {
     this.matchScore,
   });
 
+  // Backward compatibility getters
+  double get coinPerSeat => fareCoins;
+  int get availableSeats => seatsAvailable;
+  int get totalSeats => seatsOffered;
+
   factory RideModel.fromJson(Map<String, dynamic> json) {
-    // Parse GeoJSON or LatLng points
     double parseLat(dynamic val, dynamic geom) {
       if (val != null) return (val as num).toDouble();
       if (geom != null && geom['coordinates'] is List) {

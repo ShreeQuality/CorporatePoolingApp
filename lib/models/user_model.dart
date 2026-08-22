@@ -1,121 +1,104 @@
+/// User Model
+/// Aligned with Schema 014 (public.users) & SRS §3
 class UserModel {
   final String id;
-  final String phoneNumber;
   final String fullName;
-  final String gender; // 'male', 'female', 'other', 'prefer_not_to_say'
-  final String role; // 'corporate_employee', 'public_user', 'family_member', 'company_manager', 'super_admin'
   final String? workEmail;
-  final bool workEmailVerified;
-  final String? officeIdPhotoUrl;
-  final bool officeIdVerified;
+  final String? phoneNumber;
+  final String role; // 'corporate_employee', 'company_manager', 'super_admin', 'public_user'
+  final String gender;
   final String? companyId;
+  final String? companyName;
   final String? buildingId;
-  final String? primaryAccountId;
-  final bool aadhaarVerified;
-  final String? aadhaarMaskedNumber;
+  final bool workEmailVerified;
   final bool dlVerified;
+  final String? dlNumber;
   final String? profilePhotoUrl;
-  final bool autoAcceptColleagues;
-  final int autoAcceptMaxDetourM;
-  final int trustScore; // 0 to 100
-  final List<dynamic> emergencyContacts;
-  final String? fcmToken;
-  final String? fcmTokenPlatform;
-  final DateTime? fcmTokenUpdatedAt;
+  final String? officeIdPhotoUrl;
+  final int trustScore;
   final bool isBanned;
-  final String? banReason;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final double availableBalance;
+  final double corporateGrantBalance;
+  final List<dynamic>? emergencyContacts;
+  final Map<String, dynamic>? corporateAttendance;
 
   UserModel({
     required this.id,
-    required this.phoneNumber,
     required this.fullName,
-    this.gender = 'prefer_not_to_say',
-    this.role = 'corporate_employee',
     this.workEmail,
-    this.workEmailVerified = false,
-    this.officeIdPhotoUrl,
-    this.officeIdVerified = false,
+    this.phoneNumber,
+    required this.role,
+    this.gender = 'prefer_not_to_say',
     this.companyId,
+    this.companyName,
     this.buildingId,
-    this.primaryAccountId,
-    this.aadhaarVerified = false,
-    this.aadhaarMaskedNumber,
+    this.workEmailVerified = false,
     this.dlVerified = false,
+    this.dlNumber,
     this.profilePhotoUrl,
-    this.autoAcceptColleagues = false,
-    this.autoAcceptMaxDetourM = 100,
+    this.officeIdPhotoUrl,
     this.trustScore = 50,
-    this.emergencyContacts = const [],
-    this.fcmToken,
-    this.fcmTokenPlatform,
-    this.fcmTokenUpdatedAt,
     this.isBanned = false,
-    this.banReason,
-    this.createdAt,
-    this.updatedAt,
+    this.availableBalance = 0.0,
+    this.corporateGrantBalance = 0.0,
+    this.emergencyContacts,
+    this.corporateAttendance,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final company = json['companies'] as Map<String, dynamic>?;
+    final wallet = json['wallets'] as Map<String, dynamic>?;
+
     return UserModel(
-      id: json['id']?.toString() ?? '',
-      phoneNumber: json['phone_number']?.toString() ?? json['phone']?.toString() ?? '',
-      fullName: json['full_name']?.toString() ?? '',
-      gender: json['gender']?.toString() ?? 'prefer_not_to_say',
-      role: json['role']?.toString() ?? json['user_type']?.toString() ?? 'corporate_employee',
-      workEmail: json['work_email']?.toString() ?? json['email']?.toString(),
+      id: json['id'] ?? '',
+      fullName: json['full_name'] ?? json['name'] ?? '',
+      workEmail: json['work_email'] ?? json['email'],
+      phoneNumber: json['phone_number'] ?? json['phone'],
+      role: json['role'] ?? json['user_type'] ?? 'public_user',
+      gender: json['gender'] ?? 'prefer_not_to_say',
+      companyId: json['company_id'],
+      companyName: company?['name'] ?? json['company_name'],
+      buildingId: json['building_id'],
       workEmailVerified: json['work_email_verified'] ?? json['is_email_verified'] ?? false,
-      officeIdPhotoUrl: json['office_id_photo_url']?.toString(),
-      officeIdVerified: json['office_id_verified'] ?? json['is_document_verified'] ?? false,
-      companyId: json['company_id']?.toString(),
-      buildingId: json['building_id']?.toString(),
-      primaryAccountId: json['primary_account_id']?.toString(),
-      aadhaarVerified: json['aadhaar_verified'] ?? false,
-      aadhaarMaskedNumber: json['aadhaar_masked_number']?.toString(),
       dlVerified: json['dl_verified'] ?? json['is_driver_verified'] ?? false,
-      profilePhotoUrl: json['profile_photo_url']?.toString(),
-      autoAcceptColleagues: json['auto_accept_colleagues'] ?? false,
-      autoAcceptMaxDetourM: (json['auto_accept_max_detour_m'] as num?)?.toInt() ?? 100,
-      trustScore: (json['trust_score'] as num?)?.toInt() ?? 50,
-      emergencyContacts: json['emergency_contacts'] is List ? json['emergency_contacts'] : [],
-      fcmToken: json['fcm_token']?.toString(),
-      fcmTokenPlatform: json['fcm_token_platform']?.toString(),
-      fcmTokenUpdatedAt: json['fcm_token_updated_at'] != null ? DateTime.tryParse(json['fcm_token_updated_at'].toString()) : null,
+      dlNumber: json['dl_number'],
+      profilePhotoUrl: json['profile_photo_url'] ?? json['photo_url'],
+      officeIdPhotoUrl: json['office_id_photo_url'],
+      trustScore: json['trust_score'] ?? json['karma_score'] ?? 50,
       isBanned: json['is_banned'] ?? false,
-      banReason: json['ban_reason']?.toString(),
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      availableBalance: (wallet?['available_balance'] ?? json['coin_balance'] ?? 0.0).toDouble(),
+      corporateGrantBalance: (wallet?['corporate_grant_balance'] ?? 0.0).toDouble(),
+      emergencyContacts: json['emergency_contacts'] as List<dynamic>?,
+      corporateAttendance: json['corporate_attendance'] as Map<String, dynamic>?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'phone_number': phoneNumber,
       'full_name': fullName,
-      'gender': gender,
-      'role': role,
       'work_email': workEmail,
-      'work_email_verified': workEmailVerified,
-      'office_id_photo_url': officeIdPhotoUrl,
-      'office_id_verified': officeIdVerified,
+      'phone_number': phoneNumber,
+      'role': role,
+      'gender': gender,
       'company_id': companyId,
+      'company_name': companyName,
       'building_id': buildingId,
-      'primary_account_id': primaryAccountId,
-      'aadhaar_verified': aadhaarVerified,
-      'aadhaar_masked_number': aadhaarMaskedNumber,
+      'work_email_verified': workEmailVerified,
       'dl_verified': dlVerified,
+      'dl_number': dlNumber,
       'profile_photo_url': profilePhotoUrl,
-      'auto_accept_colleagues': autoAcceptColleagues,
-      'auto_accept_max_detour_m': autoAcceptMaxDetourM,
+      'office_id_photo_url': officeIdPhotoUrl,
       'trust_score': trustScore,
-      'emergency_contacts': emergencyContacts,
-      'fcm_token': fcmToken,
-      'fcm_token_platform': fcmTokenPlatform,
-      'fcm_token_updated_at': fcmTokenUpdatedAt?.toIso8601String(),
       'is_banned': isBanned,
-      'ban_reason': banReason,
+      'available_balance': availableBalance,
+      'corporate_grant_balance': corporateGrantBalance,
+      'emergency_contacts': emergencyContacts,
+      'corporate_attendance': corporateAttendance,
     };
   }
+
+  bool get isCorporate => role == 'corporate_employee';
+  bool get isCompanyManager => role == 'company_manager';
+  bool get isSuperAdmin => role == 'super_admin';
 }

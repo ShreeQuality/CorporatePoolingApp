@@ -1,37 +1,31 @@
-# Codemagic CI/CD Configuration for CorporatePoolingApp (KarmaRide)
-# Auto-triggers cloud builds automatically on `git push`
-
 workflows:
-  android-release:
-    name: Android Release APK Build
-    max_build_duration: 30
-    instance_type: mac_mini_m1
+  android-workflow:
+    name: KarmaRide Android Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
-      java: 17
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-          source: true
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Set up local properties
+      - name: Set up local.properties
         script: |
-          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" > "$CM_BUILD_DIR/android/local.properties"
       - name: Get Flutter packages
         script: |
-          flutter pub get
-      - name: Build Android APK
+          flutter packages pub get
+      - name: Analyze code
         script: |
-          flutter build apk --release --android-skip-build-dependency-validation
+          flutter analyze
+      - name: Build Android Release APK
+        script: |
+          flutter build apk --release
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
+      - build/**/outputs/**/*.apk
     publishing:
       email:
         recipients:
-          - shreequality@gmail.com
+          - shivam.quality@gmail.com
         notify:
           success: true
           failure: true

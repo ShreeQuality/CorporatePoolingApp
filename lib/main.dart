@@ -1,31 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'core/services/supabase_service.dart';
-import 'core/theme/app_theme.dart';
-import 'providers/auth_provider.dart';
-import 'screens/auth/welcome_screen.dart';
+import 'screens/auth/splash_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService().initialize();
-  runApp(const CorporatePoolingApp());
+  runApp(const KarmaRideApp());
 }
 
-class CorporatePoolingApp extends StatelessWidget {
-  const CorporatePoolingApp({Key? key}) : super(key: key);
+class KarmaRideApp extends StatelessWidget {
+  const KarmaRideApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-      ],
-      child: MaterialApp(
-        title: 'KarmaRide',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        home: const WelcomeScreen(),
+    return MaterialApp(
+      title: 'KarmaRide',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF070B19),
       ),
+      home: const SplashScreen(),
     );
   }
 }

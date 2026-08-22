@@ -57,7 +57,7 @@ Unlike commercial taxi aggregators (Uber, Ola, Rapido), CorporatePoolingApp oper
 | **Database & Auth** | **Supabase (PostgreSQL 15 + PostGIS)** | Relational data integrity, Row Level Security (RLS), ACID coin ledger transactions, and native geospatial queries. |
 | **Realtime Engine** | **Supabase Realtime (WebSockets)** | Live GPS broadcasting and instant ride status updates without maintaining a separate Redis/Firebase cluster. |
 | **Backend API / Cron** | **Node.js (Express) + Supabase Edge Functions** | High-performance in-memory polyline matching engine and nightly 8:00 PM auto-match cron jobs. |
-| **Mapping & Routing** | **Ola Maps / Mapbox SDK** | High free-tier quotas (5M requests/mo on Ola Maps), accurate Indian road networks, and low-cost tile rendering. |
+| **Mapping & Routing** | **Ola Maps SDK (Primary) + Mapbox Map Matching (GPS Snap)** | Ola Maps: Map tiles, Geocoding, Routing, Place Autocomplete (5M free requests/mo, best Indian road network). Mapbox: GPS snap-to-road for drift correction (100K free/mo). Driver turn-by-turn navigation via deep-link to Ola Maps / Google Maps native app (₹0 API cost). All distance calculations for matching use PostGIS internally (₹0). |
 | **Push Notification Pipe** | **FCM (Android) / APNs (iOS) Gateway** | Standard mobile OS push notification bridges triggered via Supabase Edge Functions (used purely as a notification delivery pipe, not database/auth). |
 
 ---
@@ -343,19 +343,11 @@ CREATE INDEX idx_rides_route_geometry ON public.rides USING GIST(route_geometry)
 
 In corporate carpooling, drivers are working professionals sharing their commute. When a driver voluntarily accepts a rider whose pickup requires an off-corridor detour, the platform actively **appreciates, incentivizes, and rewards the driver**:
 
-```
-┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 1. 🪙 DETOUR KARMA COMPENSATION: Extra Karma Coins automatically calculated and awarded to driver      │
-│ 2. 🎖️ "EXTRA MILE HERO" BADGE:   Special glowing badge & +5 Trust Score boost on driver's profile    │
-│ 3. 💖 RIDER APPRECIATION CHIP:   1-Tap "Thank You for Going the Extra Mile!" prompt upon boarding     │
-│ 4. 🏢 CORPORATE LEADERBOARD:     Company recognizes "Top Commute Heroes" who help stranded colleagues │
-└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
 1. **Automated Detour Fare Compensation Formula:**
-   * When a rider requests a pickup point requiring a detour $> 500	ext{ meters}$, the system automatically calculates extra Karma Coins added to the driver's settlement:
+   * When a rider requests a pickup point requiring a detour $> 500\text{ meters}$, the system automatically calculates extra Karma Coins added to the driver's settlement:
    $\text{Detour Compensation} = \left\lceil \frac{\text{Detour Distance (meters)}}{500\text{m}} \right\rceil \times 3.0\text{ Karma Coins}$
    * **Rider Receipt Transparency:** The rider sees: *"Doorstep Detour Compensation: +4.0 Coins (Credited to Driver for fuel & detour time)"*.
+   * **Important:** The detour bonus is credited **exclusively to the driver** as an add-on. The rider's base fare does NOT include detour coins. This maintains fare predictability for the rider.
 2. **"Extra Mile Champion" Profile Badge & Trust Boost:**
    * Drivers who complete $\ge 10$ detour pickups earn the prestigious **`[ 🌟 Extra Mile Champion ]`** Gold Badge on their profile.
    * Awards a permanent **$+5\text{ Safety Trust Score boost}$**, elevating their 8:00 PM matching priority.
@@ -363,6 +355,50 @@ In corporate carpooling, drivers are working professionals sharing their commute
    * Upon drop-off, the rider rating modal highlights the **`[ 💖 Went the Extra Mile for Pickup ]`** compliment chip. When selected, the driver's screen receives an instant celebration toast: *"🎉 Priya sent you a special Extra Mile Thank You!"*.
 4. **Corporate Commute Heroes Recognition:**
    * The top 5 drivers with the highest detour assistance scores are featured on the company's internal **Monthly Eco-Heroes Leaderboard** in the Corporate Portal.
+
+---
+
+### 4.9 Unified Fare Calculation Formula (Single Source of Truth)
+
+All coin calculations across the platform use ONE consistent formula regardless of whether the commuter is a Corporate Employee or Public User. The road distance is the same road — the coin rate is the same rate.
+
+#### Base Fare Formula:
+$$\text{Fare (Coins)} = \text{Road Distance (km)} \times \text{Rate (Coins/km)}$$
+
+| Vehicle Type | Coin Rate | Example: 12km Ride |
+|---|---|---|
+| **Car / SUV / Hatchback** | **2.0 Coins/km** | 12 × 2.0 = **24 Coins** |
+| **Motorcycle / Scooter** | **1.0 Coins/km** | 12 × 1.0 = **12 Coins** |
+
+> **Configurable:** Both rates are stored in `public.system_settings` (`CAR_COIN_RATE_PER_KM`, `BIKE_COIN_RATE_PER_KM`) and can be adjusted by the Super Admin without any app update.
+
+#### Road Distance Measurement:
+- **Method:** Ola Maps Directions API polyline decoded into waypoints. Distance is calculated as the sum of segment lengths along the actual road network (NOT straight-line).
+- **Fallback (offline / API down):** Haversine straight-line distance × Tortuosity multiplier of `1.3` as per §6.2.
+
+#### Full Fare Breakdown at Booking (Shown to Rider):
+```
+┌─────────────────────────────────────────────┐
+│  🪙 Fare Breakdown                           │
+│  Base Fare: 12.4 km × 2.0 = 24 Coins       │
+│  Detour Bonus: +4 Coins (goes to driver)    │
+│  ─────────────────────────────────────────  │
+│  You Pay: 24 Coins (Locked in Escrow)       │
+│  Driver Earns: 28 Coins                     │
+└─────────────────────────────────────────────┘
+```
+
+#### Corporate vs Public User — Same Rate, Different Funding Source:
+```
+Corporate Employee Rider:
+  Coins deducted from: Corporate Grant Balance → Personal Earned Balance → Family Pool
+  Coin rate: SAME (2.0 Coins/km for Car)
+
+Public / Family User Rider:
+  Coins deducted from: Personal Earned Balance → Family Pool
+  Coin rate: SAME (2.0 Coins/km for Car)
+```
+**The road is the same road. The rate is the same rate. Only the funding source differs.**
 
 ---
 
@@ -485,6 +521,31 @@ CREATE INDEX idx_search_alerts_user_id ON public.search_alerts(user_id);
 ### 6.3 Phase-Aware Dynamic Radii
 - **Phase 1 (Pre-Departure):** **500 meters** (Expanded to **1,500m** if `building_id` matches).
 - **Phase 2 (Live On-Route):** **150 meters** (Tightened for driver traffic safety).
+
+#### 6.3.1 Extended Radius UI Differentiation:
+
+When fewer than **5 results** are found within the standard 500m radius, the app automatically extends the search to the **1,500m building_id-matched** pool and displays these results with a distinct visual treatment:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ✅ DIRECT MATCHES (within 500m of your route)              │
+│  ─ Standard blue driver card ──────────────────────────── ─ │
+│  • Rahul Sharma (Infosys) — 8:30 AM — 0m from your route   │
+│                                                             │
+│  ⚡ NEARBY (Slight Walk Required)        [Amber / Orange]   │
+│  ─ Amber-tinted driver card ───────────────────────────── ─ │
+│  • Ananya Rao (Wipro) — 8:30 AM                             │
+│    📍 850m walk to pickup (~10 min) — On your corridor      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+| Match Type | Radius | Card Color | Label Shown |
+|---|---|---|---|
+| **Direct Route Match** | 0–500m | 🔵 Standard Blue | No extra label |
+| **Extended Campus Match** | 500m–1,500m (same `building_id`) | 🟠 Amber Tinted | "⚡ Nearby — Slight Walk Required" |
+| **Live On-Route** | 0–150m | 🟢 Bright Green | "🛣️ On Route Now" |
+
+The **walk distance and estimated time** are calculated using the actual road distance from rider GPS to the projected pickup point on the driver's polyline.
 
 ---
 

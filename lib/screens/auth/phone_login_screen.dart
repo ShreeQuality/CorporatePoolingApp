@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +19,7 @@ class PhoneLoginScreen extends StatefulWidget {
 }
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   // Phase A: Phone Input Controllers & Focus
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
@@ -50,6 +51,9 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
 
+  // Physical 3-Cycle Horizontal Shake Animation Controller (TC-32)
+  late AnimationController _shakeController;
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +78,11 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
     _glowAnimation = Tween<double>(begin: 0.35, end: 0.85).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
+
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
   }
 
   @override
@@ -88,6 +97,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
     }
     _countdownTimer?.cancel();
     _glowController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
@@ -284,6 +294,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
 
   void _triggerOtpFailure(String message) {
     HapticFeedback.vibrate();
+    _shakeController.forward(from: 0.0);
     setState(() {
       _isLoading = false;
       _isOtpError = true;
@@ -732,10 +743,23 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         ),
         const SizedBox(height: 22),
 
-        // 6-Digit PIN Matrix (TC-15 to TC-22)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(6, (index) => _buildDigitBox(index)),
+        // 6-Digit PIN Matrix with 3-Cycle Horizontal Shake Animation (TC-15 to TC-22, TC-32)
+        AnimatedBuilder(
+          animation: _shakeController,
+          builder: (context, child) {
+            final progress = _shakeController.value;
+            final double offset = progress > 0.0 && progress < 1.0
+                ? (1.0 - progress) * 12.0 * math.sin(progress * math.pi * 6)
+                : 0.0;
+            return Transform.translate(
+              offset: Offset(offset, 0),
+              child: child,
+            );
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(6, (index) => _buildDigitBox(index)),
+          ),
         ),
 
         if (_errorMessage != null) ...[

@@ -1211,9 +1211,14 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
               focusNode: _phoneFocusNode,
               keyboardType: TextInputType.phone,
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(_selectedRequiredDigits),
-                if (_selectedCountryCode == '+91') _IndianPhoneFormatter(),
+                if (_selectedCountryCode == '+91') ...[
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d\s]')),
+                  LengthLimitingTextInputFormatter(11),
+                  _IndianPhoneFormatter(),
+                ] else ...[
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(_selectedRequiredDigits),
+                ],
               ],
               style: const TextStyle(
                 color: Colors.white,
@@ -1422,14 +1427,15 @@ class _IndianPhoneFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final text = newValue.text.replaceAll(' ', '');
-    if (text.length <= 5) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final clamped = digits.length > 10 ? digits.substring(0, 10) : digits;
+    if (clamped.length <= 5) {
       return TextEditingValue(
-        text: text,
-        selection: TextSelection.collapsed(offset: text.length),
+        text: clamped,
+        selection: TextSelection.collapsed(offset: clamped.length),
       );
     }
-    final formatted = '${text.substring(0, 5)} ${text.substring(5, text.length.clamp(5, 10))}';
+    final formatted = '${clamped.substring(0, 5)} ${clamped.substring(5)}';
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),

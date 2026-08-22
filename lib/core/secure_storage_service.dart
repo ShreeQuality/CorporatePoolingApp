@@ -22,19 +22,31 @@ class SecureStorageService {
   static Future<void> setJwt(String token) async => await saveJwt(token);
 
   static Future<void> saveJwt(String token) async {
-    await _storage.write(key: _keyJwtToken, value: token);
+    try {
+      await _storage.write(key: _keyJwtToken, value: token);
+    } catch (_) {}
   }
 
   static Future<String?> getJwt() async {
-    return await _storage.read(key: _keyJwtToken);
+    try {
+      return await _storage.read(key: _keyJwtToken);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<void> saveRefreshToken(String token) async {
-    await _storage.write(key: _keyRefreshToken, value: token);
+    try {
+      await _storage.write(key: _keyRefreshToken, value: token);
+    } catch (_) {}
   }
 
   static Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _keyRefreshToken);
+    try {
+      return await _storage.read(key: _keyRefreshToken);
+    } catch (_) {
+      return null;
+    }
   }
 
   // ─── User Profile Cache ───────────────────────────────────────
@@ -45,47 +57,71 @@ class SecureStorageService {
     required String jwt,
     String? refreshToken,
   }) async {
-    await _storage.write(key: _keyUserId, value: userId);
-    await _storage.write(key: _keyUserRole, value: role);
-    await _storage.write(key: _keyJwtToken, value: jwt);
-    if (refreshToken != null) {
-      await _storage.write(key: _keyRefreshToken, value: refreshToken);
-    }
+    try {
+      await _storage.write(key: _keyUserId, value: userId);
+      await _storage.write(key: _keyUserRole, value: role);
+      await _storage.write(key: _keyJwtToken, value: jwt);
+      if (refreshToken != null) {
+        await _storage.write(key: _keyRefreshToken, value: refreshToken);
+      }
+    } catch (_) {}
   }
 
   static Future<String?> getUserId() async {
-    return await _storage.read(key: _keyUserId);
+    try {
+      return await _storage.read(key: _keyUserId);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<String?> getUserRole() async {
-    return await _storage.read(key: _keyUserRole);
+    try {
+      return await _storage.read(key: _keyUserRole);
+    } catch (_) {
+      return null;
+    }
   }
 
-  // ─── Biometric Settings ───────────────────────────────────────
+  // ─── Biometrics & Security ────────────────────────────────────
 
   static Future<void> setBiometricEnabled(bool enabled) async {
-    await _storage.write(key: _keyBiometricEnabled, value: enabled.toString());
+    try {
+      await _storage.write(key: _keyBiometricEnabled, value: enabled.toString());
+    } catch (_) {}
   }
 
   static Future<bool> isBiometricEnabled() async {
-    final val = await _storage.read(key: _keyBiometricEnabled);
-    return val == 'true';
+    try {
+      final value = await _storage.read(key: _keyBiometricEnabled);
+      return value == 'true';
+    } catch (_) {
+      return false;
+    }
   }
 
-  // ─── Onboarding Settings ─────────────────────────────────────
-  
-  static Future<void> setOnboardingSeen(bool seen) async {
-    await _storage.write(key: _keyHasSeenOnboarding, value: seen.toString());
+  // ─── Onboarding State ─────────────────────────────────────────
+
+  static Future<void> setHasSeenOnboarding(bool seen) async {
+    try {
+      await _storage.write(key: _keyHasSeenOnboarding, value: seen.toString());
+    } catch (_) {}
   }
 
   static Future<bool> hasSeenOnboarding() async {
-    final val = await _storage.read(key: _keyHasSeenOnboarding);
-    return val == 'true';
+    try {
+      final value = await _storage.read(key: _keyHasSeenOnboarding);
+      return value == 'true';
+    } catch (_) {
+      return false;
+    }
   }
 
-  // ─── Clear / Logout ───────────────────────────────────────────
+  // ─── Clear All / Logout ───────────────────────────────────────
 
   static Future<void> clearAll() async {
-    await _storage.deleteAll();
+    try {
+      await _storage.deleteAll();
+    } catch (_) {}
   }
 }

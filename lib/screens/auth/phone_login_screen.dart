@@ -463,55 +463,69 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF050814),
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          // 1. Layer 1: Live Stardust Rainfall Animation (Matching Screen 1 & 2)
-          const Positioned.fill(
-            child: StarRain1(),
-          ),
+    return PopScope(
+      canPop: !_isOtpSent,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_isOtpSent) {
+          setState(() {
+            _isOtpSent = false;
+            _errorMessage = null;
+            _isOtpError = false;
+            _isOtpSuccess = false;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF050814),
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          children: [
+            // 1. Layer 1: Live Stardust Rainfall Animation (Matching Screen 1 & 2)
+            const Positioned.fill(
+              child: StarRain1(),
+            ),
 
-          // 2. Layer 2: Subtle Ambient Light Glows
-          Positioned(
-            top: size.height * 0.10,
-            left: size.width * 0.1,
-            child: Container(
-              width: size.width * 0.8,
-              height: size.width * 0.8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF00E5FF).withValues(alpha: 0.08),
-                    const Color(0xFF6C63FF).withValues(alpha: 0.04),
-                    Colors.transparent,
-                  ],
+            // 2. Layer 2: Subtle Ambient Light Glows
+            Positioned(
+              top: size.height * 0.10,
+              left: size.width * 0.1,
+              child: Container(
+                width: size.width * 0.8,
+                height: size.width * 0.8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                      const Color(0xFF6C63FF).withValues(alpha: 0.04),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // 3. Layer 3: Main Scrollable Content Area
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildBrandHeader(),
-                    const SizedBox(height: 24),
-                    _buildGlassCard(context),
-                    const SizedBox(height: 20),
-                    _buildLegalFooter(),
-                  ],
+            // 3. Layer 3: Main Scrollable Content Area
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildBrandHeader(),
+                      const SizedBox(height: 24),
+                      _buildGlassCard(context),
+                      const SizedBox(height: 20),
+                      _buildLegalFooter(),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

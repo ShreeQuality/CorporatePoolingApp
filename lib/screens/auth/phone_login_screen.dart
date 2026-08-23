@@ -619,6 +619,31 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   // ─── Welcome Dialog & Screen Handoff (TC-38) ────────────────────
 
   void _showSuccessDialog() {
+    bool hasNavigated = false;
+
+    void navigateToRoleSelection() {
+      if (hasNavigated) return;
+      hasNavigated = true;
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, anim, secAnim) =>
+              const RoleSelectionScreen(),
+          transitionsBuilder: (context, anim, secAnim, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 350),
+        ),
+      );
+    }
+
+    // Auto-transition after 1200ms
+    Timer(const Duration(milliseconds: 1200), () {
+      if (mounted && !hasNavigated) {
+        navigateToRoleSelection();
+      }
+    });
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -672,18 +697,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pushReplacement(
-                          PageRouteBuilder(
-                            pageBuilder: (context, anim, secAnim) =>
-                                const RoleSelectionScreen(),
-                            transitionsBuilder: (context, anim, secAnim, child) =>
-                                FadeTransition(opacity: anim, child: child),
-                            transitionDuration: const Duration(milliseconds: 350),
-                          ),
-                        );
-                      },
+                      onPressed: navigateToRoleSelection,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         shape: RoundedRectangleBorder(
@@ -1113,7 +1127,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
           textAlign: TextAlign.center,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(1),
+            LengthLimitingTextInputFormatter(6),
           ],
           style: const TextStyle(
             color: Colors.white,
@@ -1130,6 +1144,32 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
               });
             }
 
+            final digits = value.replaceAll(RegExp(r'\D'), '');
+
+            // Multi-digit Clipboard Paste Handling (TC-18, TC-19)
+            if (digits.length > 1) {
+              if (digits.length >= 6) {
+                final sixDigits = digits.substring(0, 6);
+                for (int i = 0; i < 6; i++) {
+                  _otpControllers[i].text = sixDigits[i];
+                }
+                _otpFocusNodes[5].requestFocus();
+                _handleVerifyOtp();
+                return;
+              } else {
+                for (int i = 0; i < digits.length && (index + i) < 6; i++) {
+                  _otpControllers[index + i].text = digits[i];
+                }
+                final nextFocus = (index + digits.length).clamp(0, 5);
+                _otpFocusNodes[nextFocus].requestFocus();
+                if (_enteredOtp.length == 6) {
+                  _handleVerifyOtp();
+                }
+                return;
+              }
+            }
+
+            // Single Digit Typing & Backtracking
             if (value.isNotEmpty && index < 5) {
               _otpFocusNodes[index + 1].requestFocus();
             } else if (value.isEmpty && index > 0) {

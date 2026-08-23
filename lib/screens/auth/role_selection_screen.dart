@@ -2,9 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/star_rain_1.dart';
+import '../../widgets/jarvis_holo_hud.dart';
 
-/// Screen 4: Role Selection Screen (Corporate Employee vs Public Commuter)
-/// Compliant with Screen 2 Golden Base Design System (Stardust Rainfall & Glassmorphism)
+/// Screen 4: Role Selection Screen (Choose Your Journey)
+/// Enhanced with J.A.R.V.I.S. Holographic HUD Reactor & HUD Telemetry Targeting
+/// 100% Compliant with Screen 2 Golden Base Design System (Stardust Rainfall & Frosted Glassmorphism)
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
 
@@ -12,30 +14,14 @@ class RoleSelectionScreen extends StatefulWidget {
   State<RoleSelectionScreen> createState() => _RoleSelectionScreenState();
 }
 
-class _RoleSelectionScreenState extends State<RoleSelectionScreen>
-    with SingleTickerProviderStateMixin {
+class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   String? _selectedRole; // 'corporate' or 'public'
 
-  late AnimationController _glowController;
-  late Animation<double> _glowAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat(reverse: true);
-
-    _glowAnimation = Tween<double>(begin: 0.35, end: 0.85).animate(
-      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _glowController.dispose();
-    super.dispose();
+  Color get _currentThemeColor {
+    if (_selectedRole == 'public') {
+      return const Color(0xFFFF9D00); // Molten Amber
+    }
+    return const Color(0xFF00E5FF); // Electric Cyan
   }
 
   void _handleContinue() {
@@ -44,13 +30,37 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          _selectedRole == 'corporate'
-              ? 'Selected Corporate Employee. Proceeding to Screen 5...'
-              : 'Selected Public Commuter. Proceeding to KYC...',
+        content: Row(
+          children: [
+            Icon(
+              _selectedRole == 'corporate'
+                  ? Icons.business_center_rounded
+                  : Icons.directions_car_filled_rounded,
+              color: _currentThemeColor,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _selectedRole == 'corporate'
+                    ? 'Corporate Journey Confirmed. Initializing Tech Park Gateway...'
+                    : 'Public Commuter Confirmed. Initializing KYC Verification...',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                ),
+              ),
+            ),
+          ],
         ),
         backgroundColor: const Color(0xFF0E1630),
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: _currentThemeColor.withValues(alpha: 0.4)),
+        ),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -68,27 +78,34 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
             child: StarRain1(),
           ),
 
-          // 2. Ambient Radial Glow
+          // 2. Ambient Radial Glow Reacting to Selection Color
           Positioned(
-            top: size.height * 0.12,
+            top: size.height * 0.08,
             left: size.width * 0.15,
-            child: Container(
-              width: size.width * 0.7,
-              height: size.width * 0.7,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF00E5FF).withValues(alpha: 0.08),
-                    const Color(0xFF6C63FF).withValues(alpha: 0.04),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
+            child: TweenAnimationBuilder<Color?>(
+              tween: ColorTween(begin: _currentThemeColor, end: _currentThemeColor),
+              duration: const Duration(milliseconds: 500),
+              builder: (context, glowColor, child) {
+                final c = glowColor ?? const Color(0xFF00E5FF);
+                return Container(
+                  width: size.width * 0.7,
+                  height: size.width * 0.7,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        c.withValues(alpha: 0.12),
+                        const Color(0xFF6C63FF).withValues(alpha: 0.04),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
-          // 3. Main Scrollable View
+          // 3. Main Scrollable Content
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -96,7 +113,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildHeader(),
+                    _buildJarvisHeader(),
                     const SizedBox(height: 28),
                     _buildRoleCard(
                       roleId: 'corporate',
@@ -127,34 +144,21 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
-  Widget _buildHeader() {
+  /// Top J.A.R.V.I.S. Arc Reactor Core & Title Header
+  Widget _buildJarvisHeader() {
     return Column(
       children: [
-        AnimatedBuilder(
-          animation: _glowAnimation,
-          builder: (context, child) {
-            return Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
-                border: Border.all(
-                  color: const Color(0xFF00E5FF).withValues(alpha: _glowAnimation.value),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00E5FF).withValues(alpha: 0.25 * _glowAnimation.value),
-                    blurRadius: 24,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.people_alt_rounded, color: Color(0xFF00E5FF), size: 32),
-            );
-          },
+        // Interactive JARVIS Reactor Core
+        JarvisHoloHud(
+          size: 110,
+          accentColor: _currentThemeColor,
+          centerIcon: _selectedRole == 'corporate'
+              ? Icons.apartment_rounded
+              : _selectedRole == 'public'
+                  ? Icons.commute_rounded
+                  : Icons.all_inclusive_rounded,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         const Text(
           'Choose Your Journey',
           textAlign: TextAlign.center,
@@ -179,6 +183,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
+  /// Frosted Glassmorphism Card with Sci-Fi HUD Corner Brackets
   Widget _buildRoleCard({
     required String roleId,
     required String title,
@@ -216,70 +221,129 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: accentColor.withValues(alpha: 0.20),
-                        blurRadius: 20,
+                        color: accentColor.withValues(alpha: 0.25),
+                        blurRadius: 24,
                         offset: const Offset(0, 6),
                       ),
                     ]
                   : null,
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                // Sci-Fi HUD Corner Reticles on Active Card
+                if (isSelected)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _HudCornerPainter(cornerColor: accentColor),
+                    ),
                   ),
-                  child: Icon(icon, color: accentColor, size: 26),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Icon Box with Neon Border
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: accentColor.withValues(alpha: isSelected ? 0.7 : 0.3),
+                          width: isSelected ? 1.5 : 1.0,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: accentColor.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Icon(icon, color: accentColor, size: 26),
+                    ),
+                    const SizedBox(width: 16),
+
+                    // Title, Subtitle, & Badge
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : const Color(0xFFFFF8F0),
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : const Color(0xFFFFF8F0),
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isSelected ? accentColor : Colors.transparent,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? accentColor
+                                        : Colors.white.withValues(alpha: 0.3),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: isSelected
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 14,
+                                        color: Color(0xFF050814),
+                                      )
+                                    : null,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            subtitle,
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 13,
+                              height: 1.35,
                             ),
                           ),
+                          const SizedBox(height: 10),
+
+                          // Futuristic Telemetry Badge
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: accentColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
+                              color: isSelected
+                                  ? accentColor.withValues(alpha: 0.20)
+                                  : Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? accentColor.withValues(alpha: 0.5)
+                                    : Colors.white.withValues(alpha: 0.1),
+                              ),
                             ),
                             child: Text(
                               badgeText,
                               style: TextStyle(
-                                color: accentColor,
-                                fontSize: 10.5,
+                                color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 12.5,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -289,30 +353,35 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
+  /// Modern Radiant Gradient Action Button
   Widget _buildContinueButton() {
-    final enabled = _selectedRole != null;
+    final isEnabled = _selectedRole != null;
 
-    return Opacity(
-      opacity: enabled ? 1.0 : 0.45,
-      child: Container(
-        width: double.infinity,
-        height: 52,
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF00E5FF),
-              Color(0xFF0088FF),
-            ],
-          ),
-          boxShadow: enabled
+          gradient: isEnabled
+              ? LinearGradient(
+                  colors: _selectedRole == 'corporate'
+                      ? [const Color(0xFF00E5FF), const Color(0xFF0088FF)]
+                      : [const Color(0xFFFFB300), const Color(0xFFFF6D00)],
+                )
+              : LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.08),
+                    Colors.white.withValues(alpha: 0.04),
+                  ],
+                ),
+          boxShadow: isEnabled
               ? [
                   BoxShadow(
-                    color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
-                    blurRadius: 18,
-                    offset: const Offset(0, 4),
+                    color: _currentThemeColor.withValues(alpha: 0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
                   ),
                 ]
               : null,
@@ -321,24 +390,24 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: enabled ? _handleContinue : null,
-            child: const Center(
+            onTap: isEnabled ? _handleContinue : null,
+            child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Continue',
+                    'Continue to Verification',
                     style: TextStyle(
-                      color: Color(0xFF030712),
-                      fontSize: 15,
+                      color: isEnabled ? const Color(0xFF050814) : const Color(0xFF64748B),
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.4,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_forward_rounded,
-                    color: Color(0xFF030712),
+                    color: isEnabled ? const Color(0xFF050814) : const Color(0xFF64748B),
                     size: 18,
                   ),
                 ],
@@ -348,5 +417,77 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
         ),
       ),
     );
+  }
+}
+
+/// CustomPainter for Sci-Fi HUD Corner Targeting Brackets on Active Cards
+class _HudCornerPainter extends CustomPainter {
+  final Color cornerColor;
+
+  _HudCornerPainter({required this.cornerColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = cornerColor.withValues(alpha: 0.8)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    const armLength = 10.0;
+    const padding = 6.0;
+
+    // Top-Left
+    canvas.drawLine(
+      const Offset(padding, padding + armLength),
+      const Offset(padding, padding),
+      paint,
+    );
+    canvas.drawLine(
+      const Offset(padding, padding),
+      const Offset(padding + armLength, padding),
+      paint,
+    );
+
+    // Top-Right
+    canvas.drawLine(
+      Offset(size.width - padding - armLength, padding),
+      Offset(size.width - padding, padding),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width - padding, padding),
+      Offset(size.width - padding, padding + armLength),
+      paint,
+    );
+
+    // Bottom-Left
+    canvas.drawLine(
+      Offset(padding, size.height - padding - armLength),
+      Offset(padding, size.height - padding),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(padding, size.height - padding),
+      Offset(padding + armLength, size.height - padding),
+      paint,
+    );
+
+    // Bottom-Right
+    canvas.drawLine(
+      Offset(size.width - padding - armLength, size.height - padding),
+      Offset(size.width - padding, size.height - padding),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width - padding, size.height - padding),
+      Offset(size.width - padding, size.height - padding - armLength),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _HudCornerPainter oldDelegate) {
+    return oldDelegate.cornerColor != cornerColor;
   }
 }

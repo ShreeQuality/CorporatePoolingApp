@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/star_rain_1.dart';
@@ -183,7 +182,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     );
   }
 
-  /// Frosted Glassmorphism Card with Sci-Fi HUD Corner Brackets
+  /// Crystal Transparent Glass Card with Visible Stardust Rainfall Behind It
   Widget _buildRoleCard({
     required String roleId,
     required String title,
@@ -196,157 +195,154 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () {
-            HapticFeedback.selectionClick();
-            setState(() {
-              _selectedRole = roleId;
-            });
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? accentColor.withValues(alpha: 0.06)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isSelected ? accentColor : Colors.white.withValues(alpha: 0.15),
-                width: isSelected ? 1.8 : 1.0,
-              ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: accentColor.withValues(alpha: 0.20),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _selectedRole = roleId;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? accentColor.withValues(alpha: 0.08)
+                : Colors.white.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected ? accentColor : Colors.white.withValues(alpha: 0.18),
+              width: isSelected ? 1.8 : 1.0,
             ),
-            child: Stack(
-              children: [
-                // Sci-Fi HUD Corner Reticles on Active Card
-                if (isSelected)
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: _HudCornerPainter(cornerColor: accentColor),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.25),
+                      blurRadius: 24,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Stack(
+            children: [
+              // Sci-Fi HUD Corner Reticles on Active Card
+              if (isSelected)
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _HudCornerPainter(cornerColor: accentColor),
+                  ),
+                ),
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon Box with Neon Border
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: isSelected ? 0.7 : 0.3),
+                        width: isSelected ? 1.5 : 1.0,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: accentColor.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Icon(icon, color: accentColor, size: 26),
+                  ),
+                  const SizedBox(width: 16),
+
+                  // Title, Subtitle, & Badge
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : const Color(0xFFFFF8F0),
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isSelected ? accentColor : Colors.transparent,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? accentColor
+                                      : Colors.white.withValues(alpha: 0.3),
+                                  width: 2,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 14,
+                                      color: Color(0xFF050814),
+                                    )
+                                  : null,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 13,
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Futuristic Telemetry Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? accentColor.withValues(alpha: 0.20)
+                                : Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected
+                                  ? accentColor.withValues(alpha: 0.5)
+                                  : Colors.white.withValues(alpha: 0.1),
+                            ),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: TextStyle(
+                              color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Icon Box with Neon Border
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: accentColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: accentColor.withValues(alpha: isSelected ? 0.7 : 0.3),
-                          width: isSelected ? 1.5 : 1.0,
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: accentColor.withValues(alpha: 0.3),
-                                  blurRadius: 12,
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Icon(icon, color: accentColor, size: 26),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Title, Subtitle, & Badge
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  title,
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : const Color(0xFFFFF8F0),
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isSelected ? accentColor : Colors.transparent,
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? accentColor
-                                        : Colors.white.withValues(alpha: 0.3),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: isSelected
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 14,
-                                        color: Color(0xFF050814),
-                                      )
-                                    : null,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            subtitle,
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 13,
-                              height: 1.35,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Futuristic Telemetry Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? accentColor.withValues(alpha: 0.20)
-                                  : Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected
-                                    ? accentColor.withValues(alpha: 0.5)
-                                    : Colors.white.withValues(alpha: 0.1),
-                              ),
-                            ),
-                            child: Text(
-                              badgeText,
-                              style: TextStyle(
-                                color: isSelected ? accentColor : const Color(0xFFE2E8F0),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

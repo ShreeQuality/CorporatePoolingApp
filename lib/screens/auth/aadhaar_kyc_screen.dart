@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/star_rain_1.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
+import '../../providers/auth_provider.dart';
 import 'driver_kyc_screen.dart';
 
 /// Current active verification step on Screen 6
@@ -903,8 +905,22 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
             height: 52,
             child: ElevatedButton.icon(
               key: const Key('continue_to_next_screen_button'),
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.mediumImpact();
+                
+                // Show a quick saving indicator if needed, but for now we just await
+                final authProvider = context.read<AuthProvider>();
+                
+                await authProvider.updateProfile(
+                  fullName: profile.fullName,
+                  dateOfBirth: profile.dob,
+                  gender: profile.gender,
+                  homeCity: profile.district, // using district as home city
+                  selfiePhotoUrl: profile.photoUrl,
+                );
+
+                if (!mounted) return;
+
                 widget.onKycSuccess?.call(profile);
                 Navigator.of(context).push(
                   MaterialPageRoute(

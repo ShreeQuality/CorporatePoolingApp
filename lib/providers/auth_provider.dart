@@ -158,6 +158,27 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> updateProfile({
+    String? fullName,
+    String? dateOfBirth,
+    String? gender,
+    String? homeCity,
+    String? selfiePhotoUrl,
+  }) async {
+    try {
+      final res = await ApiClient.patch('/auth/profile', {
+        if (fullName != null) 'full_name': fullName,
+        if (dateOfBirth != null) 'date_of_birth': dateOfBirth,
+        if (gender != null) 'gender': gender,
+        if (homeCity != null) 'home_city': homeCity,
+        if (selfiePhotoUrl != null) 'selfie_photo_url': selfiePhotoUrl,
+      });
+      return jsonDecode(res.body);
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
   Future<Map<String, dynamic>> registerCorporate({
     required String fullName,
     required String email,

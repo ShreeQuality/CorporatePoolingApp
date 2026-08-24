@@ -106,25 +106,29 @@ Corporate Employer / HR Manager Flow:
 #### A. Corporate Employees (`corporate_verify_screen.dart`)
 To ensure total safety and community trust, corporate commuters complete **Dual-Shield Verification with Mandatory Employer Approval**:
 
-```
-[ STEP 1: INVITATION DELIVERY ]
-🔹 Primary: Universal Smart Deep-Link (https://join.corporatepooling.com/infy2026) via Slack / Teams / Email.
-🔹 Fallback: 6-Character Company Invite Code (e.g. "INFY26") entered manually on signup screen.
+[ STEP 1: CORPORATE DOMAIN CHECK (EMPLOYEE-LED GROWTH FLOW) ]
+🔹 Input: Employee enters `name@unregistered-company.com`.
+🔹 Action: Backend checks `companies` table whitelist.
+🔹 Branch A (Domain Found): Proceeds immediately to Step 2 (Email OTP).
+🔹 Branch B (Domain NOT Found): Triggers B2B Invite Flow -> App says "Your company is not registered. Enter your HR's email to invite them."
                           ⬇
-[ STEP 2: WORK EMAIL OTP & DOMAIN MATCH ]
-🔹 Employee enters work email (@infosys.com) ➔ Validates domain ➔ Submits 6-digit OTP.
+[ STEP 1B: B2B AUTOMATED SALES INVITATION (IF BRANCH B) ]
+🔹 Action: Backend sends automated sales email to the provided HR email ("Your employees want to carpool! Claim your 90-day free trial.").
+🔹 Gate: Employee is BLOCKED from OTP verification until HR registers the company on the Employer Web Portal.
                           ⬇
-[ STEP 3: EMPLOYER / HR REAL-TIME APPROVAL GATE (Pending State) ]
-🔹 Employee placed in "pending_approval" status.
-🔹 Real-time Popup / Alert appears on Employer HR Portal.
+[ STEP 2: EMAIL VERIFICATION (IF BRANCH A / UNLOCKED) ]
+🔹 Action: App triggers OTP to work email.
+                          ⬇
+[ STEP 3: EMPLOYER / ADMIN APPROVAL GATE ]
+🔹 Real-time Popup / Alert appears on Employer HR Portal (if they have one) OR Super Admin checks Office ID.
                           ⬇
 [ VERIFIED CORPORATE MEMBER ACTIVATED ]
 🔹 Status updated to "active".
 🔹 Internal company carpool roster unlocked!
-```
 
-1. **Real-Time Employer / HR Approval Gate:** ONLY when the Employer/HR clicks **`[ ✓ APPROVE ]`** is the employee officially admitted into the corporate workspace.
-2. **Legal Identity Verification (Screen 6 - Mandatory Aadhaar KYC):**
+1. **The Employee-Led B2B Invite Flow:** If an employee attempts to register with an unknown domain, the system uses them as a lead to automatically invite their HR department to purchase a B2B subscription. The employee cannot verify until the company is officially onboarded.
+2. **Real-Time Employer / HR Approval Gate:** ONLY when the Employer/HR clicks **`[ ✔ APPROVE ]`** is the employee officially admitted into the corporate workspace.
+3. **Legal Identity Verification (Screen 6 - Mandatory Aadhaar KYC):**
    - Implemented via **DigiLocker Webview** with Setu/Cashfree API.
    - Includes **Selfie Liveness Capture** and automated Face Match vs Aadhaar DP.
    - Fallback offline **Secure QR Code Scan** available.

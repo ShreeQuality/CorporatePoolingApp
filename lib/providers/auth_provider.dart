@@ -177,6 +177,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> inviteHR({
+    required String hrEmail,
+    required String companyDomain,
+    String? requestedByEmail,
+  }) async {
+    try {
+      final res = await ApiClient.post('/auth/invite-hr', {
+        'hr_email': hrEmail,
+        'company_domain': companyDomain,
+        'requested_by_email': requestedByEmail,
+      });
+      return jsonDecode(res.body);
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
   Future<Map<String, dynamic>> registerPublic({
     required String fullName,
     required String email,

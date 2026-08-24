@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/star_rain_1.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/corporate_verify_validator.dart';
+import '../../providers/auth_provider.dart';
 import 'aadhaar_kyc_screen.dart';
 
 /// Screen 5: Commuter Verification & Identity Gateway
@@ -286,52 +288,157 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       _otpErrorMessage = null;
     });
 
-    // Simulate Network Dispatch (250ms)
-    await Future.delayed(const Duration(milliseconds: 250));
+    final authProvider = context.read<AuthProvider>();
+    final email = _emailController.text.trim();
+
+    // Call Node.js Backend API
+    final response = await authProvider.registerCorporate(
+      fullName: 'Corporate User', // Ideally gathered from previous screen
+      email: email,
+      password: 'CorporateTempPassword123!', // Since this is an OTP flow, backend sets random or defaults
+    );
 
     if (!mounted) return;
 
-    setState(() {
-      _isDispatchingOtp = false;
-      _isOtpSent = true;
-    });
+    if (response['success'] == true || response['message']?.contains('verify your work email') == true) {
+      // ✅ Company exists and OTP was dispatched
+      setState(() {
+        _isDispatchingOtp = false;
+        _isOtpSent = true;
+      });
 
-    _startResendCountdown();
-    _checkClipboardForOtp();
+      _startResendCountdown();
+      _checkClipboardForOtp();
 
-    // Auto-focus 1st digit cell
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _otpFocusNodes.isNotEmpty) {
-        _otpFocusNodes[0].requestFocus();
-      }
-    });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _otpFocusNodes.isNotEmpty) {
+          _otpFocusNodes[0].requestFocus();
+        }
+      });
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.mark_email_read_rounded, color: Color(0xFF00E5FF), size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'OTP dispatched to ${_emailController.text.trim()}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13.5,
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.mark_email_read_rounded, color: Color(0xFF00E5FF), size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'OTP dispatched to $email',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13.5),
                 ),
               ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF0E1630),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: const Color(0xFF00E5FF).withValues(alpha: 0.4)),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (response['action'] == 'require_hr_email') {
+      // 🚨 B2B Employee-Led Flow Triggered (Domain Not Found)
+      setState(() => _isDispatchingOtp = false);
+      _showB2BInviteDialog(email.split('@').last);
+    } else {
+      // ❌ Generic Error
+      setState(() => _isDispatchingOtp = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Failed to connect to server.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  void _showB2BInviteDialog(String domain) {
+    final TextEditingController hrEmailController = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0E1630),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: const Color(0xFF00E5FF).withValues(alpha: 0.4)),
             ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF0E1630),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: const Color(0xFF00E5FF).withValues(alpha: 0.4)),
-        ),
-        duration: const Duration(seconds: 2),
+            title: const Text(
+              'Company Not Found',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'It looks like @$domain is not part of Corporate Pooling yet.\n\nEnter your HR\'s email address below, and we will send them a 90-Day Free Trial invite so you can start pooling!',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: hrEmailController,
+                  style: const TextStyle(color: Colors.white),
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: 'hr@$domain',
+                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00E5FF),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        if (hrEmailController.text.trim().isEmpty) return;
+                        
+                        setDialogState(() => isSubmitting = true);
+                        
+                        final res = await context.read<AuthProvider>().inviteHR(
+                          hrEmail: hrEmailController.text.trim(),
+                          companyDomain: domain,
+                        );
+
+                        setDialogState(() => isSubmitting = false);
+                        Navigator.pop(ctx);
+
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          SnackBar(
+                            content: Text(res['message'] ?? 'Invite sent to HR!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                child: isSubmitting
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.black))
+                    : const Text('Send Invite', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

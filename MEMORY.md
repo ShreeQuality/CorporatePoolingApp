@@ -30,7 +30,13 @@ We completely revamped the onboarding flow to prioritize speed and match industr
 * **Storage:** All photos (Selfie, DL, RC) are uploaded to Cloud Storage. The PostgreSQL database only stores the URL paths, never the raw image files.
 
 ## 4. Backend Database State (Supabase)
-* **Database Phase:** 100% Completed prior to Sprint 1.
+* **Database Phase:** Base architecture completed. Sprint 1 Gap Analysis applied.
+* **Sprint 1 Schema Updates:** 
+  * `users` table added: `date_of_birth`, `home_city`, `selfie_photo_url`, `is_driver` (Boolean).
+  * `vehicles` table added: `fuel_type`, `seating_capacity`, `insurance_expiry_date`, `puc_expiry_date`, `vehicle_exterior_photo_url`.
+* **Sprint 1 API Routes:** 
+  * `POST /api/v1/auth/invite-hr` (Employee-Led B2B Lead Generator. Blocks unauthorized domains).
+  * `POST /api/v1/kyc/vahan` (Securely calls Vahan and saves fuel/capacity data).
 * **Security:** Row-Level Security (RLS) is strictly enforced on all tables. (e.g., Users can only query their own wallets).
 * **Key Tables:** `users`, `vehicles`, `rides`, `ride_requests`, `wallets`, `coin_transactions`.
 * **Advanced Logic:** Uses Atomic RPC stored procedures (`complete_ride`, `reconcile_stuck_escrow`) and PostgreSQL Row Locks (`FOR UPDATE`) to prevent race conditions during Karma Coin wallet transactions.

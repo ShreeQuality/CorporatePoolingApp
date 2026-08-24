@@ -88,17 +88,14 @@ Corporate Employer / HR Manager Flow:
 ---
 
 ## 3. User Roles, Verification & Authentication
-
-### 3.1 Finalized Verification Framework by User Role
-
 ```
 +---------------------------------------------------------------------------------------------------+
-|                                 PLATFORM VERIFICATION MATRIX                                      |
+|                                 PLATFORM VERIFICATION MATRIX (SPRINT 1 FINALIZED)                 |
 +---------------------------------------------------------------------------------------------------+
-| 1. Corporate Employee  -> Phone OTP + [Work Email OTP OR Office ID Photo] + Mandatory Aadhaar KYC|
-| 2. Public / Family User-> Phone OTP + Mandatory Aadhaar / DL KYC (QR / ML Kit / Photo)            |
-| 3. Corporate Employer  -> Phone OTP + Admin Work Email OTP + GSTIN + CIN + Signed Letterhead (LOA)|
-| 4. Driver (Bike/Car)   -> Vehicle Plate Regex Check + Driving License Photo + Vehicle RC Photo    |
+| 1. Pure Rider (No vehicle) -> Phone OTP + Corporate/Public selection + Mandatory Aadhaar KYC      |
+| 2. Private Car/Bike Driver -> Aadhaar KYC + Sarathi API (DL) + Vahan API (RC) + Vehicle Photo     |
+| 3. Auto/Cab Passenger      -> Aadhaar KYC + Vahan API Commercial Plate Check (Driver docs skipped)|
+| 4. Corporate Employer      -> Phone OTP + Admin Work Email + GSTIN + CIN + Letterhead (LOA)       |
 +---------------------------------------------------------------------------------------------------+
 ```
 
@@ -106,67 +103,51 @@ Corporate Employer / HR Manager Flow:
 
 ### 3.2 Detailed Verification Specifications
 
-#### A. Corporate Employees (`corporate_signup_screen.dart`)
+#### A. Corporate Employees (`corporate_verify_screen.dart`)
 To ensure total safety and community trust, corporate commuters complete **Dual-Shield Verification with Mandatory Employer Approval**:
 
 ```
 [ STEP 1: INVITATION DELIVERY ]
-• Primary: Universal Smart Deep-Link (https://join.corporatepooling.com/infy2026) via Slack / Teams / Email.
-• Fallback: 6-Character Company Invite Code (e.g. "INFY26") entered manually on signup screen.
-                          │
-                          ▼
+🔹 Primary: Universal Smart Deep-Link (https://join.corporatepooling.com/infy2026) via Slack / Teams / Email.
+🔹 Fallback: 6-Character Company Invite Code (e.g. "INFY26") entered manually on signup screen.
+                          ⬇
 [ STEP 2: WORK EMAIL OTP & DOMAIN MATCH ]
-• Employee enters work email (@infosys.com) ➔ Validates domain ➔ Submits 6-digit OTP.
-                          │
-                          ▼
+🔹 Employee enters work email (@infosys.com) ➔ Validates domain ➔ Submits 6-digit OTP.
+                          ⬇
 [ STEP 3: EMPLOYER / HR REAL-TIME APPROVAL GATE (Pending State) ]
-• Employee placed in "pending_approval" status.
-• Real-time Popup / Alert appears on Employer HR Portal:
-  "🔔 Amit Kumar (amit.k@infosys.com • #INF-8842) wants to join your carpool workspace."
-                          │
-         ┌────────────────┴────────────────────────┐
-         ▼ (Option A: HR Clicks [ ✅ APPROVE ])     ▼ (Option B: HR Clicks [ ❌ REJECT ])
-[ VERIFIED CORPORATE MEMBER ACTIVATED ]     [ REJECTED / PUBLIC MODE ]
-• Status updated to "active".               • User restricted from company roster & funds.
-• "Verified Corporate Citizen" Badge awarded.• Gracefully operates in Public Commuter mode.
-• 100 Welcome Karma Coins airdropped!       • Zero access to company master coin pool.
-• Internal company carpool roster unlocked!
+🔹 Employee placed in "pending_approval" status.
+🔹 Real-time Popup / Alert appears on Employer HR Portal.
+                          ⬇
+[ VERIFIED CORPORATE MEMBER ACTIVATED ]
+🔹 Status updated to "active".
+🔹 Internal company carpool roster unlocked!
 ```
 
-1. **Invitation & Onboarding Channels:**
-   - **Method 1 (Primary - Smart Deep-Link):** HR Manager copies the company's unique deep-link (`https://join.corporatepooling.com/infy2026`) and posts it in company Slack, Microsoft Teams, or internal intranet. Clicking the link auto-installs the app and pre-fills company details.
-   - **Method 2 (Fallback - 6-Character Invite Code):** If firewall/MDM policies block deep-links, the employee manually enters the company code (e.g. `INFY26`) on the signup screen.
-2. **Real-Time Employer / HR Approval Gate:**
-   - When an employee signs up, their profile is held in a `pending_approval` state.
-   - The Employer HR Manager receives an instant **Real-Time Popup / Banner Alert** in the Corporate Portal.
-   - **Strict Governance Rule:** ONLY when the Employer/HR clicks **`[ ✅ APPROVE ]`** is the employee officially admitted into the corporate workspace, awarded the corporate badge, granted **100 Welcome Karma Coins**, and linked to the monthly prepaid coin grant pool.
-3. **Legal Identity Verification (Mandatory Aadhaar KYC):**
-   - **Phase 1 (₹0 Launch):** On-Device Aadhaar Secure QR Code scan / Google ML Kit text extraction with Verhoeff mathematical checksum + photo upload.
-   - **Phase 2 (Scale):** Optional automated DigiLocker API (Setu / Cashfree) for instant 2-second Govt OTP KYC.
+1. **Real-Time Employer / HR Approval Gate:** ONLY when the Employer/HR clicks **`[ ✓ APPROVE ]`** is the employee officially admitted into the corporate workspace.
+2. **Legal Identity Verification (Screen 6 - Mandatory Aadhaar KYC):**
+   - Implemented via **DigiLocker Webview** with Setu/Cashfree API.
+   - Includes **Selfie Liveness Capture** and automated Face Match vs Aadhaar DP.
+   - Fallback offline **Secure QR Code Scan** available.
 
-#### B. Public & Family Users (`public_signup_screen.dart`)
-1. **Primary Phone Auth:** SMS OTP via Supabase Auth + Fast2SMS/MSG91.
-2. **Identity KYC:** Mandatory Government ID verification (Aadhaar or Driving License) via Secure QR scan / on-device OCR / Super Admin audit.
-3. **Family Account Linking:** Optional link to a primary employee's account for **sharing Karma Coin balances only**.
+#### B. Public & Family Users
+1. **Primary Phone Auth:** SMS OTP via Supabase Auth + Fast2SMS/MSG91 (Screen 3).
+2. **Identity KYC:** Mandatory Government ID verification (Aadhaar KYC) identical to Corporate flow.
 
-#### C. Corporate Employers / HR Managers (`company_manager_signup_screen.dart`)
+#### C. Corporate Employers / HR Managers
 To onboard an enterprise onto the platform's B2B prepaid program:
-1. **Account Creation:** Phone SMS OTP + Authorized Corporate Work Email OTP (`hr.director@company.com`).
-2. **Required Business Documents:**
-   - **GSTIN Certificate (Form GST REG-06):** 15-digit tax registration proof.
-   - **Certificate of Incorporation (CIN):** 21-digit MCA registration document.
-   - **Company Corporate PAN Card:** 10-digit tax ID.
-   - **HR Letter of Authority (LOA):** 1-page signed authorization on official company letterhead with corporate stamp.
-3. **Super Admin Verification & Anti-Fraud Gates:**
-   - Super Admin cross-references GSTIN on the official Govt GST Portal (`services.gst.gov.in`).
-   - Super Admin verifies company status and confirms signing Director name on the official MCA Master Database (`mca.gov.in`).
-   - Super Admin verifies corporate email domain ownership before whitelisting.
-4. **Activation:** Super Admin activates the company portal, enabling prepaid wallet recharges and employee commute grants.
+1. **Account Creation:** Phone SMS OTP + Authorized Corporate Work Email OTP.
+2. **Required Business Documents:** GSTIN, CIN, PAN, HR Letter of Authority (LOA).
+3. **Super Admin Verification & Activation:** Super Admin cross-references GSTIN/MCA databases and activates the portal.
 
-#### D. Drivers (`add_vehicle_screen.dart`)
-1. **Format Validation (₹0):** Vehicle registration number validated in Dart (`^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$`).
-2. **Dual Document Upload:** Snaps photo of **Driving License (DL)** and **Vehicle RC Card**.
-3. **1-Click Super Admin Approval:** Documents audited side-by-side in the Super Admin KYC queue at **₹0 API cost**.
+#### D. Drivers & Vehicle Integration (Screen 7 - SKIPPABLE)
+1. **The Global Skip Button:** Screen 7 is optional at registration. Pure riders can hit "Skip" and go directly to the Dashboard.
+2. **Private Drivers (Car/Bike):**
+   - **DL Validation:** Real-time Sarathi API check. Auto-matches name with Aadhaar.
+   - **RC Validation:** Real-time Vahan API check. Extracts Make, Model, Fuel, Seating.
+   - **Safety Standards:** Insurance and PUC expiries are flagged as *Informative Warnings* (non-blocking) to optimize onboarding speed.
+3. **Auto / Cab Sharers:**
+   - Passengers sharing a commercial vehicle they are riding in skip DL/RC checks.
+   - Only require Vahan API Commercial Plate verification.
 
 ---
 

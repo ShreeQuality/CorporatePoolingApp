@@ -16,15 +16,17 @@ The **Super Admin Management System** is a dedicated web and desktop administrat
 ## 2. User Roles, Corporate Verification & KYC Governance
 *(Corresponds to Main SRS Section 3: User Roles & Auth)*
 
-### 2.1 User Management & Manual KYC Audit Queue
-1. **Global User Search & Profile Inspection:**
-   - Search any user across mobile phone number, full name, or corporate work email.
-   - Inspect verification badges (Work Email, Office ID Photo, Aadhaar KYC, DL, Vehicle RC), linked family accounts, and complete ride history.
-2. **Employee Physical Office ID Card Review Queue:**
-   - For employees who uploaded photos of their plastic Office ID badge (due to corporate email firewall blocks), Super Admin reviews the company logo, employee name, and employee ID with 1-click **Approve** or **Reject**.
-3. **Driver KYC Inspection (Side-by-Side DL + Vehicle RC):**
-   - Side-by-side high-resolution image viewer displaying the driver's **Driving License** and **Vehicle RC Card**.
-   - 1-Click action updates `users.dl_verified = true` and `vehicles.rc_verified = true` at **₹0 API cost**.
+### 2.1 Real-Time API Governance & Manual KYC Fallback Queue
+Primary KYC is processed instantly via **DigiLocker (Aadhaar)**, **Sarathi (DL)**, and **Vahan (RC)**. The Super Admin KYC Queue acts strictly as a **Fallback and Exception Handler** for edge cases:
+
+1. **Aadhaar Selfie Liveness Review:**
+   - If DigiLocker's automated Face Match score falls below 80%, Super Admin manually compares the user's live selfie against the fetched Aadhaar DP.
+2. **Employee Physical Office ID Card Review:**
+   - For employees who cannot use domain OTPs, Super Admin reviews the physical Office ID badge (Company logo, name, employee ID) with 1-click **Approve** or **Reject**.
+3. **Driver KYC Exception Queue (DL + RC):**
+   - Handles Sarathi/Vahan API timeouts or OCR mismatches. Super Admin views side-by-side high-resolution images of the **Driving License** and **Vehicle RC Card**.
+4. **Auto/Cab Commercial Passenger Audit:**
+   - Verifies users who registered under the "Auto/Cab Sharer" flow (skipping DL, verifying commercial Vahan plate only).
 
 ### 2.2 Employer Verification & Anti-Fraud Governance Console
 When an enterprise HR / Company Manager registers their company, Super Admin audits the 4 mandatory business documents:
@@ -64,11 +66,14 @@ Super Admin has complete, real-time visibility into **how many employees are in 
 
 #### Inside the Pending Join Inspector (`AdminCompanyManagerScreen`):
 When Super Admin clicks **`[ 🔍 VIEW QUEUE ]`** on any company:
-* **Pending Details:** Displays Employee Full Name, Work Email (`amit.k@infosys.com`), Employee ID (`#INF-8842`), Joined Via (Deep-Link / Code), and Pending Duration (e.g. *Pending for 48 hours*).
+* **Pending Details:** Displays Employee Full Name, Work Email (`amit.k@infosys.com`), Employee ID (`#INF-8842`), Joined Via (Deep-Link / Code), and Pending Duration.
 * **Super Admin Intervention Actions:**
-  * `[ 🔔 SEND URGENT HR APPROVAL REMINDER ]`: Dispatches automated high-priority push notification and email to HR Manager to approve pending employees.
-  * `[ ⚡ SUPER ADMIN FORCE APPROVE ]`: If HR Manager is unresponsive or on leave, Super Admin can emergency-approve verified domain employees with 1 click!
-  * `[ ❌ SUPER ADMIN FORCE REJECT ]`: Removes fraudulent or terminated employees from the queue.
+  * `[ 🚨 SEND URGENT HR APPROVAL REMINDER ]`: Dispatches automated high-priority push notification and email to HR Manager to approve pending employees.
+  * `[ ⚡ SUPER ADMIN FORCE APPROVE ]`: Emergency-approve verified domain employees with 1 click!
+
+#### B2B Employee-Led Inbound Leads Dashboard:
+* Displays all employees attempting to register from unverified domains (e.g., `@new-startup.com`).
+* Generates automated B2B sales emails to the company's HR department to invite them to the 90-day Corporate Trial.
 
 ---
 
@@ -96,15 +101,18 @@ When Super Admin clicks **`[ 🔍 VIEW QUEUE ]`** on any company:
 |  - [X] ENFORCE_TIME_OVERLAP_COLLISION_GUARD    (Block overlap)    |
 |  - [X] ENFORCE_DUAL_ROLE_COLLISION_GUARD       (Block dual role)  |
 |                                                                   |
-|  Vehicle Category & Capacity Limits:                              |
+|  Vehicle Category & Capacity Limits (Synced via Vahan):           |
 |  - Motorcycle / Scooter Max Passengers:        [ 1   ] (Locked)   |
 |  - Auto-Rickshaw Max Passengers:               [ 2   ]            |
 |  - Car / Sedan / SUV Max Passengers:           [ 3   ] (1 to 4)   |
 |  - [X] ENFORCE_MANDATORY_SPARE_HELMET          (2-Wheeler rule)   |
+|  - [X] ALLOW_WARNING_ONLY_FOR_EXPIRED_INSURANCE(Vahan Override)   |
+|  - [X] ALLOW_WARNING_ONLY_FOR_EXPIRED_PUC      (Vahan Override)   |
 |                                                                   |
 |  Karma Coin Rates:                                                |
-|  - Four-Wheeler Base Rate:                     [ 2.0 ] Coins/km   |
-|  - Two-Wheeler Base Rate:                      [ 1.0 ] Coins/km   |
+|  - [X] AUTO_CALCULATE_FARES_BASED_ON_FUEL_TYPE (EV/Petrol/Diesel) |
+|  - Four-Wheeler Base Rate (Petrol):            [ 2.0 ] Coins/km   |
+|  - Two-Wheeler Base Rate (Petrol):             [ 1.0 ] Coins/km   |
 |                                                                   |
 |                                [ SAVE POLICY ]                    |
 +-------------------------------------------------------------------+

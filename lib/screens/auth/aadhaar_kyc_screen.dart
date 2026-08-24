@@ -922,18 +922,16 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 if (!mounted) return;
 
                 widget.onKycSuccess?.call(profile);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => DriverKycScreen(
-                      verifiedAadhaarProfile: profile,
-                      previousPayload: widget.previousPayload,
-                    ),
-                  ),
-                );
+                
+                // Progressive Onboarding: Skip Vehicle KYC and jump straight to the Dashboard
+                Navigator.of(context).pushReplacementNamed('/home', arguments: {
+                  'profile': profile.toMap(),
+                  ...widget.previousPayload ?? {},
+                });
               },
-              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+              icon: const Icon(Icons.dashboard_rounded, size: 18),
               label: const Text(
-                'Proceed to Driver & Vehicle KYC',
+                'Enter Dashboard',
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 15,

@@ -22,12 +22,18 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  // Active variation index (0: V11-V1 ... 9: V11-V10, 10: V11-V10-NEW). Default is 10 (V11-V10-NEW)
-  int _selectedVariationIndex = 10;
+  // Locked to V11-V2. Other versions kept as files in /widgets but not imported.
+  // This prevents 70 idle AnimationControllers from running in the background.
+  static const int _selectedVariationIndex = 0;
 
-  // Locked to V11-V2 (Gyroscopic Precession). Other versions are preserved as
-  // files in /widgets but not imported. Change import + index to switch versions.
-  final int _selectedVariationIndex = 1;
+  // Only V11-V2 entry kept. Add more here when you re-import other versions.
+  static const List<Map<String, String>> _vibrationPatterns = [
+    {
+      'label': 'V11-V2',
+      'name': 'Gyroscopic Precession',
+      'desc': 'Dynamic 3D conical multi-axis wobble & 12Hz stabilizer hum',
+    },
+  ];
 
   @override
   void initState() {
@@ -130,9 +136,8 @@ class _SplashScreenState extends State<SplashScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: InkWell(
                             onTap: () {
-                              setState(() {
-                                _selectedVariationIndex = idx;
-                              });
+                              // Selector is locked to V11-V2 during this sprint.
+                              // To add more versions: re-import the file & add to _vibrationPatterns.
                             },
                             borderRadius: BorderRadius.circular(18),
                             child: AnimatedContainer(

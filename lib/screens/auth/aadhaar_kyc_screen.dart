@@ -1,11 +1,9 @@
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
-import '../../providers/auth_provider.dart';
-import 'driver_kyc_screen.dart';
+import 'package:go_router/go_router.dart';
 
 /// Current active verification step on Screen 6
 enum AadhaarVerificationStep {
@@ -925,14 +923,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 widget.onKycSuccess?.call(profile);
                 
                 // Route to Driver Screen (Feature Exposure UX) so they know they can offer rides
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => DriverKycScreen(
-                      verifiedAadhaarProfile: profile,
-                      previousPayload: widget.previousPayload,
-                    ),
-                  ),
-                );
+                context.go('/driver-kyc', extra: profile);
               },
               icon: const Icon(Icons.arrow_forward_rounded, size: 18),
               label: const Text(
@@ -2018,7 +2009,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppTheme.glassWhite20),
+                side: const BorderSide(color: AppTheme.glassWhite20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

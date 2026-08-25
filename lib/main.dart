@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/services/supabase_service.dart';
 import 'providers/auth_provider.dart';
-import 'screens/auth/splash_screen.dart';
-import 'screens/dashboard/home_dashboard.dart';
+import 'core/router/app_router.dart';
 import 'widgets/core/app_background.dart';
 
 void main() async {
@@ -21,7 +20,7 @@ class KarmaRideApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'KarmaRide',
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark().copyWith(
@@ -32,14 +31,7 @@ class KarmaRideApp extends StatelessWidget {
             child: child ?? const SizedBox(),
           );
         },
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const SplashScreen(),
-          '/home': (context) {
-            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            return HomeDashboard(arguments: args);
-          },
-        },
+        routerConfig: appRouter,
       ),
     );
   }

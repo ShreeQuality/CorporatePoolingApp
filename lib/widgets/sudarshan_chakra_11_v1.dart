@@ -160,8 +160,8 @@ class _SudarshanChakra11V1State extends State<SudarshanChakra11V1>
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          Color(0xFFFF9D00).withValues(alpha: 0.35 + auraSurge),
-                          Color(0xFFFF5500).withValues(alpha: 0.18 + (auraSurge * 0.5)),
+                          const Color(0xFFFF9D00).withValues(alpha: 0.35 + auraSurge),
+                          const Color(0xFFFF5500).withValues(alpha: 0.18 + (auraSurge * 0.5)),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.50, 1.0],

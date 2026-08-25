@@ -138,11 +138,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.search_rounded, color: Colors.white70, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.search_rounded, color: Colors.white70, size: 24),
+              SizedBox(width: 8),
+              Text(
                 'Find a Ride',
                 style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -178,11 +178,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.directions_car_rounded, color: Colors.white70, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.directions_car_rounded, color: Colors.white70, size: 24),
+              SizedBox(width: 8),
+              Text(
                 'Give a Ride',
                 style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -215,7 +215,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   Widget _buildDividerOR() {
     return Row(
       children: [
-        Expanded(child: Divider(color: AppTheme.glassWhite10)),
+        const Expanded(child: Divider(color: AppTheme.glassWhite10)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
@@ -223,7 +223,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
             style: TextStyle(color: Colors.orange.withValues(alpha: 0.7), fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
-        Expanded(child: Divider(color: AppTheme.glassWhite10)),
+        const Expanded(child: Divider(color: AppTheme.glassWhite10)),
       ],
     );
   }
@@ -310,7 +310,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           backgroundColor: bgColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: AppTheme.glassWhite10),
+            side: const BorderSide(color: AppTheme.glassWhite10),
           ),
           elevation: 0,
         ),

@@ -1,11 +1,11 @@
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'onboarding_screen.dart';
+import 'package:go_router/go_router.dart';
 import '../../widgets/star_rain_1.dart';
 
 // Active chakra: V11-V2 (Gyroscopic Precession)
-// Other versions (v1, v3Ã¢â‚¬â€œv10, newsudarshan) kept as files in /widgets but NOT imported
+// Other versions (v1, v3ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“v10, newsudarshan) kept as files in /widgets but NOT imported
 // to avoid loading 70+ animation controllers into memory on app start.
 import '../../widgets/sudarshan_chakra_11_v2.dart';
 
@@ -61,9 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _handleNextPressed() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-    );
+    context.go('/onboarding');
   }
 
   @override
@@ -91,9 +89,6 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: const Color(0xFF02050F),
       body: Stack(
           children: [
-            // PRE-WARM: Compiles GPU Shaders for Onboarding silently while Chakra spins
-            const Offstage(offstage: true, child: OnboardingScreen()),
-
           // 1. Base Radial Gradient
           Positioned.fill(
             child: Container(
@@ -202,7 +197,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       children: [
                         Text(
-                          '${_vibrationPatterns[_selectedVariationIndex]['label']} • ${_vibrationPatterns[_selectedVariationIndex]['name']}',
+                          '${_vibrationPatterns[_selectedVariationIndex]['label']} â€¢ ${_vibrationPatterns[_selectedVariationIndex]['name']}',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 13,
@@ -273,7 +268,7 @@ class _SplashScreenState extends State<SplashScreen>
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'Smart • Verified • Sustainable Commutes',
+                    'Smart â€¢ Verified â€¢ Sustainable Commutes',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -366,4 +361,5 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
 

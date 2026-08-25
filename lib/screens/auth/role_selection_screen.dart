@@ -2,7 +2,7 @@ import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/jarvis_holo_hud.dart';
-import 'corporate_verify_screen.dart';
+import 'package:go_router/go_router.dart';
 
 /// Screen 4: Role Selection Screen (Choose Your Journey)
 /// Options: Company vs User
@@ -29,13 +29,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     if (_selectedRole == null) return;
     HapticFeedback.mediumImpact();
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => CorporateVerifyScreen(
-          preselectedRole: _selectedRole == 'company' ? 'corporate_employee' : 'public_user',
-        ),
-      ),
-    );
+    context.go('/corporate-verify', extra: {'preselectedRole': _selectedRole == 'company' ? 'corporate_employee' : 'public_user'});
   }
 
   @override

@@ -30,7 +30,6 @@ class AppTheme {
         primary: accentGreen,
         secondary: accentSaffron,
         surface: cardDark,
-        background: backgroundDark,
       ),
       textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
         displayLarge: const TextStyle(color: textLight, fontWeight: FontWeight.bold),

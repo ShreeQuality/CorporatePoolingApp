@@ -117,7 +117,7 @@ class CosmicDriftingStardustPainter1 extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final double fullHeight = size.height + 50.0;
-    final double twoPi = 2 * math.pi;
+    const double twoPi = 2 * math.pi;
 
     for (int i = 0; i < particles.length; i++) {
       final p = particles[i];

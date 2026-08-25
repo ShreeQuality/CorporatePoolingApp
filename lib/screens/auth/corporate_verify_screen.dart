@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/corporate_verify_validator.dart';
 import '../../providers/auth_provider.dart';
-import 'aadhaar_kyc_screen.dart';
+import 'package:go_router/go_router.dart';
 
 /// Screen 5: Commuter Verification & Identity Gateway
 /// Phase 7: End-to-End Visual Polish, Final Edge-Case Handling & Screen Transition Routing
@@ -746,11 +746,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       ),
     );
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => AadhaarKycScreen(previousPayload: payload),
-      ),
-    );
+    context.go('/aadhaar-kyc', extra: payload);
   }
 
   void _handlePublicUserContinue() {
@@ -793,11 +789,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       ),
     );
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => AadhaarKycScreen(previousPayload: publicPayload),
-      ),
-    );
+    context.go('/aadhaar-kyc', extra: publicPayload);
   }
 
   @override
@@ -1264,7 +1256,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppTheme.glassWhite15),
+                borderSide: const BorderSide(color: AppTheme.glassWhite15),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -1835,7 +1827,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppTheme.glassWhite15),
+                borderSide: const BorderSide(color: AppTheme.glassWhite15),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),

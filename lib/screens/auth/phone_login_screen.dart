@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import '../../core/api_client.dart';
 import '../../core/secure_storage_service.dart';
-import 'role_selection_screen.dart';
+import 'package:go_router/go_router.dart';
 
 /// Screen 3: Phone Authentication & 6-Digit SMS OTP Verification
 /// 100% compliant with Screen 3 Specification & Exhaustive Test Suite
@@ -626,15 +626,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
       hasNavigated = true;
       if (!mounted) return;
       Navigator.of(context).pop();
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, anim, secAnim) =>
-              const RoleSelectionScreen(),
-          transitionsBuilder: (context, anim, secAnim, child) =>
-              FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 350),
-        ),
-      );
+      context.go('/role-selection');
     }
 
     // Auto-transition after 1200ms
@@ -1206,9 +1198,9 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
             onTap: _showCountryPickerModal,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppTheme.glassWhite05,
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16),
                   bottomLeft: Radius.circular(16),
                 ),

@@ -1,6 +1,7 @@
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/driver_kyc_validator.dart';
@@ -402,7 +403,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
     widget.onSkip?.call();
     widget.onDriverKycSuccess?.call(skipPayload);
     if (widget.onSkip == null && widget.onDriverKycSuccess == null) {
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false, arguments: skipPayload);
+      context.go('/home');
     }
   }
 
@@ -502,7 +503,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFF050814).withValues(alpha: 0.6),
-        border: Border(
+        border: const Border(
           bottom: BorderSide(
             color: AppTheme.glassWhite08,
             width: 1,
@@ -556,7 +557,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
               backgroundColor: Colors.white.withValues(alpha: 0.06),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
+                side: const BorderSide(
                   color: AppTheme.glassWhite15,
                 ),
               ),
@@ -995,7 +996,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                   style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: AppTheme.glassWhite15),
+                  side: const BorderSide(color: AppTheme.glassWhite15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
@@ -1424,7 +1425,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                   style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: AppTheme.glassWhite15),
+                  side: const BorderSide(color: AppTheme.glassWhite15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
@@ -2382,7 +2383,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                 
                 // If no callback provided, route to the dashboard
                 if (widget.onDriverKycSuccess == null) {
-                  Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false, arguments: finalPayload);
+                  context.go('/home');
                 }
               },
               icon: const Icon(Icons.dashboard_rounded, size: 20),

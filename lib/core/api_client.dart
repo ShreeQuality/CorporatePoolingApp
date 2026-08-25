@@ -21,24 +21,24 @@ class ApiClient {
   static Future<http.Response> get(String endpoint) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final headers = await _getHeaders();
-    return await client.get(uri, headers: headers);
+    return await client.get(uri, headers: headers).timeout(const Duration(seconds: 5));
   }
 
   static Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final headers = await _getHeaders();
-    return await client.post(uri, headers: headers, body: jsonEncode(body));
+    return await client.post(uri, headers: headers, body: jsonEncode(body)).timeout(const Duration(seconds: 5));
   }
 
   static Future<http.Response> patch(String endpoint, Map<String, dynamic> body) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final headers = await _getHeaders();
-    return await client.patch(uri, headers: headers, body: jsonEncode(body));
+    return await client.patch(uri, headers: headers, body: jsonEncode(body)).timeout(const Duration(seconds: 5));
   }
 
   static Future<http.Response> delete(String endpoint) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final headers = await _getHeaders();
-    return await client.delete(uri, headers: headers);
+    return await client.delete(uri, headers: headers).timeout(const Duration(seconds: 5));
   }
 }

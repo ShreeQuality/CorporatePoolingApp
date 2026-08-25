@@ -32,9 +32,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       description:
           'Ride exclusively with verified employees from tech parks & corporate campuses. Protected by multi-tier Aadhaar KYC, work email, and live safety radar.',
       chips: [
-        'Ã°Å¸â€â€™ Work Email Verified',
-        'Ã°Å¸ÂÂ¢ Tech Park Network',
-        'Ã°Å¸Å¡Â¨ Live SOS Radar',
+        '✅ Work Email Verified',
+        '🏢 Tech Park Network',
+        '🚨 Live SOS Radar',
       ],
       themeColor: Color(0xFFFFB800),
       beamColors: [
@@ -58,9 +58,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       description:
           'Sub-second 2-tier spatial engine pairs you along your exact commute corridor with zero-cellular BLE handshakes and dynamic boarding words.',
       chips: [
-        'Ã¢Å¡Â¡ Sub-Second Match',
-        'Ã°Å¸â€œÂ¡ Offline BLE Boarding',
-        'Ã°Å¸Âªâ„¢ Cashless Karma Coins',
+        '⚡ Sub-Second Match',
+        '📶 Offline BLE Boarding',
+        '🪙 Cashless Karma Coins',
       ],
       themeColor: Color(0xFFA855F7),
       beamColors: [
@@ -78,15 +78,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       innerGlowColor: Color(0xFF6366F1),
     ),
     StitchBeamCardData(
-      badgeText: '+1.88 kg COÃ¢â€šâ€š Saved',
+      badgeText: '+1.88 kg CO₂ Saved',
       icon: Icons.eco_rounded,
       headline: 'Earn Fuel Vouchers,\nDrive Net-Zero',
       description:
           'Convert your Karma Coins into digital fuel vouchers across HPCL, BPCL, and IOCL pumps while earning verified corporate ESG carbon offset badges.',
       chips: [
-        'Ã¢â€ºÂ½ 30,000+ Fuel Pumps',
-        'Ã°Å¸Å’Â± Verified ESG Offsets',
-        'Ã°Å¸Ââ€  Green Leaderboards',
+        '⛽ 30,000+ Fuel Pumps',
+        '🌱 Verified ESG Offsets',
+        '🏆 Green Leaderboards',
       ],
       themeColor: Color(0xFF00E676),
       beamColors: [
@@ -186,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       backgroundColor: const Color(0xFF040711),
       body: Stack(
         children: [
-          // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ [RAIN 1]: LINEAR VERTICAL COSMIC STARDUST RAINFALL Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+          // --- [RAIN 1]: LINEAR VERTICAL COSMIC STARDUST RAINFALL Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
           const Positioned.fill(
             child: StarRain1(),
           ),

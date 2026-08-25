@@ -202,7 +202,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       children: [
                         Text(
-                          '${_vibrationPatterns[_selectedVariationIndex]['label']} Ã¢â‚¬Â¢ ${_vibrationPatterns[_selectedVariationIndex]['name']}',
+                          '${_vibrationPatterns[_selectedVariationIndex]['label']} • ${_vibrationPatterns[_selectedVariationIndex]['name']}',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 13,
@@ -273,7 +273,7 @@ class _SplashScreenState extends State<SplashScreen>
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'Smart Ã¢â‚¬Â¢ Verified Ã¢â‚¬Â¢ Sustainable Commutes',
+                    'Smart • Verified • Sustainable Commutes',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

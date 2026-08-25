@@ -909,8 +909,12 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 HapticFeedback.mediumImpact();
                 
                 // Show a quick saving indicator if needed, but for now we just await
-                final authProvider = context.read<AuthProvider>();
+                // final authProvider = context.read<AuthProvider>();
                 
+                // [FRONTEND UI TESTING BYPASS]
+                // Commented out the backend API call because the Node server is off,
+                // which was causing a 5-second timeout delay before navigation.
+                /*
                 await authProvider.updateProfile(
                   fullName: profile.fullName,
                   dateOfBirth: profile.dob,
@@ -918,6 +922,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                   homeCity: profile.district, // using district as home city
                   selfiePhotoUrl: profile.photoUrl,
                 );
+                */
 
                 if (!mounted) return;
 

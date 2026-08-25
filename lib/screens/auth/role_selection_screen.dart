@@ -1,3 +1,4 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/star_rain_1.dart';
@@ -92,7 +93,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       roleId: 'company',
                       title: 'Company',
                       subtitle: 'Register corporate campus, manage tech park fleet, & employee commuter pools.',
-                      badgeText: '🏢 Corporate Partner',
+                      badgeText: 'Corporate Partner',
+                      badgeIcon: Icons.business,
                       icon: Icons.apartment_rounded,
                       accentColor: const Color(0xFF00E5FF),
                     ),
@@ -101,7 +103,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       roleId: 'user',
                       title: 'User',
                       subtitle: 'Join daily shared pools, offer extra seats, & ride with verified peers.',
-                      badgeText: '🌟 Verified Commuter',
+                      badgeText: 'Verified Commuter',
+                      badgeIcon: Icons.verified,
                       icon: Icons.person_rounded,
                       accentColor: const Color(0xFFFF9D00),
                     ),
@@ -162,6 +165,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     required String title,
     required String subtitle,
     required String badgeText,
+    required IconData badgeIcon,
     required IconData icon,
     required Color accentColor,
   }) {
@@ -183,7 +187,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? accentColor.withValues(alpha: 0.08)
-                : Colors.white.withValues(alpha: 0.03),
+                : AppTheme.glassWhite03,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isSelected ? accentColor : Colors.white.withValues(alpha: 0.18),
@@ -293,22 +297,33 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? accentColor.withValues(alpha: 0.20)
-                                : Colors.white.withValues(alpha: 0.05),
+                                : AppTheme.glassWhite05,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: isSelected
                                   ? accentColor.withValues(alpha: 0.5)
-                                  : Colors.white.withValues(alpha: 0.1),
+                                  : AppTheme.glassWhite10,
                             ),
                           ),
-                          child: Text(
-                            badgeText,
-                            style: TextStyle(
-                              color: isSelected ? accentColor : const Color(0xFFE2E8F0),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.3,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                badgeIcon,
+                                size: 12,
+                                color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                badgeText,
+                                style: TextStyle(
+                                  color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -342,7 +357,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 )
               : LinearGradient(
                   colors: [
-                    Colors.white.withValues(alpha: 0.08),
+                    AppTheme.glassWhite08,
                     Colors.white.withValues(alpha: 0.04),
                   ],
                 ),
@@ -461,3 +476,4 @@ class _HudCornerPainter extends CustomPainter {
     return oldDelegate.cornerColor != cornerColor;
   }
 }
+

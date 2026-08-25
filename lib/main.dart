@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/splash_screen.dart';
+import 'screens/dashboard/home_dashboard.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,14 @@ class KarmaRideApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF070B19),
       ),
-      home: const SplashScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/home': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          return HomeDashboard(arguments: args);
+        },
+      },
     );
   }
 }

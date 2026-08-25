@@ -1,3 +1,4 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -7,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import '../../core/api_client.dart';
 import '../../core/secure_storage_service.dart';
-import '../../widgets/star_rain_1.dart';
 import 'role_selection_screen.dart';
 
 /// Screen 3: Phone Authentication & 6-Digit SMS OTP Verification
@@ -435,7 +435,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: AppTheme.glassWhite20,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -452,7 +452,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
                   // Search Bar with Screen 2 styling
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: AppTheme.glassWhite05,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
                     ),
@@ -562,7 +562,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppTheme.glassWhite20,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -747,10 +747,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         resizeToAvoidBottomInset: true,
         body: Stack(
           children: [
-            // 1. Layer 1: Live Stardust Rainfall Animation (Matching Screen 1 & 2)
-            const Positioned.fill(
-              child: StarRain1(),
-            ),
+            
 
             // 2. Layer 2: Subtle Ambient Light Glows
             Positioned(
@@ -1195,7 +1192,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         border: Border.all(
           color: _isPhoneFocused
               ? const Color(0xFF00E5FF).withValues(alpha: 0.60)
-              : Colors.white.withValues(alpha: 0.10),
+              : AppTheme.glassWhite10,
           width: 1.2,
         ),
       ),
@@ -1210,14 +1207,14 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppTheme.glassWhite05,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   bottomLeft: Radius.circular(16),
                 ),
                 border: Border(
                   right: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.10),
+                    color: AppTheme.glassWhite10,
                     width: 1,
                   ),
                 ),
@@ -1482,3 +1479,4 @@ class _IndianPhoneFormatter extends TextInputFormatter {
     );
   }
 }
+

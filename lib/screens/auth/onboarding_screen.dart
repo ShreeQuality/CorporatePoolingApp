@@ -32,9 +32,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       description:
           'Ride exclusively with verified employees from tech parks & corporate campuses. Protected by multi-tier Aadhaar KYC, work email, and live safety radar.',
       chips: [
-        'ðŸ”’ Work Email Verified',
-        'ðŸ¢ Tech Park Network',
-        'ðŸš¨ Live SOS Radar',
+        'Ã°Å¸â€â€™ Work Email Verified',
+        'Ã°Å¸ÂÂ¢ Tech Park Network',
+        'Ã°Å¸Å¡Â¨ Live SOS Radar',
       ],
       themeColor: Color(0xFFFFB800),
       beamColors: [
@@ -58,9 +58,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       description:
           'Sub-second 2-tier spatial engine pairs you along your exact commute corridor with zero-cellular BLE handshakes and dynamic boarding words.',
       chips: [
-        'âš¡ Sub-Second Match',
-        'ðŸ“¡ Offline BLE Boarding',
-        'ðŸª™ Cashless Karma Coins',
+        'Ã¢Å¡Â¡ Sub-Second Match',
+        'Ã°Å¸â€œÂ¡ Offline BLE Boarding',
+        'Ã°Å¸Âªâ„¢ Cashless Karma Coins',
       ],
       themeColor: Color(0xFFA855F7),
       beamColors: [
@@ -78,15 +78,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       innerGlowColor: Color(0xFF6366F1),
     ),
     StitchBeamCardData(
-      badgeText: '+1.88 kg COâ‚‚ Saved',
+      badgeText: '+1.88 kg COÃ¢â€šâ€š Saved',
       icon: Icons.eco_rounded,
       headline: 'Earn Fuel Vouchers,\nDrive Net-Zero',
       description:
           'Convert your Karma Coins into digital fuel vouchers across HPCL, BPCL, and IOCL pumps while earning verified corporate ESG carbon offset badges.',
       chips: [
-        'â›½ 30,000+ Fuel Pumps',
-        'ðŸŒ± Verified ESG Offsets',
-        'ðŸ† Green Leaderboards',
+        'Ã¢â€ºÂ½ 30,000+ Fuel Pumps',
+        'Ã°Å¸Å’Â± Verified ESG Offsets',
+        'Ã°Å¸Ââ€  Green Leaderboards',
       ],
       themeColor: Color(0xFF00E676),
       beamColors: [
@@ -106,27 +106,35 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   ];
 
   @override
-  void initState() {
-    super.initState();
-
-    _beamController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 4500),
-    )..repeat();
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0.90, end: 1.15).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    _dialController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 24),
-    )..repeat();
+  void initState() {
+    super.initState();
+
+    _beamController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 4500),
+    );
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 0.90, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _dialController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 24),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _beamController.repeat();
+        _pulseController.repeat(reverse: true);
+        _dialController.repeat();
+      }
+    });
   }
 
   @override
@@ -178,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       backgroundColor: const Color(0xFF040711),
       body: Stack(
         children: [
-          // â”€â”€â”€ [RAIN 1]: LINEAR VERTICAL COSMIC STARDUST RAINFALL â”€â”€â”€â”€
+          // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ [RAIN 1]: LINEAR VERTICAL COSMIC STARDUST RAINFALL Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
           const Positioned.fill(
             child: StarRain1(),
           ),
@@ -392,7 +400,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Stack(
         children: [
-          // â”€â”€â”€ 1. FULLY TRANSPARENT GOOGLE STITCH BORDER BEAM (0 Blur, 100% Clear) â”€â”€â”€
+          // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 1. FULLY TRANSPARENT GOOGLE STITCH BORDER BEAM (0 Blur, 100% Clear) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
           Positioned.fill(
             child: RepaintBoundary(
               child: AnimatedBuilder(
@@ -410,7 +418,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // â”€â”€â”€ 2. CARD CONTENT OVER TRANSPARENT BACKGROUND â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ 2. CARD CONTENT OVER TRANSPARENT BACKGROUND Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
           ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: Container(
@@ -579,8 +587,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 }
 
-/// 🎨 Fully Transparent Google Stitch Border Beam Painter (Light Subtle Rim, Pure Luminous Inner Lightness)
-/// 🎨 Exact Google Stitch Border Beam Painter (Volumetric Corner Aura + Crisp Neon Hairline)
+/// ðŸŽ¨ Fully Transparent Google Stitch Border Beam Painter (Light Subtle Rim, Pure Luminous Inner Lightness)
+/// ðŸŽ¨ Exact Google Stitch Border Beam Painter (Volumetric Corner Aura + Crisp Neon Hairline)
 class FullyTransparentStitchBorderBeamPainter extends CustomPainter {
   final double rotationProgress;
   final double pulseFactor;

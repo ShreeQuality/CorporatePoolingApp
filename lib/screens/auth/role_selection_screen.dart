@@ -1,7 +1,6 @@
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../widgets/star_rain_1.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import 'corporate_verify_screen.dart';
 
@@ -30,7 +29,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     if (_selectedRole == null) return;
     HapticFeedback.mediumImpact();
 
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => CorporateVerifyScreen(
           preselectedRole: _selectedRole == 'company' ? 'corporate_employee' : 'public_user',
@@ -47,10 +46,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       backgroundColor: const Color(0xFF050814),
       body: Stack(
         children: [
-          // 1. Stardust Rainfall Background (Screen 2 Golden Rule)
-          const Positioned.fill(
-            child: StarRain1(),
-          ),
+          
 
           // 2. Ambient Radial Glow Reacting to Selection Color
           Positioned(

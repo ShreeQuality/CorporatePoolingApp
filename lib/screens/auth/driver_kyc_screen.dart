@@ -1,7 +1,7 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../widgets/star_rain_1.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/driver_kyc_validator.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
@@ -402,7 +402,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
     widget.onSkip?.call();
     widget.onDriverKycSuccess?.call(skipPayload);
     if (widget.onSkip == null && widget.onDriverKycSuccess == null) {
-      Navigator.of(context).pushReplacementNamed('/home', arguments: skipPayload);
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false, arguments: skipPayload);
     }
   }
 
@@ -466,10 +466,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
         backgroundColor: const Color(0xFF050814),
         body: Stack(
           children: [
-            // Live Cosmic Stardust Background
-            const Positioned.fill(
-              child: StarRain1(),
-            ),
+            
 
             // Main Content Area
             SafeArea(
@@ -507,7 +504,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
         color: const Color(0xFF050814).withValues(alpha: 0.6),
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: AppTheme.glassWhite08,
             width: 1,
           ),
         ),
@@ -560,7 +557,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: AppTheme.glassWhite15,
                 ),
               ),
             ),
@@ -652,7 +649,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    'Verified Citizen: ${widget.verifiedAadhaarProfile!.fullName} • UID: ${widget.verifiedAadhaarProfile!.maskedAadhaar}',
+                    'Verified Citizen: ${widget.verifiedAadhaarProfile!.fullName} â€¢ UID: ${widget.verifiedAadhaarProfile!.maskedAadhaar}',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
@@ -674,9 +671,9 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: AppTheme.glassWhite08),
       ),
       child: Row(
         children: [
@@ -718,7 +715,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                   ? const Color(0xFF00E676).withValues(alpha: 0.2)
                   : isCurrent
                       ? accentColor.withValues(alpha: 0.2)
-                      : Colors.white.withValues(alpha: 0.05),
+                      : AppTheme.glassWhite05,
               shape: BoxShape.circle,
               border: Border.all(color: color, width: 1.5),
             ),
@@ -780,7 +777,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
+          color: AppTheme.glassWhite03,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: _dlErrorMessage != null
@@ -998,7 +995,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                   style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                  side: BorderSide(color: AppTheme.glassWhite15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
@@ -1119,10 +1116,10 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                       ),
                       child: Text(
                         dl.vehicleClass == DlVehicleClass.lmv
-                            ? '🚗 LMV (Car)'
+                            ? 'ðŸš— LMV (Car)'
                             : dl.vehicleClass == DlVehicleClass.mcwg
-                                ? '🏍️ MCWG (Bike)'
-                                : '🚗+🏍️ DUAL (LMV+MCWG)',
+                                ? 'ðŸï¸ MCWG (Bike)'
+                                : 'ðŸš—+ðŸï¸ DUAL (LMV+MCWG)',
                         style: const TextStyle(
                           color: Color(0xFF00E5FF),
                           fontSize: 11,
@@ -1209,7 +1206,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
+          color: AppTheme.glassWhite03,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: _rcErrorMessage != null
@@ -1427,7 +1424,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                   style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                  side: BorderSide(color: AppTheme.glassWhite15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
@@ -1504,7 +1501,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
 
           // Vehicle Model & Color
           Text(
-            '${rc.make} ${rc.model} • ${rc.color}',
+            '${rc.make} ${rc.model} â€¢ ${rc.color}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -1549,20 +1546,20 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                 ),
                 child: Text(
                   rc.fuelType == 'EV'
-                      ? '⚡ 100% Electric (EV)'
-                      : '⛽ ${rc.fuelType}',
+                      ? 'âš¡ 100% Electric (EV)'
+                      : 'â›½ ${rc.fuelType}',
                   style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 11.5, fontWeight: FontWeight.w700),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: AppTheme.glassWhite08,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.white12),
                 ),
                 child: Text(
-                  '👥 ${rc.seatingCapacity} Seater (${rc.seatingCapacity - 1} Pool Seats)',
+                  'ðŸ‘¥ ${rc.seatingCapacity} Seater (${rc.seatingCapacity - 1} Pool Seats)',
                   style: const TextStyle(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -1593,7 +1590,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Insurance till ${rc.insuranceExpiryDate} • PUC till ${rc.pucExpiryDate}',
+                  'Insurance till ${rc.insuranceExpiryDate} â€¢ PUC till ${rc.pucExpiryDate}',
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
@@ -1656,7 +1653,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
+          color: AppTheme.glassWhite03,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: accentColor.withValues(alpha: 0.3)),
         ),
@@ -1692,7 +1689,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: safety.isFullyApproved ? const Color(0xFF00E676).withValues(alpha: 0.4) : accentColor.withValues(alpha: 0.3),
@@ -2007,7 +2004,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                                 Icon(Icons.check_circle_rounded, color: Color(0xFF00E676), size: 14),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Photo AI Verified ✓',
+                                  'Photo AI Verified âœ“',
                                   style: TextStyle(color: Color(0xFF00E676), fontSize: 13, fontWeight: FontWeight.w700),
                                 ),
                               ],
@@ -2055,7 +2052,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00E676),
                 foregroundColor: const Color(0xFF050814),
-                disabledBackgroundColor: Colors.white.withValues(alpha: 0.08),
+                disabledBackgroundColor: AppTheme.glassWhite08,
                 disabledForegroundColor: Colors.white24,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: (safety.isFullyApproved && _capturedVehiclePhotoPath != null) ? 6 : 0,
@@ -2129,19 +2126,19 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
           const SizedBox(height: 12),
 
           _buildPledgePillar(
-            '🚫 Zero Substance Tolerance',
+            'ðŸš« Zero Substance Tolerance',
             'Never operate your vehicle under the influence of alcohol, medication, or narcotics.',
           ),
           _buildPledgePillar(
-            '🛡️ Defensive Driving & Speed Limits',
+            'ðŸ›¡ï¸ Defensive Driving & Speed Limits',
             'Adhere strictly to traffic rules, lane discipline, and urban speed regulations.',
           ),
           _buildPledgePillar(
-            '🤝 Harassment-Free Corporate Standard',
+            'ðŸ¤ Harassment-Free Corporate Standard',
             'Maintain professional decorum, respect co-rider privacy, and support zero discrimination.',
           ),
           _buildPledgePillar(
-            '📱 Hands-Free Navigation',
+            'ðŸ“± Hands-Free Navigation',
             'Mount your mobile device securely. Never text or browse while transporting co-poolers.',
           ),
           const SizedBox(height: 16),
@@ -2170,7 +2167,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: _isCaptainPledgeAccepted ? const Color(0xFF00E676) : Colors.white.withValues(alpha: 0.05),
+                      color: _isCaptainPledgeAccepted ? const Color(0xFF00E676) : AppTheme.glassWhite05,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
                         color: _isCaptainPledgeAccepted ? const Color(0xFF00E676) : Colors.white38,
@@ -2217,7 +2214,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00E676),
                 foregroundColor: const Color(0xFF050814),
-                disabledBackgroundColor: Colors.white.withValues(alpha: 0.08),
+                disabledBackgroundColor: AppTheme.glassWhite08,
                 disabledForegroundColor: Colors.white24,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: _isCaptainPledgeAccepted ? 6 : 0,
@@ -2385,12 +2382,12 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                 
                 // If no callback provided, route to the dashboard
                 if (widget.onDriverKycSuccess == null) {
-                  Navigator.of(context).pushReplacementNamed('/home', arguments: finalPayload);
+                  Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false, arguments: finalPayload);
                 }
               },
               icon: const Icon(Icons.dashboard_rounded, size: 20),
               label: const Text(
-                'Enter Driver Dashboard ➔',
+                'Enter Driver Dashboard âž”',
                 style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.4),
               ),
               style: ElevatedButton.styleFrom(
@@ -2458,3 +2455,4 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
     );
   }
 }
+

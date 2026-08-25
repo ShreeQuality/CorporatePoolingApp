@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/secure_storage_service.dart';
-import '../../widgets/star_rain_1.dart';
 
 /// Screen 2: Onboarding Carousel Screen
 /// Featuring 100% Fully Transparent Cards (Zero Blur, Crisp Star Visibility)
@@ -172,9 +171,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       body: Stack(
         children: [
           // â”€â”€â”€ [RAIN 1]: LINEAR VERTICAL COSMIC STARDUST RAINFALL â”€â”€â”€â”€
-          const Positioned.fill(
-            child: StarRain1(),
-          ),
+          
           SafeArea(
             child: Column(
               children: [

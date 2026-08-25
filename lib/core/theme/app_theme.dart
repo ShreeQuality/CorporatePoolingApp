@@ -10,6 +10,16 @@ class AppTheme {
   static const Color textLight = Color(0xFFF8FAFC);
   static const Color textMuted = Color(0xFF94A3B8);
 
+  // Standardized Constant Glassmorphism Colors (Prevents GC spikes)
+  static const Color glassWhite03 = Color(0x08FFFFFF); // 3% opacity
+  static const Color glassWhite05 = Color(0x0DFFFFFF); // 5% opacity
+  static const Color glassWhite08 = Color(0x14FFFFFF); // 8% opacity
+  static const Color glassWhite10 = Color(0x1AFFFFFF); // 10% opacity
+  static const Color glassWhite15 = Color(0x26FFFFFF); // 15% opacity
+  static const Color glassWhite20 = Color(0x33FFFFFF); // 20% opacity
+  static const Color glassBlack30 = Color(0x4D000000); // 30% black
+  static const Color glassBlack50 = Color(0x80000000); // 50% black
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

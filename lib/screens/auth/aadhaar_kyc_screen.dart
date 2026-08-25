@@ -2,7 +2,6 @@ import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../widgets/star_rain_1.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
 import '../../providers/auth_provider.dart';
@@ -383,7 +382,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
               _buildPrivacyBullet(
                 icon: Icons.lock_outline_rounded,
                 title: 'Zero Plain-Text Storage',
-                description: 'Your full 12-digit Aadhaar is never saved in our database. It is instantly masked into •••• •••• 1234.',
+                description: 'Your full 12-digit Aadhaar is never saved in our database. It is instantly masked into â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ 1234.',
               ),
               const SizedBox(height: 12),
               _buildPrivacyBullet(
@@ -474,10 +473,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
         backgroundColor: const Color(0xFF050814),
         body: Stack(
           children: [
-            // 1. Continuous Stardust Rainfall Background (Screen 2 Golden Rule)
-            const Positioned.fill(
-              child: StarRain1(),
-            ),
+            
 
             // 2. Ambient Radiant Glow Reacting to Accent Color
             Positioned(
@@ -688,8 +684,8 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
             children: [
               Text(
                 _currentStep == AadhaarVerificationStep.verifiedSuccess
-                    ? '🛡️'
-                    : (_currentStep == AadhaarVerificationStep.digilockerModal ? '🏛️' : '🔒'),
+                    ? 'ðŸ›¡ï¸'
+                    : (_currentStep == AadhaarVerificationStep.digilockerModal ? 'ðŸ›ï¸' : 'ðŸ”’'),
                 style: const TextStyle(fontSize: 12),
               ),
               const SizedBox(width: 6),
@@ -890,9 +886,9 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 const Divider(color: Colors.white10, height: 16),
                 _buildProfileRow('Jurisdiction', '${profile.district}, ${profile.state}'),
                 const Divider(color: Colors.white10, height: 16),
-                _buildProfileRow('Biometrics', '98.4% Match Confidence ✓'),
+                _buildProfileRow('Biometrics', '98.4% Match Confidence âœ“'),
                 const Divider(color: Colors.white10, height: 16),
-                _buildProfileRow('DPDP Act 2023', 'Zero Plain-Text Storage ✓'),
+                _buildProfileRow('DPDP Act 2023', 'Zero Plain-Text Storage âœ“'),
               ],
             ),
           ),
@@ -929,7 +925,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 widget.onKycSuccess?.call(profile);
                 
                 // Route to Driver Screen (Feature Exposure UX) so they know they can offer rides
-                Navigator.of(context).push(
+                Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => DriverKycScreen(
                       verifiedAadhaarProfile: profile,
@@ -1244,11 +1240,11 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
           Center(
             child: Text(
               _isFaceMatched
-                  ? 'Biometric Match: $_faceMatchScore% ✓ (UIDAI Verified)'
+                  ? 'Biometric Match: $_faceMatchScore% âœ“ (UIDAI Verified)'
                   : (_livenessStep == 1
-                      ? '👁️ Blink eyes slowly...'
+                      ? 'ðŸ‘ï¸ Blink eyes slowly...'
                       : (_livenessStep == 2
-                          ? '😊 Smile naturally...'
+                          ? 'ðŸ˜Š Smile naturally...'
                           : 'Position your face within the oval')),
               style: TextStyle(
                 color: _isFaceMatched ? const Color(0xFF00E676) : const Color(0xFFFFB74D),
@@ -1823,7 +1819,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'UIDAI Mathematical Checksum Verified ✓',
+                      'UIDAI Mathematical Checksum Verified âœ“',
                       style: TextStyle(
                         color: Color(0xFF69F0AE),
                         fontSize: 12,
@@ -1919,7 +1915,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                           GestureDetector(
                             onTap: _showDpdpPrivacyModal,
                             child: const Text(
-                              'Read DPDP Privacy Shield Policy ➔',
+                              'Read DPDP Privacy Shield Policy âž”',
                               style: TextStyle(
                                 color: Color(0xFF00E5FF),
                                 fontSize: 11.5,

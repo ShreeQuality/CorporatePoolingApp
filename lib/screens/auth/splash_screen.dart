@@ -1,10 +1,11 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'onboarding_screen.dart';
 import '../../widgets/star_rain_1.dart';
 
 // Active chakra: V11-V2 (Gyroscopic Precession)
-// Other versions (v1, v3–v10, newsudarshan) kept as files in /widgets but NOT imported
+// Other versions (v1, v3Ã¢â‚¬â€œv10, newsudarshan) kept as files in /widgets but NOT imported
 // to avoid loading 70+ animation controllers into memory on app start.
 import '../../widgets/sudarshan_chakra_11_v2.dart';
 
@@ -60,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _handleNextPressed() {
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const OnboardingScreen()),
     );
   }
@@ -89,7 +90,10 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF02050F),
       body: Stack(
-        children: [
+          children: [
+            // PRE-WARM: Compiles GPU Shaders for Onboarding silently while Chakra spins
+            const Offstage(offstage: true, child: OnboardingScreen()),
+
           // 1. Base Radial Gradient
           Positioned.fill(
             child: Container(
@@ -149,12 +153,12 @@ class _SplashScreenState extends State<SplashScreen>
                               decoration: BoxDecoration(
                                 color: isSel
                                     ? const Color(0xFFFF8F00)
-                                    : Colors.white.withValues(alpha: 0.08),
+                                    : AppTheme.glassWhite08,
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
                                   color: isSel
                                       ? const Color(0xFFFFB74D)
-                                      : Colors.white.withValues(alpha: 0.15),
+                                      : AppTheme.glassWhite15,
                                   width: isSel ? 1.5 : 1.0,
                                 ),
                                 boxShadow: isSel
@@ -192,13 +196,13 @@ class _SplashScreenState extends State<SplashScreen>
                       color: Colors.black.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.10),
+                        color: AppTheme.glassWhite10,
                       ),
                     ),
                     child: Column(
                       children: [
                         Text(
-                          '${_vibrationPatterns[_selectedVariationIndex]['label']} • ${_vibrationPatterns[_selectedVariationIndex]['name']}',
+                          '${_vibrationPatterns[_selectedVariationIndex]['label']} Ã¢â‚¬Â¢ ${_vibrationPatterns[_selectedVariationIndex]['name']}',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 13,
@@ -269,7 +273,7 @@ class _SplashScreenState extends State<SplashScreen>
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'Smart • Verified • Sustainable Commutes',
+                    'Smart Ã¢â‚¬Â¢ Verified Ã¢â‚¬Â¢ Sustainable Commutes',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -312,7 +316,7 @@ class _SplashScreenState extends State<SplashScreen>
                         onTap: _handleNextPressed,
                         borderRadius: BorderRadius.circular(27),
                         splashColor: Colors.white.withValues(alpha: 0.25),
-                        highlightColor: Colors.white.withValues(alpha: 0.15),
+                        highlightColor: AppTheme.glassWhite15,
                         child: Center(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -362,3 +366,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+

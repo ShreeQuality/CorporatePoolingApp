@@ -1,8 +1,8 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../widgets/star_rain_1.dart';
 import '../../widgets/jarvis_holo_hud.dart';
 import '../../core/services/corporate_verify_validator.dart';
 import '../../providers/auth_provider.dart';
@@ -301,7 +301,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
     if (!mounted) return;
 
     if (response['success'] == true || response['message']?.contains('verify your work email') == true) {
-      // ✅ Company exists and OTP was dispatched
+      // âœ… Company exists and OTP was dispatched
       setState(() {
         _isDispatchingOtp = false;
         _isOtpSent = true;
@@ -341,11 +341,11 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
         ),
       );
     } else if (response['action'] == 'require_hr_email') {
-      // 🚨 B2B Employee-Led Flow Triggered (Domain Not Found)
+      // ðŸš¨ B2B Employee-Led Flow Triggered (Domain Not Found)
       setState(() => _isDispatchingOtp = false);
       _showB2BInviteDialog(email.split('@').last);
     } else {
-      // ❌ Generic Error
+      // âŒ Generic Error
       setState(() => _isDispatchingOtp = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -391,7 +391,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
                     hintText: 'hr@$domain',
                     hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    fillColor: AppTheme.glassWhite05,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -746,7 +746,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       ),
     );
 
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => AadhaarKycScreen(previousPayload: payload),
       ),
@@ -793,7 +793,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       ),
     );
 
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => AadhaarKycScreen(previousPayload: publicPayload),
       ),
@@ -815,10 +815,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
         backgroundColor: const Color(0xFF050814),
         body: Stack(
           children: [
-            // 1. Stardust Rainfall Background (Screen 2 Golden Rule)
-            const Positioned.fill(
-              child: StarRain1(),
-            ),
+            
 
             // 2. Ambient Radiant Radial Glow
             Positioned(
@@ -911,10 +908,10 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppTheme.glassWhite05,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: AppTheme.glassWhite15,
                   width: 1,
                 ),
                 boxShadow: [
@@ -1024,8 +1021,8 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
             children: [
               Text(
                 _identityMode == CommuterIdentityMode.corporateEmployee
-                    ? (_corporateSubMode == CorporateAuthSubMode.inviteCode ? '🔑' : '🏢')
-                    : '🌟',
+                    ? (_corporateSubMode == CorporateAuthSubMode.inviteCode ? 'ðŸ”‘' : 'ðŸ¢')
+                    : 'ðŸŒŸ',
                 style: const TextStyle(fontSize: 12),
               ),
               const SizedBox(width: 6),
@@ -1178,7 +1175,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
     );
   }
 
-  /// 🏢 Section for Corporate Employee Mode (Phase 4, Phase 5 & Phase 6)
+  /// ðŸ¢ Section for Corporate Employee Mode (Phase 4, Phase 5 & Phase 6)
   Widget _buildCorporateEmployeeSection() {
     if (_isOtpSent) {
       return _buildCorporateOtpSection();
@@ -1199,12 +1196,12 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       key: const ValueKey('section_corporate_employee'),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isEmailValid
               ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
-              : (isPublicDomain ? const Color(0xFFFF5252).withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.15)),
+              : (isPublicDomain ? const Color(0xFFFF5252).withValues(alpha: 0.4) : AppTheme.glassWhite15),
           width: 1,
         ),
         boxShadow: [
@@ -1267,14 +1264,14 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                borderSide: BorderSide(color: AppTheme.glassWhite15),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide(
                   color: isEmailValid
                       ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
-                      : (isPublicDomain ? const Color(0xFFFF5252).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.15)),
+                      : (isPublicDomain ? const Color(0xFFFF5252).withValues(alpha: 0.5) : AppTheme.glassWhite15),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -1453,7 +1450,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       key: const ValueKey('section_corporate_otp'),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _otpErrorMessage != null
@@ -1705,7 +1702,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
                   Flexible(
                     child: Text(
                       _isOtpVerified
-                          ? 'Verified ✓ Proceed to KYC'
+                          ? 'Verified âœ“ Proceed to KYC'
                           : (_isVerifyingOtp ? 'Verifying OTP...' : 'Verify & Unlock Corporate Pool'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1740,14 +1737,14 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
       key: const ValueKey('section_corporate_invite_code'),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: (isCodeValid || _isInviteCodeVerified)
               ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
               : (_inviteCodeErrorMessage != null
                   ? const Color(0xFFFF5252).withValues(alpha: 0.4)
-                  : Colors.white.withValues(alpha: 0.15)),
+                  : AppTheme.glassWhite15),
           width: 1,
         ),
         boxShadow: [
@@ -1838,7 +1835,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                borderSide: BorderSide(color: AppTheme.glassWhite15),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -1847,7 +1844,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
                       ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
                       : (_inviteCodeErrorMessage != null
                           ? const Color(0xFFFF5252).withValues(alpha: 0.5)
-                          : Colors.white.withValues(alpha: 0.15)),
+                          : AppTheme.glassWhite15),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -2000,7 +1997,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
                   Flexible(
                     child: Text(
                       _isInviteCodeVerified
-                          ? 'Passkey Verified ✓ Proceed to KYC'
+                          ? 'Passkey Verified âœ“ Proceed to KYC'
                           : (_isVerifyingInviteCode ? 'Verifying Passkey...' : 'Verify Passkey & Unlock Corporate Pool'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2040,7 +2037,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
               ? const Color(0xFFFF5252)
               : (hasFocus
                   ? const Color(0xFF00E5FF)
-                  : (hasValue ? const Color(0xFF00E5FF).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.15))),
+                  : (hasValue ? const Color(0xFF00E5FF).withValues(alpha: 0.5) : AppTheme.glassWhite15)),
           width: hasFocus ? 1.6 : 1.0,
         ),
         boxShadow: hasFocus
@@ -2081,13 +2078,13 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
     );
   }
 
-  /// 🌟 Section for Public User Mode (Phase 3 Core Feature)
+  /// ðŸŒŸ Section for Public User Mode (Phase 3 Core Feature)
   Widget _buildPublicUserSection() {
     return Container(
       key: const ValueKey('section_public_user'),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: const Color(0xFFFF9D00).withValues(alpha: 0.25),
@@ -2151,10 +2148,10 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
+              color: AppTheme.glassWhite03,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: AppTheme.glassWhite08,
               ),
             ),
             child: Column(
@@ -2274,3 +2271,4 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
     );
   }
 }
+

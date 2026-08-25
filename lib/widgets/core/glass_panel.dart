@@ -1,3 +1,4 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -36,7 +37,7 @@ class GlassPanel extends StatelessWidget {
         color: Colors.white.withValues(alpha: opacity),
         borderRadius: radius,
         border: customBorder ?? Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: AppTheme.glassWhite10,
           width: 1,
         ),
       ),
@@ -55,3 +56,4 @@ class GlassPanel extends StatelessWidget {
     );
   }
 }
+

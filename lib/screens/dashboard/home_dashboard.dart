@@ -1,3 +1,4 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/core/glass_panel.dart';
 
@@ -214,7 +215,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   Widget _buildDividerOR() {
     return Row(
       children: [
-        Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
+        Expanded(child: Divider(color: AppTheme.glassWhite10)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
@@ -222,7 +223,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
             style: TextStyle(color: Colors.orange.withValues(alpha: 0.7), fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
-        Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
+        Expanded(child: Divider(color: AppTheme.glassWhite10)),
       ],
     );
   }
@@ -266,7 +267,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
         width: 70,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.3),
+          color: isSelected ? AppTheme.glassWhite15 : AppTheme.glassBlack30,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.white.withValues(alpha: 0.5) : Colors.transparent,
@@ -309,7 +310,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           backgroundColor: bgColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            side: BorderSide(color: AppTheme.glassWhite10),
           ),
           elevation: 0,
         ),
@@ -317,3 +318,4 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 }
+

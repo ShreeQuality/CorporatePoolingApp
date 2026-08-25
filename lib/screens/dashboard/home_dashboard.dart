@@ -1,6 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../widgets/star_rain_1.dart';
+import '../../widgets/core/glass_panel.dart';
 
 class HomeDashboard extends StatefulWidget {
   final Map<String, dynamic>? arguments;
@@ -16,59 +15,29 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
+    // The background (Color + StarRain + Glows) is now provided globally 
+    // by AppBackground in main.dart. We just need a transparent Scaffold.
     return Scaffold(
-      backgroundColor: const Color(0xFF050814),
-      body: Stack(
-        children: [
-          // 1. Layer 1: Live Stardust Rainfall Animation (Matching Screen 2)
-          const Positioned.fill(
-            child: StarRain1(),
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 16),
+              _buildStatsRow(),
+              const SizedBox(height: 24),
+              _buildFindRidePanel(),
+              const SizedBox(height: 16),
+              _buildDividerOR(),
+              const SizedBox(height: 16),
+              _buildGiveRidePanel(),
+              const SizedBox(height: 80),
+            ],
           ),
-
-          // 2. Layer 2: Subtle Ambient Light Glows (Matching Screen 2)
-          Positioned(
-            top: size.height * 0.10,
-            left: size.width * 0.1,
-            child: Container(
-              width: size.width * 0.8,
-              height: size.width * 0.8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF00E5FF).withValues(alpha: 0.08),
-                    const Color(0xFF6C63FF).withValues(alpha: 0.04),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 3. Foreground Glass UI
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 16),
-                  _buildStatsRow(),
-                  const SizedBox(height: 24),
-                  _buildFindRidePanel(),
-                  const SizedBox(height: 16),
-                  _buildDividerOR(),
-                  const SizedBox(height: 16),
-                  _buildGiveRidePanel(),
-                  const SizedBox(height: 80), // Padding for bottom nav (which will be added in layout shell later)
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -123,47 +92,40 @@ class _HomeDashboardState extends State<HomeDashboard> {
   Widget _buildStatsRow() {
     return Row(
       children: [
-        Expanded(child: _buildStatCard(Icons.monetization_on, Colors.amber, '170', 'KarmaCoin')),
+        _buildStatCard('KarmaCoin', '170', Icons.monetization_on, Colors.amber),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(Icons.favorite, Colors.redAccent, '5.0', 'Karma')),
+        _buildStatCard('Karma', '5.0', Icons.favorite, Colors.redAccent),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard(Icons.two_wheeler, Colors.blueAccent, '1', 'Current')),
+        _buildStatCard('Current', '1', Icons.two_wheeler, Colors.blueAccent),
       ],
     );
   }
 
-  Widget _buildStatCard(IconData icon, Color iconColor, String value, String label) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: iconColor, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
-              ),
-            ],
-          ),
+  Widget _buildStatCard(String label, String value, IconData icon, Color iconColor) {
+    return Expanded(
+      child: GlassPanel(
+        sigma: 8,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: iconColor, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  value,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+            ),
+          ],
         ),
       ),
     );
@@ -266,20 +228,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
 
   Widget _buildGlassPanel({required Widget child, required Color borderColor}) {
-    return ClipRRect(
+    return GlassPanel(
+      sigma: 8,
+      padding: const EdgeInsets.all(20),
       borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: borderColor, width: 1.5),
-          ),
-          child: child,
-        ),
-      ),
+      customBorder: Border.all(color: borderColor, width: 1.5),
+      opacity: 0.03,
+      child: child,
     );
   }
 

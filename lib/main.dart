@@ -4,6 +4,7 @@ import 'core/services/supabase_service.dart';
 import 'providers/auth_provider.dart';
 import 'screens/auth/splash_screen.dart';
 import 'screens/dashboard/home_dashboard.dart';
+import 'widgets/core/app_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,11 @@ class KarmaRideApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: const Color(0xFF070B19),
         ),
+        builder: (context, child) {
+          return AppBackground(
+            child: child ?? const SizedBox(),
+          );
+        },
         initialRoute: '/',
         routes: {
           '/': (context) => const SplashScreen(),

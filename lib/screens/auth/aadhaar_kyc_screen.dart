@@ -1,3 +1,4 @@
+import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -77,7 +78,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
   bool _isDpdpConsentGiven = false;
 
   // Validation State
-  AadhaarValidationResult? _validationResult;
+  final ValueNotifier<AadhaarValidationResult?> _validationResult = ValueNotifier(null);
 
   // Verified Profile Payload
   AadhaarProfilePayload? _verifiedProfile;
@@ -130,13 +131,12 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
     _idController.dispose();
     _idFocusNode.dispose();
     _digiLockerOtpController.dispose();
+    _validationResult.dispose();
     super.dispose();
   }
 
   void _onIdInputChanged() {
-    setState(() {
-      _validationResult = AadhaarKycValidator.validateAadhaarOrVid(_idController.text);
-    });
+    _validationResult.value = AadhaarKycValidator.validateAadhaarOrVid(_idController.text);
   }
 
   Color get _currentAccentColor {
@@ -156,7 +156,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
 
   /// TC-6.09: Handle DigiLocker Verification trigger with DPDP Consent Check
   void _handleDigiLockerVerification() {
-    if (_validationResult == null || !_validationResult!.isValid) return;
+    if (_validationResult.value == null || !_validationResult.value!.isValid) return;
 
     if (!_isDpdpConsentGiven) {
       HapticFeedback.heavyImpact();
@@ -357,7 +357,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: AppTheme.glassWhite20,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -578,7 +578,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 color: Colors.white.withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: AppTheme.glassWhite15,
                 ),
               ),
               child: const Icon(
@@ -789,7 +789,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: const Color(0xFF00E676).withValues(alpha: 0.5),
@@ -880,7 +880,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: AppTheme.glassWhite10),
             ),
             child: Column(
               children: [
@@ -970,7 +970,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
@@ -991,7 +991,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
             height: 220,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: AppTheme.glassBlack50,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
@@ -1128,7 +1128,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: _isFaceMatched
@@ -1173,7 +1173,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: AppTheme.glassWhite10),
               ),
               child: Column(
                 children: [
@@ -1209,7 +1209,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withValues(alpha: 0.05),
+                    AppTheme.glassWhite05,
                     Colors.white.withValues(alpha: 0.02),
                   ],
                 ),
@@ -1347,7 +1347,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: const Color(0xFF2979FF).withValues(alpha: 0.4),
@@ -1370,7 +1370,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
             decoration: BoxDecoration(
               color: const Color(0xFF09122C),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              border: Border.all(color: AppTheme.glassWhite10),
             ),
             child: Row(
               children: [
@@ -1456,7 +1456,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.02),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: AppTheme.glassWhite08),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1491,9 +1491,9 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: AppTheme.glassWhite05,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              border: Border.all(color: AppTheme.glassWhite15),
             ),
             child: TextField(
               key: const Key('digilocker_otp_input'),
@@ -1635,16 +1635,18 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
 
   /// Phase 3: Smart Aadhaar/VID Input Card, Verhoeff Checksum & DPDP Consent
   Widget _buildIdInputAndConsentCard(Color accentColor) {
-    final validation = _validationResult;
-    final isChecksumValid = validation != null && validation.isValid;
-    final hasChecksumError = validation != null && !validation.isValid && !validation.isPartial && validation.errorMessage != null;
+    return ValueListenableBuilder<AadhaarValidationResult?>(
+      valueListenable: _validationResult,
+      builder: (context, validation, child) {
+        final isChecksumValid = validation != null && validation.isValid;
+        final hasChecksumError = validation != null && !validation.isValid && !validation.isPartial && validation.errorMessage != null;
 
-    return Container(
+        return Container(
       key: const Key('aadhaar_input_card'),
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: AppTheme.glassWhite03,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isChecksumValid
@@ -1690,13 +1692,24 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: accentColor.withValues(alpha: 0.4)),
                   ),
-                  child: Text(
-                    validation.type == AadhaarIdType.vid ? '🔑 16-Digit VID' : '🏢 12-Digit Aadhaar',
-                    style: TextStyle(
-                      color: accentColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        validation.type == AadhaarIdType.vid ? Icons.vpn_key : Icons.badge,
+                        size: 12,
+                        color: accentColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        validation.type == AadhaarIdType.vid ? '16-Digit VID' : '12-Digit Aadhaar',
+                        style: TextStyle(
+                          color: accentColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -1714,14 +1727,14 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
           // Smart Auto-Spaced Input Field
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: AppTheme.glassWhite05,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isChecksumValid
                     ? const Color(0xFF00E676).withValues(alpha: 0.6)
                     : (hasChecksumError
                         ? const Color(0xFFFF5252).withValues(alpha: 0.6)
-                        : Colors.white.withValues(alpha: 0.15)),
+                        : AppTheme.glassWhite15),
               ),
             ),
             child: TextField(
@@ -1853,7 +1866,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                   border: Border.all(
                     color: _isDpdpConsentGiven
                         ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
-                        : Colors.white.withValues(alpha: 0.1),
+                        : AppTheme.glassWhite10,
                   ),
                 ),
                 child: Row(
@@ -1940,7 +1953,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                       )
                     : LinearGradient(
                         colors: [
-                          Colors.white.withValues(alpha: 0.08),
+                          AppTheme.glassWhite08,
                           Colors.white.withValues(alpha: 0.04),
                         ],
                       ),
@@ -2009,7 +2022,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                side: BorderSide(color: AppTheme.glassWhite20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -2019,5 +2032,8 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
         ],
       ),
     );
+      },
+    );
   }
 }
+

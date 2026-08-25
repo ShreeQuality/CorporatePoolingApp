@@ -23,11 +23,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
           // 1. Map Background (Placeholder for Ola Maps)
           Positioned.fill(
             child: Container(
+              // Simple map grid placeholder without external images
               decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/map_placeholder.png'), // Fallback if missing
-                  fit: BoxFit.cover,
-                ),
+                color: Color(0xFF02040A),
               ),
               // If image fails to load, this gradient grid acts as a fallback map feel
               child: CustomPaint(

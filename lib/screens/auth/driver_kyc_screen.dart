@@ -2382,6 +2382,11 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
                 };
 
                 widget.onDriverKycSuccess?.call(finalPayload);
+                
+                // If no callback provided, route to the dashboard
+                if (widget.onDriverKycSuccess == null) {
+                  Navigator.of(context).pushReplacementNamed('/home', arguments: finalPayload);
+                }
               },
               icon: const Icon(Icons.dashboard_rounded, size: 20),
               label: const Text(

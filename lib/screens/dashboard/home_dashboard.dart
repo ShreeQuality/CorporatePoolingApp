@@ -16,24 +16,33 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: const Color(0xFF050814),
       body: Stack(
         children: [
-          // 1. App Theme Background (Keeping it consistent with Auth screens for now)
-          // Note: In Sprint 3, this entire container will be replaced by the interactive Ola Map widget.
-          Positioned.fill(
-            child: Container(
-              color: const Color(0xFF070B19), // Matches AppTheme scaffold background
-            ),
+          // 1. Layer 1: Live Stardust Rainfall Animation (Matching Screen 2)
+          const Positioned.fill(
+            child: StarRain1(),
           ),
 
-          // 2. Stardust Rainfall (30% opacity to not overpower the UI)
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.35,
-              child: IgnorePointer(
-                child: StarRain1(),
+          // 2. Layer 2: Subtle Ambient Light Glows (Matching Screen 2)
+          Positioned(
+            top: size.height * 0.10,
+            left: size.width * 0.1,
+            child: Container(
+              width: size.width * 0.8,
+              height: size.width * 0.8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                    const Color(0xFF6C63FF).withValues(alpha: 0.04),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
           ),

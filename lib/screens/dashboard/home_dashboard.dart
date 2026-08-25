@@ -20,17 +20,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
       backgroundColor: const Color(0xFF050814),
       body: Stack(
         children: [
-          // 1. Map Background (Placeholder for Ola Maps)
+          // 1. App Theme Background (Keeping it consistent with Auth screens for now)
+          // Note: In Sprint 3, this entire container will be replaced by the interactive Ola Map widget.
           Positioned.fill(
             child: Container(
-              // Simple map grid placeholder without external images
-              decoration: const BoxDecoration(
-                color: Color(0xFF02040A),
-              ),
-              // If image fails to load, this gradient grid acts as a fallback map feel
-              child: CustomPaint(
-                painter: MapGridPainter(),
-              ),
+              color: const Color(0xFF070B19), // Matches AppTheme scaffold background
             ),
           ),
 
@@ -358,24 +352,4 @@ class _HomeDashboardState extends State<HomeDashboard> {
       ),
     );
   }
-}
-
-/// Fallback painter to give a slight "Map Grid" texture to the dark background
-class MapGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.03)
-      ..strokeWidth = 1.0;
-
-    for (double i = 0; i < size.width; i += 40) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
-    }
-    for (double i = 0; i < size.height; i += 40) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

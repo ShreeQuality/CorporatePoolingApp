@@ -37,7 +37,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050814),
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           

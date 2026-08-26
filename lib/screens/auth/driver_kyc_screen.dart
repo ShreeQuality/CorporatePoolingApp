@@ -464,7 +464,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> with TickerProviderSt
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF050814),
+        backgroundColor: Colors.transparent,
         body: Stack(
           children: [
             

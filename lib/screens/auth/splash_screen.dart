@@ -89,33 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: Colors.transparent,
       body: Stack(
           children: [
-          // 1. Base Radial Gradient
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(0.0, -0.15),
-                  radius: 1.15,
-                  colors: [
-                    Color(0xFF080E24),
-                    Color(0xFF040815),
-                    Color(0xFF02050F),
-                    Color(0xFF010308),
-                  ],
-                  stops: [0.0, 0.35, 0.70, 1.0],
-                ),
-              ),
-            ),
-          ),
-
-          // 2. StarRain1: Linear Vertical Stardust Drift (Excludes Chakra Center)
-          Positioned.fill(
-            child: StarRain1(
-              exclusionZone: chakraExclusion,
-            ),
-          ),
-
-          // 3. Main Centered Splash Screen Content
+          // Main Centered Splash Screen Content
           SafeArea(
             child: Column(
               children: [

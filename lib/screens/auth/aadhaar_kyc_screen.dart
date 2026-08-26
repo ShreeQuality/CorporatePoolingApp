@@ -468,7 +468,7 @@ class _AadhaarKycScreenState extends State<AadhaarKycScreen> with TickerProvider
       behavior: HitTestBehavior.opaque,
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: const Color(0xFF050814),
+        backgroundColor: Colors.transparent,
         body: Stack(
           children: [
             

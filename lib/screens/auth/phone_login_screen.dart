@@ -741,7 +741,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF050814),
+        backgroundColor: Colors.transparent,
         resizeToAvoidBottomInset: true,
         body: Stack(
           children: [

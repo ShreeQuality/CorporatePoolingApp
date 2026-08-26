@@ -24,7 +24,7 @@ class KarmaRideApp extends StatelessWidget {
         title: 'KarmaRide',
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: const Color(0xFF070B19),
+          scaffoldBackgroundColor: Colors.transparent,
         ),
         builder: (context, child) {
           return AppBackground(

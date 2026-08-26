@@ -197,7 +197,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       children: [
                         Text(
-                          '${_vibrationPatterns[_selectedVariationIndex]['label']} â€¢ ${_vibrationPatterns[_selectedVariationIndex]['name']}',
+                          '${_vibrationPatterns[_selectedVariationIndex]['label']} \u2022 ${_vibrationPatterns[_selectedVariationIndex]['name']}',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 13,

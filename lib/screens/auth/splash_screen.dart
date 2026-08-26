@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFF02050F),
+      backgroundColor: Colors.transparent,
       body: Stack(
           children: [
           // 1. Base Radial Gradient
@@ -168,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               child: Text(
                                 _vibrationPatterns[idx]['label']!,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 10.5,
                                   fontWeight: isSel ? FontWeight.w800 : FontWeight.w600,
                                   color: isSel ? Colors.white : const Color(0xFFB0BEC5),
@@ -199,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen>
                         Text(
                           '${_vibrationPatterns[_selectedVariationIndex]['label']} \u2022 ${_vibrationPatterns[_selectedVariationIndex]['name']}',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter', 
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFFFFB74D),
@@ -210,7 +210,7 @@ class _SplashScreenState extends State<SplashScreen>
                         Text(
                           _vibrationPatterns[_selectedVariationIndex]['desc']!,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter', 
                             fontSize: 11,
                             color: const Color(0xFF90A4AE),
                             height: 1.25,
@@ -243,7 +243,7 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _fadeAnimation,
                   child: Text(
                     'KarmaRide',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter', 
                       fontSize: 36,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xFFFFF8F0),
@@ -269,7 +269,7 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _fadeAnimation,
                   child: Text(
                     'Smart \u2022 Verified \u2022 Sustainable Commutes',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter', 
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFFFFB74D),
@@ -318,7 +318,7 @@ class _SplashScreenState extends State<SplashScreen>
                             children: [
                               Text(
                                 'Next',
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 16.5,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
@@ -344,7 +344,7 @@ class _SplashScreenState extends State<SplashScreen>
                 // SECURITY BADGE
                 Text(
                   'Secured with Enterprise SSO & Biometrics',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF78909C),

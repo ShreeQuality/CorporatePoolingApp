@@ -267,7 +267,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
         width: 70,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.glassWhite15 : AppTheme.glassBlack30,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.white.withValues(alpha: 0.5) : Colors.transparent,

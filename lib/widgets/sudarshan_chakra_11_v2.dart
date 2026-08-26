@@ -29,70 +29,21 @@ class SudarshanChakra11V2 extends StatefulWidget {
 
 class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
     with TickerProviderStateMixin {
-  late final AnimationController _outermostRingController;
-  late final AnimationController _wheelController;
-  late final AnimationController _dashedRingController;
-  late final AnimationController _fireClockwiseController;
-  late final AnimationController _fireAntiClockwiseController;
-  late final AnimationController _glowController;
-  late final AnimationController _gyroController;
+  late final AnimationController _masterController;
 
   @override
   void initState() {
     super.initState();
 
-    // 1. Outermost Perimeter Circle with 36 Blade Teeth rotates independently (10000ms)
-    _outermostRingController = AnimationController(
+    _masterController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: (10000 / widget.speed).round()),
-    )..repeat();
-
-    // 2. Main Wheel rotates Clockwise (8000ms)
-    _wheelController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: (8000 / widget.speed).round()),
-    )..repeat();
-
-    // 3. Dashed Arc Circle (- - -) rotates Anti-Clockwise (6500ms)
-    _dashedRingController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: (6500 / widget.speed).round()),
-    )..repeat();
-
-    // 4. Outer Fire Hexagon Star rotates Clockwise (5500ms)
-    _fireClockwiseController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: (5500 / widget.speed).round()),
-    )..repeat();
-
-    // 5. Inner Fire Hexagon Star rotates Anti-Clockwise (4500ms)
-    _fireAntiClockwiseController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: (4500 / widget.speed).round()),
-    )..repeat();
-
-    // 6. Ambient Breathing Glow (2400ms)
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat(reverse: true);
-
-    // 7. Continuous 3D Gyroscopic Precession Cycle: 3200ms
-    _gyroController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: Duration(milliseconds: (120000 / widget.speed).round()),
     )..repeat();
   }
 
   @override
   void dispose() {
-    _outermostRingController.dispose();
-    _wheelController.dispose();
-    _dashedRingController.dispose();
-    _fireClockwiseController.dispose();
-    _fireAntiClockwiseController.dispose();
-    _glowController.dispose();
-    _gyroController.dispose();
+    _masterController.dispose();
     super.dispose();
   }
 
@@ -103,17 +54,19 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
       height: widget.size * 1.15,
       child: Center(
         child: AnimatedBuilder(
-          animation: Listenable.merge([
-            _outermostRingController,
-            _wheelController,
-            _dashedRingController,
-            _fireClockwiseController,
-            _fireAntiClockwiseController,
-            _glowController,
-            _gyroController,
-          ]),
+          animation: _masterController,
           builder: (context, _) {
-            final t = _gyroController.value * math.pi * 2;
+            final m = _masterController.value;
+            final vOutermost = (m * (120000 / 10000)) % 1.0;
+            final vWheel    = (m * (120000 / 8000))  % 1.0;
+            final vDashed   = (m * (120000 / 6500))  % 1.0;
+            final vFireClock = (m * (120000 / 5500)) % 1.0;
+            final vFireAnti  = (m * (120000 / 4500)) % 1.0;
+            final vGlowRaw   = (m * (120000 / 2400)) % 2.0;
+            final vGlow = vGlowRaw <= 1.0 ? vGlowRaw : (2.0 - vGlowRaw);
+            final vGyro = (m * (120000 / 3200)) % 1.0;
+
+            final t = vGyro * math.pi * 2;
 
             // 3D Gyroscopic Precession Angles (Dynamic Conical Wobble)
             // Base X: -54 deg (+- 4.2 deg wobble)
@@ -128,7 +81,7 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
             final tremorX = math.sin(t * 12) * 1.8 * gyroIntensity;
             final tremorY = math.cos(t * 12) * 1.4 * gyroIntensity;
 
-            final baseGlow = _glowController.value;
+            final baseGlow = vGlow;
             final glowScale = 1.62 + (baseGlow * 0.08);
 
             return Stack(
@@ -176,7 +129,7 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
                         alignment: Alignment.center,
                         transform: Matrix4.identity()..translate(tremorX, tremorY, 0.0),
                         child: Transform.rotate(
-                          angle: _outermostRingController.value * math.pi * 2,
+                          angle: vOutermost * math.pi * 2,
                           child: SvgPicture.string(
                             _outermostRingSvgData,
                             width: widget.size,
@@ -190,7 +143,7 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
                         alignment: Alignment.center,
                         transform: Matrix4.identity()..translate(tremorX, tremorY, 0.0),
                         child: Transform.rotate(
-                          angle: _wheelController.value * math.pi * 2,
+                          angle: vWheel * math.pi * 2,
                           child: SvgPicture.string(
                             _wheelSvgData,
                             width: widget.size,
@@ -204,7 +157,7 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
                         alignment: Alignment.center,
                         transform: Matrix4.identity()..translate(tremorX, tremorY, 0.0),
                         child: Transform.rotate(
-                          angle: -_dashedRingController.value * math.pi * 2,
+                          angle: -vDashed * math.pi * 2,
                           child: SvgPicture.string(
                             _dashedRingSvgData,
                             width: widget.size,
@@ -218,7 +171,7 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
                         alignment: Alignment.center,
                         transform: Matrix4.identity()..translate(tremorX * 0.9, tremorY * 0.9, 0.0),
                         child: Transform.rotate(
-                          angle: _fireClockwiseController.value * math.pi * 2,
+                          angle: vFireClock * math.pi * 2,
                           child: SvgPicture.string(
                             _fireClockwiseSvgData,
                             width: widget.size,
@@ -232,7 +185,7 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
                         alignment: Alignment.center,
                         transform: Matrix4.identity()..translate(tremorX * 1.1, tremorY * 1.1, 0.0),
                         child: Transform.rotate(
-                          angle: -_fireAntiClockwiseController.value * math.pi * 2,
+                          angle: -vFireAnti * math.pi * 2,
                           child: SvgPicture.string(
                             _fireAntiClockwiseSvgData,
                             width: widget.size,

@@ -93,18 +93,24 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   @override
   void initState() {
     super.initState();
-    listenForCode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      listenForCode();
+    });
 
     _phoneFocusNode.addListener(() {
-      setState(() {
-        _isPhoneFocused = _phoneFocusNode.hasFocus;
-      });
+      if (_isPhoneFocused != _phoneFocusNode.hasFocus) {
+        setState(() {
+          _isPhoneFocused = _phoneFocusNode.hasFocus;
+        });
+      }
     });
 
     _phoneController.addListener(() {
-      setState(() {
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = null;
+        });
+      }
     });
 
     _glowController = AnimationController(
@@ -640,10 +646,10 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        return Container(
+          color: Colors.transparent,
           child: Dialog(
-            backgroundColor: const Color(0xFF0E1630).withValues(alpha: 0.92),
+            backgroundColor: const Color(0xFF0E1630).withValues(alpha: 0.98),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
               side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
@@ -852,8 +858,8 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
   Widget _buildGlassCard(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+      child: Container(
+        color: Colors.transparent,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 350),
           width: double.infinity,

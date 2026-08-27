@@ -1,3 +1,4 @@
+import '../../widgets/core/app_background.dart';
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -66,6 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    AppBackground.exclusionZone.value = null;
     _animationController.dispose();
     super.dispose();
   }
@@ -81,9 +83,18 @@ class _SplashScreenState extends State<SplashScreen>
     final chakraCenter = Offset(screenSize.width / 2, screenSize.height * 0.46);
     final chakraExclusion = Rect.fromCenter(
       center: chakraCenter,
-      width: 220,
-      height: 220,
+      width: 240,
+      height: 240,
     );
+
+    // Keep global StarRain exclusion zone synchronized with chakra position
+    if (AppBackground.exclusionZone.value != chakraExclusion) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          AppBackground.exclusionZone.value = chakraExclusion;
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent,

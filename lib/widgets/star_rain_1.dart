@@ -125,12 +125,13 @@ class CosmicDriftingStardustPainter1 extends CustomPainter {
       final double currentY = (normalizedY * fullHeight) - 25.0;
       final double currentX = p.startX * size.width;
 
-      if (exclusionZone != null &&
-          currentX >= exclusionZone!.left &&
-          currentX <= exclusionZone!.right &&
-          currentY >= exclusionZone!.top &&
-          currentY <= exclusionZone!.bottom) {
-        continue;
+      if (exclusionZone != null) {
+        final double dx = currentX - exclusionZone!.center.dx;
+        final double dy = currentY - exclusionZone!.center.dy;
+        final double maxR = exclusionZone!.width / 2;
+        if ((dx * dx + dy * dy) <= (maxR * maxR)) {
+          continue;
+        }
       }
 
       final double wave = (math.sin(progress * twoPi * 3.0 + p.twinklePhase) + 1.0) * 0.5;
@@ -157,5 +158,5 @@ class CosmicDriftingStardustPainter1 extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CosmicDriftingStardustPainter1 oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress || oldDelegate.exclusionZone != exclusionZone;
 }

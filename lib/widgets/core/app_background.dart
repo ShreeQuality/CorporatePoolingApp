@@ -7,6 +7,9 @@ import '../star_rain_1.dart';
 class AppBackground extends StatelessWidget {
   final Widget child;
   
+  /// Global dynamic exclusion zone (e.g. for Sacred Chakra on splash screen)
+  static final ValueNotifier<Rect?> exclusionZone = ValueNotifier<Rect?>(null);
+  
   const AppBackground({
     super.key,
     required this.child,
@@ -22,8 +25,13 @@ class AppBackground extends StatelessWidget {
         ),
 
         // 2. Continuous Stardust Rainfall Animation (Runs 1 time globally)
-        const Positioned.fill(
-          child: StarRain1(),
+        Positioned.fill(
+          child: ValueListenableBuilder<Rect?>(
+            valueListenable: exclusionZone,
+            builder: (context, zone, _) {
+              return StarRain1(exclusionZone: zone);
+            },
+          ),
         ),
 
         // 3. The Active Screen (Transparent Scaffold)

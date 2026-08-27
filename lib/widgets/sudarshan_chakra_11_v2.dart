@@ -68,13 +68,13 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
 
             final t = vGyro * math.pi * 2;
 
-            // 3D Gyroscopic Precession Angles (Dynamic Conical Wobble)
-            // Base X: -54 deg (+- 4.2 deg wobble)
-            final tiltX = (-54 + (math.sin(t) * 4.5)) * math.pi / 180;
-            // Dynamic Y: (+- 5.0 deg cross-tilt)
-            final tiltY = (math.cos(t) * 5.0) * math.pi / 180;
-            // Base Z: 10 deg (+- 3.5 deg torque shift)
-            final tiltZ = (10 + (math.sin(t + math.pi / 4) * 3.5)) * math.pi / 180;
+            // 3D Gyroscopic Precession Angles (Enhanced Dynamic Conical Wobble & Deeper Tilt)
+            // Base X: -65 deg (+- 5.0 deg wobble) for a deeper, more pronounced 3D tilt
+            final tiltX = (-65 + (math.sin(t) * 5.0)) * math.pi / 180;
+            // Dynamic Y: (+- 6.0 deg cross-tilt)
+            final tiltY = (math.cos(t) * 6.0) * math.pi / 180;
+            // Base Z: 12 deg (+- 4.0 deg torque shift)
+            final tiltZ = (12 + (math.sin(t + math.pi / 4) * 4.0)) * math.pi / 180;
 
             // High-frequency gyroscopic stabilizer tremor (12Hz harmonic hum)
             final gyroIntensity = 0.5 + (0.5 * math.sin(t).abs());

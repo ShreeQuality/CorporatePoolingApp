@@ -461,14 +461,14 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
 
     // X: starts from upper-right (+120px right of center) → arrives at center (0)
     // Uses easeInOut so horizontal movement starts slow and ends slow (smooth arc)
-    _dx = Tween<double>(begin: 120.0, end: 0.0)
+    _dx = Tween<double>(begin: 350.0, end: 0.0)
         .chain(CurveTween(curve: Curves.easeInOut))
         .animate(_controller);
 
     // Y: starts from above center (-220px) → arrives at center (0)
     // Uses easeInQuart to match the scale — slow drift down at first, then swoops
-    _dy = Tween<double>(begin: -220.0, end: 0.0)
-        .chain(CurveTween(curve: Curves.easeInQuart))
+    _dy = Tween<double>(begin: 0.0, end: 0.0)
+        .chain(CurveTween(curve: Curves.linear))
         .animate(_controller);
 
     if (widget.autoPlay) {

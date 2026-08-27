@@ -1,5 +1,4 @@
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// A universal Glassmorphism container.
@@ -44,16 +43,9 @@ class GlassPanel extends StatelessWidget {
       child: child,
     );
 
-    // Using BackdropFilter is expensive. By centralizing it, 
-    // a super admin config can dynamically return just the container
-    // if a "battery saver" or "performance" mode is active.
-    return ClipRRect(
-      borderRadius: radius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-        child: container,
-      ),
-    );
+    // BackdropFilter removed: fully transparent so StarRain1 rainfall
+    // shows through every panel with zero blur/tint.
+    return container;
   }
 }
 

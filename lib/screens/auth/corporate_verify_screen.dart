@@ -809,25 +809,7 @@ class _CorporateVerifyScreenState extends State<CorporateVerifyScreen> with Sing
           children: [
             
 
-            // 2. Ambient Radiant Radial Glow
-            Positioned(
-              top: size.height * 0.08,
-              left: size.width * 0.15,
-              child: Container(
-                width: size.width * 0.7,
-                height: size.width * 0.7,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      themeColor.withValues(alpha: 0.12),
-                      const Color(0xFF0088FF).withValues(alpha: 0.04),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Background provided globally by AppBackground (no local glow)
 
             // 3. Main Scrollable Content
             SafeArea(

@@ -2,7 +2,6 @@ import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -725,8 +724,6 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return PopScope(
       canPop: !_isOtpSent,
       onPopInvokedWithResult: (didPop, result) {
@@ -747,25 +744,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen>
           children: [
             
 
-            // 2. Layer 2: Subtle Ambient Light Glows
-            Positioned(
-              top: size.height * 0.10,
-              left: size.width * 0.1,
-              child: Container(
-                width: size.width * 0.8,
-                height: size.width * 0.8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF00E5FF).withValues(alpha: 0.08),
-                      const Color(0xFF6C63FF).withValues(alpha: 0.04),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // Background provided globally by AppBackground (no local glow)
 
             // 3. Layer 3: Main Scrollable Content Area
             SafeArea(

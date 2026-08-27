@@ -71,8 +71,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildChakraWidget() {
-    // V11-V2: Gyroscopic Precession
-    return const SudarshanChakra11V2(key: ValueKey('v11v2'), size: 165);
+    // V11-V2: Gyroscopic Precession with "arriving from far away" entrance
+    return const SudarshanChakraEntrance(key: ValueKey('v11v2'), size: 165);
   }
 
   @override

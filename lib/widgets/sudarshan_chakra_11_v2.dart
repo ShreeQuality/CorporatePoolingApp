@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -387,3 +388,133 @@ class _SudarshanChakra11V2State extends State<SudarshanChakra11V2>
   </g>
 </svg>""";
 }
+
+
+// ─────────────────────────────────────────────────────────────
+// ENTRANCE ANIMATION WRAPPER
+// "Arriving from far away" — starts as a tiny blurred distant spark,
+// rushes toward the viewer, then snaps elastically into place.
+//
+// Usage in splash_screen.dart:
+//   SudarshanChakraEntrance(size: 165)
+//
+// To replay (e.g. re-entering a screen):
+//   final key = GlobalKey<SudarshanChakraEntranceState>();
+//   SudarshanChakraEntrance(key: key, ...);
+//   key.currentState?.play();
+// ─────────────────────────────────────────────────────────────
+
+class SudarshanChakraEntrance extends StatefulWidget {
+  const SudarshanChakraEntrance({
+    super.key,
+    this.size = 170,
+    this.speed = 1.0,
+    this.entranceDuration = const Duration(milliseconds: 2200),
+    this.autoPlay = true,
+    this.startTiltRadians = 0.55,
+    this.startBlur = 14.0,
+  });
+
+  final double size;
+  final double speed;
+  final Duration entranceDuration;
+  final bool autoPlay;
+  final double startTiltRadians;
+  final double startBlur;
+
+  @override
+  State<SudarshanChakraEntrance> createState() =>
+      SudarshanChakraEntranceState();
+}
+
+class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  // Scale: starts as a distant speck (0.04) -> overshoots slightly (1.08)
+  // -> settles exactly at 1.0 with an elastic snap on arrival.
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.entranceDuration,
+    );
+
+    _scale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.04, end: 1.08)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 80,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.08, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 20,
+      ),
+    ]).animate(_controller);
+
+    if (widget.autoPlay) {
+      _controller.forward();
+    }
+  }
+
+  /// Re-plays the entrance from the beginning (e.g. on screen re-entry).
+  void play() => _controller.forward(from: 0);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = Curves.easeOut.transform(_controller.value.clamp(0.0, 1.0));
+
+        final scale = _scale.value;
+        final tilt = (1 - t) * widget.startTiltRadians; // levels out on arrival
+        final blurSigma = (1 - t) * widget.startBlur;   // sharpens on arrival
+        final opacity = Curves.easeIn.transform(
+          (_controller.value / 0.3).clamp(0.0, 1.0),
+        ); // fades in during the first ~30% of the flight
+
+        Widget content = child!;
+
+        if (blurSigma > 0.05) {
+          content = ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(
+              sigmaX: blurSigma,
+              sigmaY: blurSigma,
+            ),
+            child: content,
+          );
+        }
+
+        return Opacity(
+          opacity: opacity,
+          child: Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.0016) // perspective depth
+              ..rotateX(tilt)          // tilted when far, levels on arrival
+              ..scale(scale, scale, 1.0),
+            child: content,
+          ),
+        );
+      },
+      // The chakra child is built once and keeps spinning underneath
+      // the entrance transform the entire time.
+      child: SudarshanChakra11V2(
+        size: widget.size,
+        speed: widget.speed,
+      ),
+    );
+  }
+}
+

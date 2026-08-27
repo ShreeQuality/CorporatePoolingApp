@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -412,16 +411,12 @@ class SudarshanChakraEntrance extends StatefulWidget {
     // Slower & more cinematic — the journey feels long
     this.entranceDuration = const Duration(milliseconds: 4000),
     this.autoPlay = true,
-    this.startTiltRadians = 0.40,
-    this.startBlur = 10.0,
   });
 
   final double size;
   final double speed;
   final Duration entranceDuration;
   final bool autoPlay;
-  final double startTiltRadians;
-  final double startBlur;
 
   @override
   State<SudarshanChakraEntrance> createState() =>
@@ -480,50 +475,17 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final t = _controller.value.clamp(0.0, 1.0);
-
         final scale = _scale.value;
 
-        // Tilt angle: high when far (tilted away), zeroes out on arrival
-        final tilt = (1.0 - t) * widget.startTiltRadians;
-
-        // Blur: strong & blurry when far, sharpens completely on arrival
-        // Use easeInQuart to match scale — sharpening accelerates as it nears
-        final blurT = Curves.easeInQuart.transform(t);
-        final blurSigma = (1.0 - blurT) * widget.startBlur;
-
-        // Opacity: appears very gradually during the first 50% of flight
-        // (when far away it should be faint, not abruptly bright)
-        final opacity = Curves.easeInOut.transform(
-          (t / 0.5).clamp(0.0, 1.0),
-        );
-
-        Widget content = child!;
-
-        if (blurSigma > 0.05) {
-          content = ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(
-              sigmaX: blurSigma,
-              sigmaY: blurSigma,
-              tileMode: TileMode.decal, // fades to transparent at edges, no rectangular box
-            ),
-            child: content,
-          );
-        }
-
-        return Opacity(
-          opacity: opacity,
-          child: Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.0018) // perspective depth (slightly stronger)
-              ..rotateX(tilt)           // levels to flat on arrival
-              ..scale(scale, scale, 1.0),
-            child: content,
-          ),
+        // Pure scale only — no blur, no tilt, no effects.
+        // The actual chakra shape is always crisp and clear,
+        // just very small at first and slowly growing larger.
+        return Transform.scale(
+          scale: scale,
+          child: child,
         );
       },
-      // Built once — chakra spins normally underneath the entire time
+      // Built once — chakra spins normally the entire time
       child: SudarshanChakra11V2(
         size: widget.size,
         speed: widget.speed,

@@ -427,10 +427,14 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  // easeInQuart: starts VERY slow when tiny/far, accelerates naturally
-  // as it gets closer — exactly like real perspective depth.
-  // No overshoot — it gently decelerates and settles on arrival.
+  // Scale: 0.01 (tiny distant speck) → 1.0 (full size at B)
   late final Animation<double> _scale;
+
+  // X offset: starts at upper-right (positive dx), moves to center (0)
+  late final Animation<double> _dx;
+
+  // Y offset: starts above center (negative dy), moves to center (0)
+  late final Animation<double> _dy;
 
   @override
   void initState() {
@@ -440,9 +444,8 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
       duration: widget.entranceDuration,
     );
 
-    // 0.01 = barely-visible distant speck
-    // easeInQuart = almost no movement at first, then surges toward viewer
-    // Last 15%: easeOut to gently decelerate and land at full size
+    // Scale: barely visible → full size
+    // easeInQuart = very slow crawl at first, surges at the end
     _scale = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween(begin: 0.01, end: 0.95)
@@ -455,6 +458,18 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
         weight: 15,
       ),
     ]).animate(_controller);
+
+    // X: starts from upper-right (+120px right of center) → arrives at center (0)
+    // Uses easeInOut so horizontal movement starts slow and ends slow (smooth arc)
+    _dx = Tween<double>(begin: 120.0, end: 0.0)
+        .chain(CurveTween(curve: Curves.easeInOut))
+        .animate(_controller);
+
+    // Y: starts from above center (-220px) → arrives at center (0)
+    // Uses easeInQuart to match the scale — slow drift down at first, then swoops
+    _dy = Tween<double>(begin: -220.0, end: 0.0)
+        .chain(CurveTween(curve: Curves.easeInQuart))
+        .animate(_controller);
 
     if (widget.autoPlay) {
       _controller.forward();
@@ -475,14 +490,14 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final scale = _scale.value;
-
-        // Pure scale only — no blur, no tilt, no effects.
-        // The actual chakra shape is always crisp and clear,
-        // just very small at first and slowly growing larger.
-        return Transform.scale(
-          scale: scale,
-          child: child,
+        // Crisp actual shape — no blur, no effects.
+        // Moves from upper-right (A) to center (B) while scaling up.
+        return Transform.translate(
+          offset: Offset(_dx.value, _dy.value),
+          child: Transform.scale(
+            scale: _scale.value,
+            child: child,
+          ),
         );
       },
       // Built once — chakra spins normally the entire time

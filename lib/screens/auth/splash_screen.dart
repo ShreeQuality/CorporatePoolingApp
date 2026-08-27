@@ -1,3 +1,4 @@
+import '../../core/secure_storage_service.dart';
 import 'dart:async';
 import '../../widgets/core/app_background.dart';
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
@@ -33,16 +34,24 @@ class _SplashScreenState extends State<SplashScreen> {
     super.dispose();
   }
 
-  void _handleChakraArrived() {
+  void _handleChakraArrived() async {
     if (!mounted) return;
     setState(() {
       _isChakraArrived = true;
     });
 
-    // Wait 3 seconds after chakra arrival, then navigate to next screen
+    // Step 1: Check local secure storage for an active session token
+    final jwtToken = await SecureStorageService.getJwt();
+
+    // Wait 3 seconds after chakra arrival, then navigate automatically
     _navigationTimer?.cancel();
     _navigationTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
+      if (!mounted) return;
+      if (jwtToken != null && jwtToken.isNotEmpty) {
+        // Already registered/logged in -> Go directly to Home Dashboard
+        context.go('/home');
+      } else {
+        // New user -> Go to Onboarding
         context.go('/onboarding');
       }
     });

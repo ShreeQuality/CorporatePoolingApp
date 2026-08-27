@@ -409,10 +409,11 @@ class SudarshanChakraEntrance extends StatefulWidget {
     super.key,
     this.size = 170,
     this.speed = 1.0,
-    this.entranceDuration = const Duration(milliseconds: 2200),
+    // Slower & more cinematic — the journey feels long
+    this.entranceDuration = const Duration(milliseconds: 4000),
     this.autoPlay = true,
-    this.startTiltRadians = 0.55,
-    this.startBlur = 14.0,
+    this.startTiltRadians = 0.40,
+    this.startBlur = 10.0,
   });
 
   final double size;
@@ -431,8 +432,9 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  // Scale: starts as a distant speck (0.04) -> overshoots slightly (1.08)
-  // -> settles exactly at 1.0 with an elastic snap on arrival.
+  // easeInQuart: starts VERY slow when tiny/far, accelerates naturally
+  // as it gets closer — exactly like real perspective depth.
+  // No overshoot — it gently decelerates and settles on arrival.
   late final Animation<double> _scale;
 
   @override
@@ -443,16 +445,19 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
       duration: widget.entranceDuration,
     );
 
+    // 0.01 = barely-visible distant speck
+    // easeInQuart = almost no movement at first, then surges toward viewer
+    // Last 15%: easeOut to gently decelerate and land at full size
     _scale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.04, end: 1.08)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
-        weight: 80,
+        tween: Tween(begin: 0.01, end: 0.95)
+            .chain(CurveTween(curve: Curves.easeInQuart)),
+        weight: 85,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.08, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOutBack)),
-        weight: 20,
+        tween: Tween(begin: 0.95, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 15,
       ),
     ]).animate(_controller);
 
@@ -475,14 +480,23 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final t = Curves.easeOut.transform(_controller.value.clamp(0.0, 1.0));
+        final t = _controller.value.clamp(0.0, 1.0);
 
         final scale = _scale.value;
-        final tilt = (1 - t) * widget.startTiltRadians; // levels out on arrival
-        final blurSigma = (1 - t) * widget.startBlur;   // sharpens on arrival
-        final opacity = Curves.easeIn.transform(
-          (_controller.value / 0.3).clamp(0.0, 1.0),
-        ); // fades in during the first ~30% of the flight
+
+        // Tilt angle: high when far (tilted away), zeroes out on arrival
+        final tilt = (1.0 - t) * widget.startTiltRadians;
+
+        // Blur: strong & blurry when far, sharpens completely on arrival
+        // Use easeInQuart to match scale — sharpening accelerates as it nears
+        final blurT = Curves.easeInQuart.transform(t);
+        final blurSigma = (1.0 - blurT) * widget.startBlur;
+
+        // Opacity: appears very gradually during the first 50% of flight
+        // (when far away it should be faint, not abruptly bright)
+        final opacity = Curves.easeInOut.transform(
+          (t / 0.5).clamp(0.0, 1.0),
+        );
 
         Widget content = child!;
 
@@ -501,15 +515,14 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
           child: Transform(
             alignment: Alignment.center,
             transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.0016) // perspective depth
-              ..rotateX(tilt)          // tilted when far, levels on arrival
+              ..setEntry(3, 2, 0.0018) // perspective depth (slightly stronger)
+              ..rotateX(tilt)           // levels to flat on arrival
               ..scale(scale, scale, 1.0),
             child: content,
           ),
         );
       },
-      // The chakra child is built once and keeps spinning underneath
-      // the entrance transform the entire time.
+      // Built once — chakra spins normally underneath the entire time
       child: SudarshanChakra11V2(
         size: widget.size,
         speed: widget.speed,

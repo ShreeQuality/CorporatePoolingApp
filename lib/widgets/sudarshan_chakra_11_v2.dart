@@ -505,6 +505,7 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
             imageFilter: ui.ImageFilter.blur(
               sigmaX: blurSigma,
               sigmaY: blurSigma,
+              tileMode: TileMode.decal, // fades to transparent at edges, no rectangular box
             ),
             child: content,
           );

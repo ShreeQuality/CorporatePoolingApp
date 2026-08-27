@@ -1,3 +1,5 @@
+import '../../core/secure_storage_service.dart';
+import 'package:go_router/go_router.dart';
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/core/glass_panel.dart';
@@ -72,6 +74,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
             IconButton(
               icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
               onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.white70),
+              tooltip: 'Logout',
+              onPressed: () async {
+                final nav = GoRouter.of(context);
+                await SecureStorageService.clearAll();
+                nav.go('/phone-login');
+              },
             ),
             Container(
               decoration: BoxDecoration(

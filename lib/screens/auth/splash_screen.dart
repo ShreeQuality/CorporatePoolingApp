@@ -16,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   bool _isChakraArrived = false;
+  bool _isExiting = false;
   Timer? _navigationTimer;
 
   static const int _selectedVariationIndex = 0;
@@ -43,17 +44,23 @@ class _SplashScreenState extends State<SplashScreen> {
     // Step 1: Check local secure storage for an active session token
     final jwtToken = await SecureStorageService.getJwt();
 
-    // Wait 3 seconds after chakra arrival, then navigate automatically
+    // Wait 3 seconds after chakra arrival, then dissolve smoothly before navigating
     _navigationTimer?.cancel();
     _navigationTimer = Timer(const Duration(seconds: 3), () {
       if (!mounted) return;
-      if (jwtToken != null && jwtToken.isNotEmpty) {
-        // Already registered/logged in -> Go directly to Home Dashboard
-        context.go('/home');
-      } else {
-        // New user -> Go to Onboarding
-        context.go('/onboarding');
-      }
+      setState(() {
+        _isExiting = true;
+      });
+
+      // 350ms smooth dissolve fade-out before changing screens
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        if (jwtToken != null && jwtToken.isNotEmpty) {
+          context.go('/home');
+        } else {
+          context.go('/onboarding');
+        }
+      });
     });
   }
 
@@ -86,9 +93,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          SafeArea(
+      body: AnimatedOpacity(
+        opacity: _isExiting ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+        child: Stack(
+          children: [
+            SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 10),
@@ -267,6 +278,7 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

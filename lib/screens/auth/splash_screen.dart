@@ -1,16 +1,11 @@
+import 'dart:async';
 import '../../widgets/core/app_background.dart';
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import '../../widgets/star_rain_1.dart';
-
-// Active chakra: V11-V2 (Gyroscopic Precession)
-// Other versions (v1, v3-v10, newsudarshan) kept as files in /widgets but NOT imported
-// to avoid loading 70+ animation controllers into memory on app start.
 import '../../widgets/sudarshan_chakra_11_v2.dart';
 
-/// Screen 1: KarmaRide Sacred Splash Screen (Dedicated Night Mode Edition - V11 Vibration Studies 1 to 10 + V11-V10-NEW)
+/// Screen 1: KarmaRide Sacred Splash Screen
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,17 +13,11 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+class _SplashScreenState extends State<SplashScreen> {
+  bool _isChakraArrived = false;
+  Timer? _navigationTimer;
 
-  // Locked to V11-V2. Other versions kept as files in /widgets but not imported.
-  // This prevents 70 idle AnimationControllers from running in the background.
   static const int _selectedVariationIndex = 0;
-
-  // Only V11-V2 entry kept. Add more here when you re-import other versions.
   static const List<Map<String, String>> _vibrationPatterns = [
     {
       'label': 'V11-V2',
@@ -38,49 +27,39 @@ class _SplashScreenState extends State<SplashScreen>
   ];
 
   @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutBack,
-      ),
-    );
-
-    _animationController.forward();
-  }
-
-  void _handleNextPressed() {
-    context.go('/onboarding');
-  }
-
-  @override
   void dispose() {
+    _navigationTimer?.cancel();
     AppBackground.exclusionZone.value = null;
-    _animationController.dispose();
     super.dispose();
   }
 
+  void _handleChakraArrived() {
+    if (!mounted) return;
+    setState(() {
+      _isChakraArrived = true;
+    });
+
+    // Wait 3 seconds after chakra arrival, then navigate to next screen
+    _navigationTimer?.cancel();
+    _navigationTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        context.go('/onboarding');
+      }
+    });
+  }
+
   Widget _buildChakraWidget() {
-    // V11-V2: Gyroscopic Precession with "arriving from far away" entrance
-    return const SudarshanChakraEntrance(key: ValueKey('v11v2'), size: 165);
+    return SudarshanChakraEntrance(
+      key: const ValueKey('v11v2'),
+      size: 165,
+      onArrival: _handleChakraArrived,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final chakraCenter = Offset(screenSize.width / 2, screenSize.height * 0.46);
+    final chakraCenter = Offset(screenSize.width / 2, screenSize.height * 0.44);
     final chakraExclusion = Rect.fromCenter(
       center: chakraCenter,
       width: 240,
@@ -99,14 +78,13 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
-          children: [
-          // Main Centered Splash Screen Content
+        children: [
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 10),
 
-                // UPPER V11 VIBRATION PATTERN SELECTOR BAR (V11-V1 to V11-V10)
+                // UPPER V11 VIBRATION PATTERN SELECTOR BAR
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: SingleChildScrollView(
@@ -119,10 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: InkWell(
-                            onTap: () {
-                              // Selector is locked to V11-V2 during this sprint.
-                              // To add more versions: re-import the file & add to _vibrationPatterns.
-                            },
+                            onTap: () {},
                             borderRadius: BorderRadius.circular(18),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
@@ -153,7 +128,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               child: Text(
                                 _vibrationPatterns[idx]['label']!,
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
                                   fontSize: 10.5,
                                   fontWeight: isSel ? FontWeight.w800 : FontWeight.w600,
                                   color: isSel ? Colors.white : const Color(0xFFB0BEC5),
@@ -182,12 +158,13 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       children: [
                         Text(
-                          '${_vibrationPatterns[_selectedVariationIndex]['label']} \u2022 ${_vibrationPatterns[_selectedVariationIndex]['name']}',
+                          '${_vibrationPatterns[_selectedVariationIndex]['label']} • ${_vibrationPatterns[_selectedVariationIndex]['name']}',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontFamily: 'Inter', 
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFFFFB74D),
+                            color: Color(0xFFFFB74D),
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -195,9 +172,10 @@ class _SplashScreenState extends State<SplashScreen>
                         Text(
                           _vibrationPatterns[_selectedVariationIndex]['desc']!,
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontFamily: 'Inter', 
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 11,
-                            color: const Color(0xFF90A4AE),
+                            color: Color(0xFF90A4AE),
                             height: 1.25,
                           ),
                         ),
@@ -209,135 +187,72 @@ class _SplashScreenState extends State<SplashScreen>
                 const Spacer(flex: 3),
 
                 // V11 CHAKRA (LIVE SELECTED VARIATION)
-                ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Center(
-                      child: RepaintBoundary(
-                        child: _buildChakraWidget(),
-                      ),
-                    ),
+                Center(
+                  child: RepaintBoundary(
+                    child: _buildChakraWidget(),
                   ),
                 ),
 
-                const Spacer(flex: 2),
+                // Positioned slightly higher, neatly right under the chakra
+                const SizedBox(height: 16),
 
-                // BRAND LOGO TEXT
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Text(
-                    'KarmaRide',
-                    style: TextStyle(fontFamily: 'Inter', 
-                      fontSize: 36,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFFFFF8F0),
-                      letterSpacing: 0.5,
-                      shadows: [
-                        Shadow(
-                          color: const Color(0xFFFF8F00).withValues(alpha: 0.50),
-                          blurRadius: 22,
-                        ),
-                        Shadow(
-                          color: const Color(0xFFFF5A00).withValues(alpha: 0.30),
-                          blurRadius: 36,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // SUBTITLE
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Text(
-                    'Smart \u2022 Verified \u2022 Sustainable Commutes',
-                    style: TextStyle(fontFamily: 'Inter', 
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFFFB74D),
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-
-                const Spacer(flex: 3),
-
-                // INTERACTIVE NEXT BUTTON
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48),
-                  child: Container(
-                    width: double.infinity,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFFF8F00),
-                          Color(0xFFE65100),
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      borderRadius: BorderRadius.circular(27),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF8F00).withValues(alpha: 0.45),
-                          blurRadius: 22,
-                          spreadRadius: 2,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _handleNextPressed,
-                        borderRadius: BorderRadius.circular(27),
-                        splashColor: Colors.white.withValues(alpha: 0.25),
-                        highlightColor: AppTheme.glassWhite15,
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Next',
-                                style: TextStyle(fontFamily: 'Inter', 
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.arrow_forward_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ],
-                          ),
+                // BRAND LOGO TEXT & SUBTITLE (Fades in once chakra arrives)
+                AnimatedOpacity(
+                  opacity: _isChakraArrived ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOut,
+                  child: Column(
+                    children: [
+                      Text(
+                        'KarmaRide',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFFFF8F0),
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              color: const Color(0xFFFF8F00).withValues(alpha: 0.50),
+                              blurRadius: 22,
+                            ),
+                            Shadow(
+                              color: const Color(0xFFFF5A00).withValues(alpha: 0.30),
+                              blurRadius: 36,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Smart • Verified • Sustainable Commutes',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFFB74D),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const Spacer(flex: 4),
 
                 // SECURITY BADGE
-                Text(
+                const Text(
                   'Secured with Enterprise SSO & Biometrics',
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
+                    fontFamily: 'Inter',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF78909C),
+                    color: Color(0xFF78909C),
                     letterSpacing: 0.25,
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -346,5 +261,3 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-
-

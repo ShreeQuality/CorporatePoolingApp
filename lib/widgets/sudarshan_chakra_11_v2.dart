@@ -411,12 +411,14 @@ class SudarshanChakraEntrance extends StatefulWidget {
     // Slower & more cinematic — the journey feels long
     this.entranceDuration = const Duration(milliseconds: 4000),
     this.autoPlay = true,
+    this.onArrival,
   });
 
   final double size;
   final double speed;
   final Duration entranceDuration;
   final bool autoPlay;
+  final VoidCallback? onArrival;
 
   @override
   State<SudarshanChakraEntrance> createState() =>
@@ -470,6 +472,12 @@ class SudarshanChakraEntranceState extends State<SudarshanChakraEntrance>
     _dy = Tween<double>(begin: 0.0, end: 0.0)
         .chain(CurveTween(curve: Curves.linear))
         .animate(_controller);
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        widget.onArrival?.call();
+      }
+    });
 
     if (widget.autoPlay) {
       _controller.forward();

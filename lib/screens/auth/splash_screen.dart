@@ -1,3 +1,4 @@
+import '../../core/secure_storage_service.dart';
 import '../../widgets/core/app_background.dart';
 import 'package:corporate_pooling_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -5,10 +6,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../widgets/star_rain_1.dart';
 
-// Active chakra: V11-V2 (Gyroscopic Precession)
-// Other versions (v1, v3-v10, newsudarshan) kept as files in /widgets but NOT imported
-// to avoid loading 70+ animation controllers into memory on app start.
+import '../../widgets/sudarshan_chakra_11_v1.dart';
 import '../../widgets/sudarshan_chakra_11_v2.dart';
+import '../../widgets/sudarshan_chakra_11_v3.dart';
+import '../../widgets/sudarshan_chakra_11_v4.dart';
+import '../../widgets/sudarshan_chakra_11_v5.dart';
+import '../../widgets/sudarshan_chakra_11_v6.dart';
+import '../../widgets/sudarshan_chakra_11_v7.dart';
+import '../../widgets/sudarshan_chakra_11_v8.dart';
+import '../../widgets/sudarshan_chakra_11_v9.dart';
+import '../../widgets/sudarshan_chakra_11_v10.dart';
+import '../../widgets/newsudarshan_chakra.dart';
 
 /// Screen 1: KarmaRide Sacred Splash Screen (Dedicated Night Mode Edition - V11 Vibration Studies 1 to 10 + V11-V10-NEW)
 class SplashScreen extends StatefulWidget {
@@ -24,16 +32,64 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  // Locked to V11-V2. Other versions kept as files in /widgets but not imported.
-  // This prevents 70 idle AnimationControllers from running in the background.
-  static const int _selectedVariationIndex = 0;
+  // Active variation index (0: V11-V1 ... 9: V11-V10, 10: V11-V10-NEW). Default is 1 (V11-V2).
+  int _selectedVariationIndex = 1;
 
-  // Only V11-V2 entry kept. Add more here when you re-import other versions.
-  static const List<Map<String, String>> _vibrationPatterns = [
+  final List<Map<String, String>> _vibrationPatterns = [
+    {
+      'label': 'V11-V1',
+      'name': 'Heartbeat (Lub-Dub)',
+      'desc': 'Rhythmic dual biological pulse with serene rest phase',
+    },
     {
       'label': 'V11-V2',
       'name': 'Gyroscopic Precession',
       'desc': 'Dynamic 3D conical multi-axis wobble & 12Hz stabilizer hum',
+    },
+    {
+      'label': 'V11-V3',
+      'name': 'Harmonic Hum',
+      'desc': 'Continuous high-frequency acoustic resonance (20Hz) & breathing',
+    },
+    {
+      'label': 'V11-V4',
+      'name': 'Charge & Snap',
+      'desc': 'Tense inward energy compression -> Explosive whip-crack snap release',
+    },
+    {
+      'label': 'V11-V5',
+      'name': 'Staccato Tick',
+      'desc': 'Precision chronometer escapement / 4 crisp mechanical ratchet ticks/sec',
+    },
+    {
+      'label': 'V11-V6',
+      'name': 'Multi-Layer Polyphonic',
+      'desc': 'Independent layer physics: 1.2Hz perimeter heave, 16Hz shimmer, 24Hz plasma',
+    },
+    {
+      'label': 'V11-V7',
+      'name': 'Fast Core + Slow Ring',
+      'desc': 'Deep 3D parallax feel: Slow 14s rim + Fast core',
+    },
+    {
+      'label': 'V11-V8',
+      'name': 'Turbo Inner Chakra',
+      'desc': 'Fast inner wheel (3.5s) & stars (2.2s/1.0s) + Slow outer rim (14s)',
+    },
+    {
+      'label': 'V11-V9',
+      'name': 'Slow Swell & Exhale',
+      'desc': 'Gentle slow energy charge (2.5s) -> Smooth organic sinusoidal release (No snap)',
+    },
+    {
+      'label': 'V11-V10',
+      'name': 'Harmonic Micro-Precession',
+      'desc': 'Smooth V9 energy swell + Delicate micro 3D gyro tilt (+-1.2° pitch/yaw/roll)',
+    },
+    {
+      'label': 'V11-V10-NEW',
+      'name': 'New Sudarshan Chakra',
+      'desc': 'White Theme & Pure Kinetic Vibration Tremor with Inverted 3D Perspective Tilt',
     },
   ];
 
@@ -61,8 +117,14 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
   }
 
-  void _handleNextPressed() {
-    context.go('/onboarding');
+  void _handleNextPressed() async {
+    final jwtToken = await SecureStorageService.getJwt();
+    if (!mounted) return;
+    if (jwtToken != null && jwtToken.isNotEmpty) {
+      context.go('/home');
+    } else {
+      context.go('/onboarding');
+    }
   }
 
   @override
@@ -73,8 +135,33 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildChakraWidget() {
-    // V11-V2: Gyroscopic Precession with "arriving from far away" entrance
-    return const SudarshanChakraEntrance(key: ValueKey('v11v2'), size: 165);
+    switch (_selectedVariationIndex) {
+      case 0:
+        return const SudarshanChakra11V1(key: ValueKey('v11v1'), size: 165);
+      case 1:
+        // V11-V2: Gyroscopic Precession with "arriving from far away" entrance
+        return const SudarshanChakraEntrance(key: ValueKey('v11v2'), size: 165);
+      case 2:
+        return const SudarshanChakra11V3(key: ValueKey('v11v3'), size: 165);
+      case 3:
+        return const SudarshanChakra11V4(key: ValueKey('v11v4'), size: 165);
+      case 4:
+        return const SudarshanChakra11V5(key: ValueKey('v11v5'), size: 165);
+      case 5:
+        return const SudarshanChakra11V6(key: ValueKey('v11v6'), size: 165);
+      case 6:
+        return const SudarshanChakra11V7(key: ValueKey('v11v7'), size: 165);
+      case 7:
+        return const SudarshanChakra11V8(key: ValueKey('v11v8'), size: 165);
+      case 8:
+        return const SudarshanChakra11V9(key: ValueKey('v11v9'), size: 165);
+      case 9:
+        return const SudarshanChakra11V10(key: ValueKey('v11v10'), size: 165);
+      case 10:
+        return const NewSudarshanChakra(key: ValueKey('v11v10_new'), size: 165);
+      default:
+        return const NewSudarshanChakra(key: ValueKey('v11v10_def'), size: 165);
+    }
   }
 
   @override
@@ -120,8 +207,9 @@ class _SplashScreenState extends State<SplashScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: InkWell(
                             onTap: () {
-                              // Selector is locked to V11-V2 during this sprint.
-                              // To add more versions: re-import the file & add to _vibrationPatterns.
+                              setState(() {
+                                _selectedVariationIndex = idx;
+                              });
                             },
                             borderRadius: BorderRadius.circular(18),
                             child: AnimatedContainer(

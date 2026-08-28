@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/services/supabase_service.dart';
 import 'providers/auth_provider.dart';
+import 'providers/wallet_provider.dart';
 import 'core/router/app_router.dart';
 import 'widgets/core/app_background.dart';
 
@@ -19,6 +20,7 @@ class KarmaRideApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
       ],
       child: MaterialApp.router(
         title: 'KarmaRide',

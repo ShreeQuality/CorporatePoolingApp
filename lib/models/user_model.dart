@@ -101,4 +101,6 @@ class UserModel {
   bool get isCorporate => role == 'corporate_employee';
   bool get isCompanyManager => role == 'company_manager';
   bool get isSuperAdmin => role == 'super_admin';
+  bool get isDriver => dlVerified || role == 'driver';
+  String get email => workEmail ?? '';
 }

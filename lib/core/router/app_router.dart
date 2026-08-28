@@ -7,7 +7,7 @@ import '../../screens/auth/role_selection_screen.dart';
 import '../../screens/auth/corporate_verify_screen.dart';
 import '../../screens/auth/aadhaar_kyc_screen.dart';
 import '../../screens/auth/driver_kyc_screen.dart';
-import '../../screens/dashboard/home_dashboard.dart';
+import '../../screens/home/home_shell_screen.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -56,7 +56,7 @@ final GoRouter appRouter = GoRouter(
       path: '/home',
       builder: (context, state) {
         final args = state.extra as Map<String, dynamic>?;
-        return HomeDashboard(arguments: args);
+        return HomeShellScreen(arguments: args);
       },
     ),
   ],

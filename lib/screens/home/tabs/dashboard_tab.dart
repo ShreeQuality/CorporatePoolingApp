@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/wallet_provider.dart';
-import '../../../widgets/core/glass_panel.dart';
 import '../widgets/driver_upgrade_card.dart';
 import '../widgets/quick_commute_card.dart';
 import '../widgets/wallet_summary_banner.dart';
@@ -178,10 +177,10 @@ class _DashboardTabState extends State<DashboardTab> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.white.withValues(alpha: 0.12),
           width: 1,
         ),
       ),
@@ -190,17 +189,24 @@ class _DashboardTabState extends State<DashboardTab> {
           Expanded(
             child: _buildModeTab(
               index: 0,
-              label: 'Find a Ride',
-              icon: Icons.search_rounded,
-              color: const Color(0xFFFFB74D),
+              label: '[ Find a Ride ]',
+              selectedGradient: const LinearGradient(
+                colors: [Color(0xFFFFE082), Color(0xFFFFA000)],
+              ),
+              textColor: const Color(0xFF3E2723),
+              borderColor: const Color(0xFFFFD54F),
             ),
           ),
+          const SizedBox(width: 4),
           Expanded(
             child: _buildModeTab(
               index: 1,
-              label: 'Give a Ride',
-              icon: Icons.directions_car_rounded,
-              color: const Color(0xFF00E676),
+              label: '[ Give a Ride ]',
+              selectedGradient: const LinearGradient(
+                colors: [Color(0xFF69F0AE), Color(0xFF00E676)],
+              ),
+              textColor: const Color(0xFF0A2E17),
+              borderColor: const Color(0xFF00E676),
             ),
           ),
         ],
@@ -211,8 +217,9 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget _buildModeTab({
     required int index,
     required String label,
-    required IconData icon,
-    required Color color,
+    required Gradient selectedGradient,
+    required Color textColor,
+    required Color borderColor,
   }) {
     final isSelected = _activeModeIndex == index;
     return GestureDetector(
@@ -222,113 +229,131 @@ class _DashboardTabState extends State<DashboardTab> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : Colors.transparent,
+          gradient: isSelected ? selectedGradient : null,
+          color: isSelected ? null : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: isSelected
-              ? Border.all(color: color.withValues(alpha: 0.5), width: 1)
+              ? Border.all(color: borderColor, width: 1.5)
               : Border.all(color: Colors.transparent),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: borderColor.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : null,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: isSelected ? color : Colors.white60, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: isSelected ? Colors.white : Colors.white60,
-                fontSize: 13.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: isSelected ? textColor : const Color(0xFF94A3B8),
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+              letterSpacing: 0.3,
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildFindRidePanel() {
-    return GlassPanel(
-      sigma: 8,
-      opacity: 0.03,
-      padding: const EdgeInsets.all(18),
-      borderRadius: BorderRadius.circular(20),
-      customBorder: Border.all(color: const Color(0xFFFFB74D).withValues(alpha: 0.4), width: 1.2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.location_on_rounded, color: Color(0xFFFFB74D), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Commuter Search & Match',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.06),
+            blurRadius: 20,
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Find empty seats on verified corporate commuter routes.',
-            style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildVehicleSelector('Any', Icons.near_me_rounded, _selectedFindVehicle == 'Any', (v) => setState(() => _selectedFindVehicle = v)),
-              _buildVehicleSelector('Bike', Icons.two_wheeler_rounded, _selectedFindVehicle == 'Bike', (v) => setState(() => _selectedFindVehicle = v)),
-              _buildVehicleSelector('Scooter', Icons.electric_scooter_rounded, _selectedFindVehicle == 'Scooter', (v) => setState(() => _selectedFindVehicle = v)),
-              _buildVehicleSelector('Auto', Icons.local_taxi_rounded, _selectedFindVehicle == 'Auto', (v) => setState(() => _selectedFindVehicle = v)),
-            ],
-          ),
-          const SizedBox(height: 18),
-          _buildActionButton('Find rides near me', Icons.search_rounded, const Color(0xFFFFB74D)),
         ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1E293B).withValues(alpha: 0.7),
+              const Color(0xFF0F172A).withValues(alpha: 0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+            width: 1.1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildVehicleSelector('Any', Icons.directions_car_rounded, _selectedFindVehicle == 'Any', (v) => setState(() => _selectedFindVehicle = v)),
+                _buildVehicleSelector('Bike', Icons.two_wheeler_rounded, _selectedFindVehicle == 'Bike', (v) => setState(() => _selectedFindVehicle = v)),
+                _buildVehicleSelector('Scooter', Icons.electric_scooter_rounded, _selectedFindVehicle == 'Scooter', (v) => setState(() => _selectedFindVehicle = v)),
+                _buildVehicleSelector('Auto', Icons.electric_rickshaw_rounded, _selectedFindVehicle == 'Auto', (v) => setState(() => _selectedFindVehicle = v)),
+              ],
+            ),
+            const SizedBox(height: 18),
+            _buildActionButton('Find rides near me', Icons.search_rounded),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildGiveRidePanel() {
-    return GlassPanel(
-      sigma: 8,
-      opacity: 0.03,
-      padding: const EdgeInsets.all(18),
-      borderRadius: BorderRadius.circular(20),
-      customBorder: Border.all(color: const Color(0xFF00E676).withValues(alpha: 0.4), width: 1.2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.alt_route_rounded, color: Color(0xFF00E676), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Publish Your Commute Corridor',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00E676).withValues(alpha: 0.06),
+            blurRadius: 20,
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Share empty seats, offset fuel costs, and earn Karma Coins.',
-            style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildVehicleSelector('Bike', Icons.two_wheeler_rounded, _selectedGiveVehicle == 'Bike', (v) => setState(() => _selectedGiveVehicle = v)),
-              _buildVehicleSelector('Scooter', Icons.electric_scooter_rounded, _selectedGiveVehicle == 'Scooter', (v) => setState(() => _selectedGiveVehicle = v)),
-              _buildVehicleSelector('Auto', Icons.local_taxi_rounded, _selectedGiveVehicle == 'Auto', (v) => setState(() => _selectedGiveVehicle = v)),
-              _buildVehicleSelector('Car', Icons.directions_car_rounded, _selectedGiveVehicle == 'Car', (v) => setState(() => _selectedGiveVehicle = v)),
-            ],
-          ),
-          const SizedBox(height: 18),
-          _buildActionButton('Post my route', Icons.add_road_rounded, const Color(0xFF00E676)),
         ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1E293B).withValues(alpha: 0.7),
+              const Color(0xFF0F172A).withValues(alpha: 0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFF00E676).withValues(alpha: 0.3),
+            width: 1.1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildVehicleSelector('Bike', Icons.two_wheeler_rounded, _selectedGiveVehicle == 'Bike', (v) => setState(() => _selectedGiveVehicle = v)),
+                _buildVehicleSelector('Scooter', Icons.electric_scooter_rounded, _selectedGiveVehicle == 'Scooter', (v) => setState(() => _selectedGiveVehicle = v)),
+                _buildVehicleSelector('Auto', Icons.electric_rickshaw_rounded, _selectedGiveVehicle == 'Auto', (v) => setState(() => _selectedGiveVehicle = v)),
+                _buildVehicleSelector('Car', Icons.directions_car_rounded, _selectedGiveVehicle == 'Car', (v) => setState(() => _selectedGiveVehicle = v)),
+              ],
+            ),
+            const SizedBox(height: 18),
+            _buildActionButton('Post my route', Icons.add_road_rounded, isDriver: true),
+          ],
+        ),
       ),
     );
   }
@@ -341,26 +366,42 @@ class _DashboardTabState extends State<DashboardTab> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 70,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? const Color(0xFFFFD54F).withValues(alpha: 0.12)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? Colors.white.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08),
-            width: 1,
+            color: isSelected
+                ? const Color(0xFFFFD54F)
+                : Colors.white.withValues(alpha: 0.15),
+            width: isSelected ? 1.5 : 1.0,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFFFD54F).withValues(alpha: 0.3),
+                    blurRadius: 10,
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? Colors.white : Colors.white60, size: 24),
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFFFFD54F) : Colors.white,
+              size: 26,
+            ),
             const SizedBox(height: 6),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: isSelected ? Colors.white : Colors.white60,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? const Color(0xFFFFD54F) : Colors.white,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
               ),
             ),
           ],
@@ -369,34 +410,60 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, Color accentColor) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          HapticFeedback.mediumImpact();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: const Color(0xFF1E293B),
-              content: Text('$label initialized! Connecting to live routes...'),
-              duration: const Duration(seconds: 2),
-            ),
+  Widget _buildActionButton(String label, IconData icon, {bool isDriver = false}) {
+    final gradient = isDriver
+        ? const LinearGradient(
+            colors: [Color(0xFF69F0AE), Color(0xFF00E676)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFFFE082), // Radiant Champagne Top
+              Color(0xFFFFB300), // Rich Warm Amber Gold
+              Color(0xFFFF8F00), // Deep Amber Rim
+            ],
           );
-        },
-        icon: Icon(icon, color: Colors.black87, size: 18),
-        label: Text(
-          label,
-          style: GoogleFonts.inter(
-            color: Colors.black87,
-            fontSize: 14.5,
-            fontWeight: FontWeight.w700,
+
+    final glowColor = isDriver ? const Color(0xFF00E676) : const Color(0xFFFFB300);
+    final textColor = isDriver ? const Color(0xFF0A2E17) : const Color(0xFF2E1C0C);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF1E293B),
+            content: Text('$label initialized! Connecting to live routes...'),
+            duration: const Duration(seconds: 2),
           ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        height: 52,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: glowColor.withValues(alpha: 0.45),
+              blurRadius: 16,
+              spreadRadius: 0,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: accentColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.3,
+            ),
+          ),
         ),
       ),
     );

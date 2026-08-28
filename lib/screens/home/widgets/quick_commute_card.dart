@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../widgets/core/glass_panel.dart';
 
 class QuickCommuteCard extends StatelessWidget {
   final VoidCallback? onTap;
@@ -16,10 +15,8 @@ class QuickCommuteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = _isMorning ? 'Morning Commute' : 'Evening Return Commute';
     final subtitle = _isMorning
-        ? 'Quick 1-Tap Pool to Manyata Tech Park Block D'
-        : 'Quick 1-Tap Pool Return Ride Home';
-    final icon = _isMorning ? Icons.wb_sunny_rounded : Icons.nights_stay_rounded;
-    final accentColor = _isMorning ? const Color(0xFFFFB74D) : const Color(0xFF00E5FF);
+        ? 'Manyata Tech Park Block D'
+        : 'Return Ride Home';
 
     return GestureDetector(
       onTap: () {
@@ -39,80 +36,100 @@ class QuickCommuteCard extends StatelessWidget {
           );
         }
       },
-      child: GlassPanel(
-        sigma: 8,
-        opacity: 0.04,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        borderRadius: BorderRadius.circular(16),
-        customBorder: Border.all(
-          color: accentColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: accentColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: accentColor, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00E676).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '1-TAP',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF00E676),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withValues(alpha: 0.4),
-              size: 14,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
             ),
           ],
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1E293B).withValues(alpha: 0.7),
+                const Color(0xFF0F172A).withValues(alpha: 0.8),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+              width: 1.1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_rounded,
+                          color: Color(0xFF94A3B8),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          subtitle,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Glowing Neon Emerald [ 1-TAP ] Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E676),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00E676).withValues(alpha: 0.6),
+                      blurRadius: 14,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  '1-TAP',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF0A2E17),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

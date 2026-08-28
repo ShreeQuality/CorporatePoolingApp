@@ -12,34 +12,13 @@ class WalletSummaryBanner extends StatelessWidget {
       builder: (context, walletProv, child) {
         final summary = walletProv.summary;
 
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            // Outer multi-color ambient glow
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-                blurRadius: 28,
-                spreadRadius: 1,
-                offset: const Offset(8, -4),
-              ),
-              BoxShadow(
-                color: const Color(0xFFFFB74D).withValues(alpha: 0.15),
-                blurRadius: 28,
-                spreadRadius: 1,
-                offset: const Offset(-8, 8),
-              ),
-            ],
-          ),
+        return CustomPaint(
+          painter: _KarmaCardGlowPainter(),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF0D1726).withValues(alpha: 0.75),
+              color: const Color(0xFF0D1726).withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: const Color(0xFFFFD54F).withValues(alpha: 0.55),
-                width: 1.5,
-              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,39 +48,44 @@ class WalletSummaryBanner extends StatelessWidget {
                 // Main Coin Row: 3D Embossed (K) Medallion + "340 Coins"
                 Row(
                   children: [
-                    // 3D Embossed Coin with Gold Glow Halo
+                    // Coin with Golden Radial Energy Bloom
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFB300).withValues(alpha: 0.75),
+                            blurRadius: 16,
+                            spreadRadius: 2,
+                          ),
+                          BoxShadow(
+                            color: const Color(0xFFFFE082).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
                         gradient: const RadialGradient(
-                          center: Alignment(-0.3, -0.4),
-                          radius: 0.8,
+                          center: Alignment(-0.35, -0.4),
+                          radius: 0.85,
                           colors: [
                             Color(0xFFFFF9C4), // Bright highlight
                             Color(0xFFFFD54F), // Gold body
                             Color(0xFFFF8F00), // Deep rim
                           ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFFFB300).withValues(alpha: 0.65),
-                            blurRadius: 14,
-                            spreadRadius: 2,
-                          ),
-                        ],
                         border: Border.all(
                           color: const Color(0xFFFFFDE7),
-                          width: 1.5,
+                          width: 1.6,
                         ),
                       ),
                       child: Center(
                         child: Text(
                           'K',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFF4E342E),
-                            fontSize: 20,
+                            color: const Color(0xFF3E2723),
+                            fontSize: 21,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -112,13 +96,13 @@ class WalletSummaryBanner extends StatelessWidget {
                       '${summary.availableCoins.toStringAsFixed(0)} Coins',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFE082),
-                        fontSize: 27,
+                        fontSize: 28,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.3,
                         shadows: [
                           Shadow(
-                            color: const Color(0xFFFFB300).withValues(alpha: 0.5),
-                            blurRadius: 12,
+                            color: const Color(0xFFFFB300).withValues(alpha: 0.7),
+                            blurRadius: 14,
                           ),
                         ],
                       ),
@@ -128,7 +112,7 @@ class WalletSummaryBanner extends StatelessWidget {
 
                 const SizedBox(height: 18),
 
-                // Bottom Row: 1. Solid Cyan Pill + 2. Green Cloud Metric + 3. Red Shield Metric
+                // Bottom Row: 1. Solid Glowing Cyan Pill + 2. Green Cloud Metric + 3. Red Shield Metric
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -141,10 +125,14 @@ class WalletSummaryBanner extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00E5FF).withValues(alpha: 0.65),
-                            blurRadius: 14,
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.8),
+                            blurRadius: 16,
                             spreadRadius: 1,
                             offset: const Offset(0, 2),
+                          ),
+                          BoxShadow(
+                            color: const Color(0xFF80D8FF).withValues(alpha: 0.5),
+                            blurRadius: 8,
                           ),
                         ],
                       ),
@@ -162,7 +150,7 @@ class WalletSummaryBanner extends StatelessWidget {
                             style: GoogleFonts.inter(
                               color: const Color(0xFF002A3A),
                               fontSize: 12.5,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ],
@@ -177,11 +165,12 @@ class WalletSummaryBanner extends StatelessWidget {
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF00E676).withValues(alpha: 0.18),
+                            color: const Color(0xFF00E676).withValues(alpha: 0.22),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00E676).withValues(alpha: 0.4),
-                                blurRadius: 10,
+                                color: const Color(0xFF00E676).withValues(alpha: 0.6),
+                                blurRadius: 12,
+                                spreadRadius: 1,
                               ),
                             ],
                           ),
@@ -202,6 +191,12 @@ class WalletSummaryBanner extends StatelessWidget {
                                 color: const Color(0xFF00E676),
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
+                                shadows: [
+                                  Shadow(
+                                    color: const Color(0xFF00E676).withValues(alpha: 0.6),
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
                             ),
                             Text(
@@ -225,11 +220,12 @@ class WalletSummaryBanner extends StatelessWidget {
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFFFF5252).withValues(alpha: 0.18),
+                            color: const Color(0xFFFF5252).withValues(alpha: 0.22),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFF5252).withValues(alpha: 0.4),
-                                blurRadius: 10,
+                                color: const Color(0xFFFF5252).withValues(alpha: 0.6),
+                                blurRadius: 12,
+                                spreadRadius: 1,
                               ),
                             ],
                           ),
@@ -250,6 +246,12 @@ class WalletSummaryBanner extends StatelessWidget {
                                 color: const Color(0xFFFF6E6E),
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
+                                shadows: [
+                                  Shadow(
+                                    color: const Color(0xFFFF5252).withValues(alpha: 0.6),
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
                             ),
                             Text(
@@ -273,4 +275,46 @@ class WalletSummaryBanner extends StatelessWidget {
       },
     );
   }
+}
+
+/// CustomPainter for the dual-tone neon glowing border
+class _KarmaCardGlowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(24));
+
+    // 1. Dual-tone Gradient Shader (Amber on Left/Bottom, Cyan on Right/Top)
+    final gradientShader = const LinearGradient(
+      begin: Alignment.bottomLeft,
+      end: Alignment.topRight,
+      colors: [
+        Color(0xFFFFB74D), // Amber gold
+        Color(0xFFFFD54F),
+        Color(0xFF80D8FF),
+        Color(0xFF00E5FF), // Electric cyan
+      ],
+      stops: [0.0, 0.35, 0.70, 1.0],
+    ).createShader(rect);
+
+    // 2. Outer Soft Neon Blur Halo
+    final haloPaint = Paint()
+      ..shader = gradientShader
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0);
+
+    canvas.drawRRect(rrect, haloPaint);
+
+    // 3. Crisp Inner Neon Line
+    final borderPaint = Paint()
+      ..shader = gradientShader
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    canvas.drawRRect(rrect, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

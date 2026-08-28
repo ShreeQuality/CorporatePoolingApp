@@ -228,28 +228,29 @@ class KarmaCoinsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      // CRITICAL: Clip.none allows the EdgeGlowBorder's blur to radiate
-      // out of the container onto the dark background!
-      clipBehavior: Clip.none,
+      // We no longer need Clip.none since nothing is bleeding outside the container
+      clipBehavior: Clip.hardEdge,
       children: [
-        // ── 1. OUTER EDGE GLOW (Bleeding outside the card) ──
-        const Positioned.fill(
-          child: EdgeGlowBorder(
-            borderRadius: 20,
-            lineWidth: 0, // No crisp line here, just pure neon blur
-            glowWidth: 10.0,
-            glowBlurSigma: 8.0,
-          ),
-        ),
-
-        // ── 2. MAIN CARD CONTENTS (Clipped internally) ──
+        // ── 1. MAIN CARD CONTENTS (Clipped internally) ──
         ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: Container(
             color: KarmaCardColors.bgBase,
             child: Stack(
               children: [
-                // ── FOG LAYER (Amber, top-left) ──
+                // ── A. INNER EDGE GLOW (Bleeding INSIDE the card) ──
+                // Placed inside the ClipRRect, the outer half of the blur is cut off,
+                // leaving a perfect inner neon glow that bleeds over the background.
+                const Positioned.fill(
+                  child: EdgeGlowBorder(
+                    borderRadius: 20,
+                    lineWidth: 0, // pure neon blur
+                    glowWidth: 16.0, // Wide stroke so the inner bleed is deep
+                    glowBlurSigma: 12.0,
+                  ),
+                ),
+
+                // ── B. FOG LAYER (Amber, top-left) ──
                 Positioned(
                   top: -40,
                   left: -40,
@@ -266,7 +267,7 @@ class KarmaCoinsCard extends StatelessWidget {
                   ),
                 ),
 
-                // ── FOG LAYER (Cyan, top-right) ──
+                // ── C. FOG LAYER (Cyan, top-right) ──
                 Positioned(
                   top: -30,
                   right: -30,
@@ -283,7 +284,7 @@ class KarmaCoinsCard extends StatelessWidget {
                   ),
                 ),
 
-                // ── TOP EDGE HIGHLIGHT (Sheen band) ──
+                // ── D. TOP EDGE HIGHLIGHT (Sheen band) ──
                 Positioned(
                   top: 0,
                   left: 0,
@@ -303,12 +304,12 @@ class KarmaCoinsCard extends StatelessWidget {
                   ),
                 ),
 
-                // ── GRAIN: Subtle noise texture over fog ──
+                // ── E. GRAIN: Subtle noise texture over fog ──
                 const Positioned.fill(
                   child: GrainOverlay(opacity: 0.06, density: 7),
                 ),
 
-                // ── CONTENT ──
+                // ── F. CONTENT ──
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                   child: Column(

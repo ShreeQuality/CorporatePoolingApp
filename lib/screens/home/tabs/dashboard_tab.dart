@@ -107,41 +107,33 @@ class _DashboardTabState extends State<DashboardTab> {
                     fontSize: 13,
                   ),
                 ),
-                Text(
-                  userName,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.business_rounded, color: Color(0xFF00E5FF), size: 11),
-                      const SizedBox(width: 4),
-                      Text(
-                        company,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF00E5FF),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
+                Row(
+                  children: [
+                    Text(
+                      userName,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.verified_rounded,
+                      color: Color(0xFF00E5FF),
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '[ $company ]',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -41,29 +41,34 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
 
   Widget _buildTransparentBottomNav() {
     const List<_NavItem> items = [
-      _NavItem(icon: Icons.home_rounded, label: 'Home'),
-      _NavItem(icon: Icons.directions_car_rounded, label: 'Rides'),
-      _NavItem(icon: Icons.account_balance_wallet_rounded, label: 'Wallet'),
-      _NavItem(icon: Icons.shield_rounded, label: 'Safety'),
-      _NavItem(icon: Icons.person_rounded, label: 'Profile'),
+      _NavItem(icon: Icons.home_rounded, label: 'Home', activeColor: Color(0xFFFFB74D)),
+      _NavItem(icon: Icons.directions_car_rounded, label: 'Rides', activeColor: Color(0xFF00E5FF)),
+      _NavItem(icon: Icons.account_balance_wallet_rounded, label: 'Wallet', activeColor: Color(0xFFFFD54F)),
+      _NavItem(icon: Icons.shield_rounded, label: 'Safety', activeColor: Color(0xFFFF5252)),
+      _NavItem(icon: Icons.person_rounded, label: 'Profile', activeColor: Color(0xFF00E676)),
     ];
 
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 20),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(26),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-          width: 1.0,
+          color: Colors.white.withValues(alpha: 0.15),
+          width: 1.1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 20,
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 24,
             spreadRadius: 2,
             offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.05),
+            blurRadius: 20,
+            spreadRadius: -4,
           ),
         ],
       ),
@@ -72,13 +77,7 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
         children: List.generate(items.length, (index) {
           final isSelected = _selectedTabIndex == index;
           final item = items[index];
-
-          Color activeColor = const Color(0xFF00E5FF);
-          if (index == 0) activeColor = const Color(0xFFFFB74D); // Home = Gold
-          if (index == 1) activeColor = const Color(0xFF00E5FF); // Rides = Cyan
-          if (index == 2) activeColor = const Color(0xFFFFB74D); // Wallet = Gold
-          if (index == 3) activeColor = const Color(0xFFFF5252); // Safety = Red
-          if (index == 4) activeColor = const Color(0xFF00E676); // Profile = Emerald
+          final color = item.activeColor;
 
           return GestureDetector(
             onTap: () {
@@ -89,32 +88,42 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
-                color: isSelected ? activeColor.withValues(alpha: 0.15) : Colors.transparent,
-                borderRadius: BorderRadius.circular(18),
+                color: isSelected ? color.withValues(alpha: 0.16) : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
                 border: isSelected
                     ? Border.all(
-                        color: activeColor.withValues(alpha: 0.5),
-                        width: 1.0,
+                        color: color.withValues(alpha: 0.6),
+                        width: 1.2,
                       )
                     : Border.all(color: Colors.transparent),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.45),
+                          blurRadius: 14,
+                          spreadRadius: 0,
+                        ),
+                      ]
+                    : null,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     item.icon,
-                    size: 22,
-                    color: isSelected ? activeColor : Colors.white60,
+                    size: 23,
+                    color: isSelected ? color : const Color(0xFF94A3B8),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     item.label,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? Colors.white : Colors.white60,
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                      color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
@@ -130,5 +139,10 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
 class _NavItem {
   final IconData icon;
   final String label;
-  const _NavItem({required this.icon, required this.label});
+  final Color activeColor;
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.activeColor,
+  });
 }

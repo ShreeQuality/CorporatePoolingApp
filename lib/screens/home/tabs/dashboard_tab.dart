@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/wallet_provider.dart';
-import '../../../widgets/core/jarvis_glow_view.dart';
 import '../widgets/driver_upgrade_card.dart';
 import '../widgets/quick_commute_card.dart';
 import '../widgets/wallet_summary_banner.dart';
@@ -17,9 +16,9 @@ class DashboardTab extends StatefulWidget {
 }
 
 class _DashboardTabState extends State<DashboardTab> {
-  int _activeModeIndex = 0; // 0 = Find a Ride, 1 = Give a Ride
   String _selectedFindVehicle = 'Any';
   String _selectedGiveVehicle = 'Car';
+  int _activeModeIndex = 0; // 0 = Find a Ride, 1 = Give a Ride
 
   @override
   void initState() {
@@ -45,90 +44,45 @@ class _DashboardTabState extends State<DashboardTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // 1. Ambient Animated Jarvis Holographic HUD in Background
-        const Positioned(
-          top: 60,
-          right: -80,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: 0.45,
-              child: JarvisGlowView(
-                size: 320,
-                rotationDuration: Duration(seconds: 18),
-                pulseDuration: Duration(milliseconds: 2400),
-                primaryGlowColor: Color(0xFF00E5FF),
-                secondaryGlowColor: Color(0xFF0059B2),
-                accentColor: Color(0xFF80D8FF),
-                coreEnergyColor: Colors.white,
-              ),
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 16),
+            const WalletSummaryBanner(),
+            const SizedBox(height: 14),
+            const QuickCommuteCard(),
+            const SizedBox(height: 14),
+
+            // Driver Upgrade CTA if user is not yet a registered driver
+            Consumer<AuthProvider>(
+              builder: (context, auth, _) {
+                final isDriver = auth.currentUser?.isDriver ?? false;
+                if (!isDriver) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 14.0),
+                    child: DriverUpgradeCard(),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
-          ),
+
+            // Mode Selector Tabs (Find a Ride vs Give a Ride)
+            _buildModeSwitcher(),
+            const SizedBox(height: 16),
+
+            // Active Mode Panel
+            if (_activeModeIndex == 0) _buildFindRidePanel() else _buildGiveRidePanel(),
+
+            const SizedBox(height: 110), // clearance for bottom navigation
+          ],
         ),
-
-        // 2. Secondary Amber/Gold Sub-Ring near bottom search panel
-        const Positioned(
-          bottom: 120,
-          left: -100,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: 0.30,
-              child: JarvisGlowView(
-                size: 300,
-                rotationDuration: Duration(seconds: 24),
-                pulseDuration: Duration(milliseconds: 3000),
-                primaryGlowColor: Color(0xFFFFB74D),
-                secondaryGlowColor: Color(0xFFFF6F00),
-                accentColor: Color(0xFFFFE082),
-                coreEnergyColor: Colors.white,
-              ),
-            ),
-          ),
-        ),
-
-        // 3. Foreground Interactive Dashboard Content
-        SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 16),
-                const WalletSummaryBanner(),
-                const SizedBox(height: 14),
-                const QuickCommuteCard(),
-                const SizedBox(height: 14),
-
-                // Driver Upgrade CTA if user is not yet a registered driver
-                Consumer<AuthProvider>(
-                  builder: (context, auth, _) {
-                    final isDriver = auth.currentUser?.isDriver ?? false;
-                    if (!isDriver) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 14.0),
-                        child: DriverUpgradeCard(),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-
-                // Mode Selector Tabs (Find a Ride vs Give a Ride)
-                _buildModeSwitcher(),
-                const SizedBox(height: 16),
-
-                // Active Mode Panel
-                if (_activeModeIndex == 0) _buildFindRidePanel() else _buildGiveRidePanel(),
-
-                const SizedBox(height: 110), // clearance for bottom navigation
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

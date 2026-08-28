@@ -14,86 +14,85 @@ class WalletSummaryBanner extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            // Multi-Layer Nebula Ambient Glow
+            borderRadius: BorderRadius.circular(24),
+            // Outer multi-color ambient glow
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.18),
+                color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
                 blurRadius: 28,
                 spreadRadius: 1,
-                offset: const Offset(0, 4),
+                offset: const Offset(8, -4),
               ),
               BoxShadow(
-                color: const Color(0xFFFFB74D).withValues(alpha: 0.12),
-                blurRadius: 24,
-                spreadRadius: -2,
-                offset: const Offset(-6, -4),
+                color: const Color(0xFFFFB74D).withValues(alpha: 0.15),
+                blurRadius: 28,
+                spreadRadius: 1,
+                offset: const Offset(-8, 8),
               ),
             ],
           ),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             decoration: BoxDecoration(
-              // Translucent Frosted Glass Surface (StarRain shines through)
-              color: const Color(0xFF1E293B).withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(22),
+              color: const Color(0xFF0D1726).withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.45),
-                width: 1.2,
+                color: const Color(0xFFFFD54F).withValues(alpha: 0.55),
+                width: 1.5,
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Label: Karma Coins
+                // Top Row: Sparkle + "Karma Coins"
                 Row(
                   children: [
                     const Icon(
                       Icons.auto_awesome,
-                      color: Color(0xFFFFD54F),
-                      size: 13,
+                      color: Color(0xFFFFE082),
+                      size: 15,
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 6),
                     Text(
                       'Karma Coins',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFFFFD54F),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFFFE082),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-                // Main Coin Value Row with 3D Embossed (K) Medallion
+                // Main Coin Row: 3D Embossed (K) Medallion + "340 Coins"
                 Row(
                   children: [
-                    // 3D Embossed Golden Coin Medallion
+                    // 3D Embossed Coin with Gold Glow Halo
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                        gradient: const RadialGradient(
+                          center: Alignment(-0.3, -0.4),
+                          radius: 0.8,
                           colors: [
-                            Color(0xFFFFE082), // Champagne Top
-                            Color(0xFFFFA000), // Rich Gold
-                            Color(0xFFFF6F00), // Deep Amber Rim
+                            Color(0xFFFFF9C4), // Bright highlight
+                            Color(0xFFFFD54F), // Gold body
+                            Color(0xFFFF8F00), // Deep rim
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFB300).withValues(alpha: 0.6),
-                            blurRadius: 12,
-                            spreadRadius: 1,
+                            color: const Color(0xFFFFB300).withValues(alpha: 0.65),
+                            blurRadius: 14,
+                            spreadRadius: 2,
                           ),
                         ],
                         border: Border.all(
-                          color: const Color(0xFFFFF9C4),
+                          color: const Color(0xFFFFFDE7),
                           width: 1.5,
                         ),
                       ),
@@ -101,8 +100,8 @@ class WalletSummaryBanner extends StatelessWidget {
                         child: Text(
                           'K',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFF3E2723),
-                            fontSize: 19,
+                            color: const Color(0xFF4E342E),
+                            fontSize: 20,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -112,48 +111,158 @@ class WalletSummaryBanner extends StatelessWidget {
                     Text(
                       '${summary.availableCoins.toStringAsFixed(0)} Coins',
                       style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD54F),
-                        fontSize: 26,
+                        color: const Color(0xFFFFE082),
+                        fontSize: 27,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.3,
+                        shadows: [
+                          Shadow(
+                            color: const Color(0xFFFFB300).withValues(alpha: 0.5),
+                            blurRadius: 12,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
 
-                // Bottom 3 Saturated Highlight Pills
+                // Bottom Row: 1. Solid Cyan Pill + 2. Green Cloud Metric + 3. Red Shield Metric
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 1. Corporate Grant Left Pill (Cyan)
-                    _buildPill(
-                      icon: Icons.access_time_filled_rounded,
-                      label: '${summary.corporateGrantRemaining.toStringAsFixed(0)} Grant Left',
-                      color: const Color(0xFF00E5FF),
-                      bgColor: const Color(0xFF00E5FF).withValues(alpha: 0.22),
-                      borderColor: const Color(0xFF00E5FF).withValues(alpha: 0.65),
+                    // 1. Solid Glowing Cyan Pill (200 Grant Left)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E5FF),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.65),
+                            blurRadius: 14,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.access_time_rounded,
+                            color: Color(0xFF00384D),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${summary.corporateGrantRemaining.toStringAsFixed(0)} Grant Left',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF002A3A),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
-                    // 2. CO2 Saved Pill (Emerald Green)
-                    _buildPill(
-                      icon: Icons.eco_rounded,
-                      label: '${summary.co2SavedKg.toStringAsFixed(1)} kg',
-                      sublabel: 'CO₂ Saved',
-                      color: const Color(0xFF00E676),
-                      bgColor: const Color(0xFF00E676).withValues(alpha: 0.20),
-                      borderColor: const Color(0xFF00E676).withValues(alpha: 0.65),
+                    // 2. CO2 Metric (Green Cloud + Stacked Text)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF00E676).withValues(alpha: 0.18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00E676).withValues(alpha: 0.4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.cloud_upload_rounded,
+                            color: Color(0xFF00E676),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${summary.co2SavedKg.toStringAsFixed(1)} kg',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF00E676),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              'CO₂ Saved',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFCFD8DC),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
 
-                    // 3. Trust Score Pill (Coral Red Shield)
-                    _buildPill(
-                      icon: Icons.shield_rounded,
-                      label: '${summary.trustScore.toStringAsFixed(0)}/100',
-                      sublabel: 'Trust Score',
-                      color: const Color(0xFFFF5252),
-                      bgColor: const Color(0xFFFF5252).withValues(alpha: 0.20),
-                      borderColor: const Color(0xFFFF5252).withValues(alpha: 0.65),
+                    // 3. Trust Score Metric (Red Shield + Stacked Text)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFFF5252).withValues(alpha: 0.18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFF5252).withValues(alpha: 0.4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.verified_user_rounded,
+                            color: Color(0xFFFF5252),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${summary.trustScore.toStringAsFixed(0)}/100',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFF6E6E),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              'Trust Score',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFCFD8DC),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -162,60 +271,6 @@ class WalletSummaryBanner extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildPill({
-    required IconData icon,
-    required String label,
-    String? sublabel,
-    required Color color,
-    required Color bgColor,
-    required Color borderColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.25),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 5),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  color: color,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (sublabel != null)
-                Text(
-                  sublabel,
-                  style: GoogleFonts.inter(
-                    color: color.withValues(alpha: 0.9),
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

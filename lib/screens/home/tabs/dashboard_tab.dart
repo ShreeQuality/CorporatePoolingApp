@@ -268,26 +268,20 @@ class _DashboardTabState extends State<DashboardTab> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.06),
-            blurRadius: 20,
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.10),
+            blurRadius: 24,
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1E293B).withValues(alpha: 0.7),
-              const Color(0xFF0F172A).withValues(alpha: 0.8),
-            ],
-          ),
+          color: const Color(0xFF1E293B).withValues(alpha: 0.35),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
-            width: 1.1,
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.38),
+            width: 1.2,
           ),
         ),
         child: Column(
@@ -316,26 +310,20 @@ class _DashboardTabState extends State<DashboardTab> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E676).withValues(alpha: 0.06),
-            blurRadius: 20,
+            color: const Color(0xFF00E676).withValues(alpha: 0.10),
+            blurRadius: 24,
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1E293B).withValues(alpha: 0.7),
-              const Color(0xFF0F172A).withValues(alpha: 0.8),
-            ],
-          ),
+          color: const Color(0xFF1E293B).withValues(alpha: 0.35),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFF00E676).withValues(alpha: 0.3),
-            width: 1.1,
+            color: const Color(0xFF00E676).withValues(alpha: 0.38),
+            width: 1.2,
           ),
         ),
         child: Column(
@@ -370,19 +358,19 @@ class _DashboardTabState extends State<DashboardTab> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFFFD54F).withValues(alpha: 0.12)
-              : Colors.transparent,
+              ? const Color(0xFFFFD54F).withValues(alpha: 0.20)
+              : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFFFD54F)
-                : Colors.white.withValues(alpha: 0.15),
+                : Colors.white.withValues(alpha: 0.22),
             width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFFFD54F).withValues(alpha: 0.3),
+                    color: const Color(0xFFFFD54F).withValues(alpha: 0.35),
                     blurRadius: 10,
                   ),
                 ]
@@ -401,7 +389,7 @@ class _DashboardTabState extends State<DashboardTab> {
               style: GoogleFonts.inter(
                 color: isSelected ? const Color(0xFFFFD54F) : Colors.white,
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
           ],

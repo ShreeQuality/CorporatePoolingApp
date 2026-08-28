@@ -27,17 +27,10 @@ class DriverUpgradeCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF1E293B).withValues(alpha: 0.7),
-                const Color(0xFF0F172A).withValues(alpha: 0.8),
-              ],
-            ),
+            color: const Color(0xFF1E293B).withValues(alpha: 0.35),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: const Color(0xFF00E676).withValues(alpha: 0.35),
+              color: const Color(0xFF00E676).withValues(alpha: 0.40),
               width: 1.1,
             ),
           ),

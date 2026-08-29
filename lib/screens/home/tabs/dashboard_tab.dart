@@ -54,15 +54,11 @@ class _DashboardTabState extends State<DashboardTab> {
             const SizedBox(height: 16),
 
             // Find a Ride Section
-            _buildSectionTitle('[ Find a Ride ]', const Color(0xFFFFD54F)),
-            const SizedBox(height: 12),
             _buildFindRidePanel(),
 
             const SizedBox(height: 24),
 
             // Give a Ride Section
-            _buildSectionTitle('[ Give a Ride ]', const Color(0xFF00E676)),
-            const SizedBox(height: 12),
             _buildGiveRidePanel(),
 
             const SizedBox(height: 110), // clearance for bottom navigation
@@ -196,6 +192,16 @@ class _DashboardTabState extends State<DashboardTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Find a Ride',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD54F),
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -238,6 +244,16 @@ class _DashboardTabState extends State<DashboardTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Give a Ride',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF00E676),
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

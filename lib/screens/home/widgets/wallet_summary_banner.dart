@@ -575,8 +575,6 @@ class KarmaCoinsCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 }

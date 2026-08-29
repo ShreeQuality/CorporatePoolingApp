@@ -183,9 +183,12 @@ class _EdgeGlowPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Inset by half the line width so the stroke is drawn fully inside the bounds
+    // and doesn't get clipped in half by any outer ClipRRect.
+    final inset = lineWidth / 2;
     final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(borderRadius),
+      Rect.fromLTWH(inset, inset, size.width - lineWidth, size.height - lineWidth),
+      Radius.circular(borderRadius - inset),
     );
 
     // Same diagonal sweep as the visible border (topLeft -> bottomRight)
@@ -347,7 +350,7 @@ class KarmaCoinsCard extends StatelessWidget {
               child: CustomPaint(
                 painter: InteriorGlowPainter(
                   position: const Alignment(0.60, -0.70), // 80%,15% -> alignment space
-                  peakColor: KarmaCardColors.fogCyan.withOpacity(0.7), // Semi-transparent peak
+                  peakColor: KarmaCardColors.fogCyan, // Fully opaque peak as original
                   baseColor: Colors.transparent, // Fade to transparent, not opaque base
                   radiusXFactor: 0.66,
                   radiusYFactor: 0.70,

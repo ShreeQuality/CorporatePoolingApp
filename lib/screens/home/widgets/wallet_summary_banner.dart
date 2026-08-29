@@ -336,98 +336,89 @@ class KarmaCoinsCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        // ── Gradient border (gold → teal → cyan sweep)
-        padding: const EdgeInsets.all(1.4),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              KarmaCardColors.borderGold,
-              KarmaCardColors.borderTeal,
-              KarmaCardColors.borderCyan,
-            ],
-            stops: [0.0, 0.5, 1.0],
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(19),
-          child: Container(
-            color: KarmaCardColors.bgBase.withOpacity(0.45), // Translucent base to show rainfall
-            child: Stack(
-              children: [
-                // ── INTERIOR GLOW (cyan): CustomPainter, elliptical
-                // radial gradient fitted to measured pixel data.
-                // Peak sits at 80% across / 15% down — NOT at the
-                // literal corner — fading to transparent so the rainfall shows through.
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: InteriorGlowPainter(
-                      position: const Alignment(0.60, -0.70), // 80%,15% -> alignment space
-                      peakColor: KarmaCardColors.fogCyan.withOpacity(0.7), // Semi-transparent peak
-                      baseColor: Colors.transparent, // Fade to transparent, not opaque base
-                      radiusXFactor: 0.66,
-                      radiusYFactor: 0.70,
-                    ),
+        color: KarmaCardColors.bgBase.withOpacity(0.45), // Translucent base to show rainfall
+        child: Stack(
+          children: [
+            // ── INTERIOR GLOW (cyan): CustomPainter, elliptical
+            // radial gradient fitted to measured pixel data.
+            // Peak sits at 80% across / 15% down — NOT at the
+            // literal corner — fading to transparent so the rainfall shows through.
+            Positioned.fill(
+              child: CustomPaint(
+                painter: InteriorGlowPainter(
+                  position: const Alignment(0.60, -0.70), // 80%,15% -> alignment space
+                  peakColor: KarmaCardColors.fogCyan.withOpacity(0.7), // Semi-transparent peak
+                  baseColor: Colors.transparent, // Fade to transparent, not opaque base
+                  radiusXFactor: 0.66,
+                  radiusYFactor: 0.70,
+                ),
+              ),
+            ),
+
+            // ── INTERIOR GLOW (amber): same technique, centered
+            // near the coin icon on the left rather than the
+            // exact top-left corner point. Fades to TRANSPARENT
+            // (not bgBase) since this paints on top of the cyan
+            // layer — using an opaque outer color here would
+            // erase the cyan glow underneath everywhere it covers.
+            Positioned.fill(
+              child: CustomPaint(
+                painter: InteriorGlowPainter(
+                  position: const Alignment(-0.84, -0.10), // ~8%,45% -> alignment space
+                  peakColor: const Color(0xCC6E5A2E), // ~80% opacity, blends instead of replacing
+                  baseColor: Colors.transparent,
+                  radiusXFactor: 0.60,
+                  radiusYFactor: 0.62,
+                ),
+              ),
+            ),
+
+            // ── TOP EDGE HIGHLIGHT: a separate thin white sheen
+            // strip along the very top of the card — a different
+            // SHAPE entirely (a band, not a circle). Simulates
+            // glass catching overhead light.
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 46,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x14FFFFFF), // ~8% white
+                      Color(0x00FFFFFF),
+                    ],
                   ),
                 ),
+              ),
+            ),
 
-                // ── INTERIOR GLOW (amber): same technique, centered
-                // near the coin icon on the left rather than the
-                // exact top-left corner point. Fades to TRANSPARENT
-                // (not bgBase) since this paints on top of the cyan
-                // layer — using an opaque outer color here would
-                // erase the cyan glow underneath everywhere it covers.
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: InteriorGlowPainter(
-                      position: const Alignment(-0.84, -0.10), // ~8%,45% -> alignment space
-                      peakColor: const Color(0xCC6E5A2E), // ~80% opacity, blends instead of replacing
-                      baseColor: Colors.transparent,
-                      radiusXFactor: 0.60,
-                      radiusYFactor: 0.62,
-                    ),
-                  ),
-                ),
+            // ── BORDER STROKE
+            // Uses the EdgeGlowBorder class but with glowWidth: 0
+            // so we just get the crisp 1.4px gradient line without
+            // the heavy "rectangle-wise" glow you disliked earlier.
+            // This replaces the old "opaque container padding" hack,
+            // allowing true transparency for the rainfall.
+            const Positioned.fill(
+              child: EdgeGlowBorder(
+                borderRadius: 20,
+                lineWidth: 1.4,
+                glowWidth: 0, // No glow, just the stroke
+              ),
+            ),
 
-                // ── TOP EDGE HIGHLIGHT: a separate thin white sheen
-                // strip along the very top of the card — a different
-                // SHAPE entirely (a band, not a circle). Simulates
-                // glass catching overhead light.
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 46,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0x14FFFFFF), // ~8% white
-                          Color(0x00FFFFFF),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+            // ── GRAIN: subtle noise texture over the whole card,
+            // sits above the fog glow, below the text/icons.
+            const Positioned.fill(
+              child: GrainOverlay(opacity: 0.06, density: 7),
+            ),
 
-                // NOTE: no separate border-bleed blur layer needed —
-                // the diagonal base gradient above already produces
-                // the cool cast near the border on that side. The
-                // EdgeGlowBorder class is still in this file if you
-                // want extra punch later, just unused here for now.
-
-                // ── GRAIN: subtle noise texture over the whole card,
-                // sits above the fog glow, below the text/icons.
-                const Positioned.fill(
-                  child: GrainOverlay(opacity: 0.06, density: 7),
-                ),
-
-                // ── CONTENT
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+            // ── CONTENT
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

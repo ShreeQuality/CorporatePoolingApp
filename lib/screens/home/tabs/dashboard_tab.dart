@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/wallet_provider.dart';
-import '../widgets/driver_upgrade_card.dart';
-import '../widgets/quick_commute_card.dart';
 import '../widgets/wallet_summary_banner.dart';
 
 class DashboardTab extends StatefulWidget {
@@ -54,23 +52,7 @@ class _DashboardTabState extends State<DashboardTab> {
             _buildHeader(),
             const SizedBox(height: 16),
             const WalletSummaryBanner(),
-            const SizedBox(height: 14),
-            const QuickCommuteCard(),
-            const SizedBox(height: 14),
-
-            // Driver Upgrade CTA if user is not yet a registered driver
-            Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                final isDriver = auth.currentUser?.isDriver ?? false;
-                if (!isDriver) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 14.0),
-                    child: DriverUpgradeCard(),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+            const SizedBox(height: 16),
 
             // Mode Selector Tabs (Find a Ride vs Give a Ride)
             _buildModeSwitcher(),

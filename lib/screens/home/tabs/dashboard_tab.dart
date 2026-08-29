@@ -201,6 +201,27 @@ class _DashboardTabState extends State<DashboardTab> {
                 letterSpacing: 0.5,
               ),
             ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD54F).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFFFD54F).withValues(alpha: 0.3),
+                  width: 0.8,
+                ),
+              ),
+              child: Text(
+                '"Give a ride today, take a ride tomorrow"',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFFD54F).withValues(alpha: 0.9),
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -251,6 +272,27 @@ class _DashboardTabState extends State<DashboardTab> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E676).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF00E676).withValues(alpha: 0.3),
+                  width: 0.8,
+                ),
+              ),
+              child: Text(
+                '"Give a ride today, take a ride tomorrow"',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF00E676).withValues(alpha: 0.9),
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const SizedBox(height: 16),

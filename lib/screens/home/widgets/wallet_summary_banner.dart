@@ -5,36 +5,47 @@ import 'package:provider/provider.dart';
 import '../../../providers/wallet_provider.dart';
 
 // ═════════════════════════════════════════════════════════════
-// Karma Coins Card — exact color/glow match to reference image
+// Karma Coins Card — color/glow match to reference image
 // ═════════════════════════════════════════════════════════════
-//
-// What's happening visually in the reference:
-//   1. BASE: near-black navy background (#0A121C)
-//   2. FOG: a warm amber/gold radial glow bleeding in from the
-//      TOP-LEFT corner only, fading into the dark base — this is
-//      what gives the "Karma Coins" label + coin its warm glow.
-//   3. BORDER: a thin gradient outline — gold at top-left,
-//      sweeping through teal, ending cyan-blue at bottom-right.
-//   4. Each stat has its OWN glow color: gold (coins), cyan
-//      (pill, filled solid + glowing), green (CO2), red (trust).
-// ─────────────────────────────────────────────────────────────
+
+class WalletSummaryBanner extends StatelessWidget {
+  const WalletSummaryBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<WalletProvider>(
+      builder: (context, walletProv, child) {
+        final summary = walletProv.summary;
+
+        return KarmaCoinsCard(
+          coins: summary.availableCoins.toInt(),
+          grantLeft: summary.corporateGrantRemaining.toInt(),
+          co2SavedKg: summary.co2SavedKg,
+          trustScore: summary.trustScore.toInt(),
+        );
+      },
+    );
+  }
+}
 
 class KarmaCardColors {
   static const bgBase      = Color(0xFF28363D); // measured true base — muted slate, not near-black
   static const fogAmber    = Color(0xFFFFB300); // top-left warm glow source
   static const fogCyan     = Color(0xFF265062); // measured interior glow peak color
 
-  // Border gradient sweep: gold → teal → cyan-blue
-  static const borderGold  = Color(0xFFFFD65C);
-  static const borderTeal  = Color(0xFF33C7C1);
-  static const borderCyan  = Color(0xFF2E9BE6);
+  // Border gradient sweep — measured from the reference border
+  static const borderGold  = Color(0xFFB2A27B);
+  static const borderTeal  = Color(0xFF6E7F86);
+  static const borderCyan  = Color(0xFF67B4C7);
 
   static const coinGoldHi  = Color(0xFFFFDB70); // coin circle highlight
-  static const coinGoldLo  = Color(0xFFE8A317); // coin circle shadow edge
-  static const textCoinTitle = Color(0xFFFFE9B0); // "340 Coins" warm cream
-  static const textLabel   = Color(0xFFF3D9A4); // "Karma Coins" label
+  static const coinGoldLo  = Color(0xFFF0C24A); // coin circle shadow edge — measured range
+  static const textCoinTitle = Color(0xFFFFE9B0); // "340 Coins" — measured #FFEAA1, near match
+  static const textLabel   = Color(0xFFF3D9A4); // "Karma Coins" label — UNVERIFIED, sampling kept missing glyphs
 
-  static const pillCyanFill = Color(0xFF19C9E6); // solid glowing pill bg
+  // Pill is NOT a flat fill — measured a top-to-bottom gradient.
+  static const pillCyanHi   = Color(0xFF47E1F3); // measured, top of pill
+  static const pillCyanLo   = Color(0xFF4DC9D9); // measured, bottom of pill
   static const pillCyanText = Color(0xFF07222C); // dark text on pill
 
   static const co2Green     = Color(0xFF3FE07E);
@@ -47,19 +58,9 @@ class KarmaCardColors {
 // ═════════════════════════════════════════════════════════════
 // GRAIN / NOISE OVERLAY
 // ═════════════════════════════════════════════════════════════
-//
-// Thousands of tiny random black/white dots at very low opacity.
-// Uses a FIXED random seed so the pattern is stable (doesn't
-// shimmer/flicker on rebuild) and shouldRepaint = false so it's
-// painted once and cached — effectively free performance cost.
-// ─────────────────────────────────────────────────────────────
 
 class GrainOverlay extends StatelessWidget {
-  /// Overall strength of the grain. Real premium UIs sit around
-  /// 0.04–0.08 — anything higher starts looking like visible static.
   final double opacity;
-
-  /// Roughly how many dots per 1000px² of surface area.
   final int density;
 
   const GrainOverlay({
@@ -84,7 +85,6 @@ class GrainOverlay extends StatelessWidget {
 
 class _GrainPainter extends CustomPainter {
   final int density;
-  // Fixed seed → same grain pattern every time, no flicker.
   static final math.Random _rng = math.Random(1337);
 
   _GrainPainter({required this.density});
@@ -98,31 +98,20 @@ class _GrainPainter extends CustomPainter {
       final x = _rng.nextDouble() * size.width;
       final y = _rng.nextDouble() * size.height;
       final isLight = _rng.nextBool();
-      final strength = _rng.nextDouble() * 0.5 + 0.2; // 0.2–0.7
+      final strength = _rng.nextDouble() * 0.5 + 0.2;
       paint.color =
           (isLight ? Colors.white : Colors.black).withOpacity(strength);
       canvas.drawRect(Rect.fromLTWH(x, y, 1.0, 1.0), paint);
     }
   }
 
-  // Static grain — never needs to repaint once drawn.
   @override
   bool shouldRepaint(covariant _GrainPainter oldDelegate) => false;
 }
 
-
 // ═════════════════════════════════════════════════════════════
-// EDGE-GLOW BORDER — the border's light "bleeding" onto the
-// interior surface (this is the piece that was missing).
+// EDGE-GLOW BORDER
 // ═════════════════════════════════════════════════════════════
-//
-// A real glowing border is TWO strokes on the same path:
-//   1. A wide, heavily blurred stroke   → the soft bleed/glow
-//   2. A thin, crisp stroke on top      → the visible hairline
-// Both use the SAME gradient, so the glow color matches the
-// border color at every point — warm gold near top-left,
-// cooling to teal/cyan near top-right and the right edge.
-// ─────────────────────────────────────────────────────────────
 
 class EdgeGlowBorder extends StatelessWidget {
   final double borderRadius;
@@ -183,15 +172,11 @@ class _EdgeGlowPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Inset by half the line width so the stroke is drawn fully inside the bounds
-    // and doesn't get clipped in half by any outer ClipRRect.
-    final inset = lineWidth / 2;
     final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(inset, inset, size.width - lineWidth, size.height - lineWidth),
-      Radius.circular(borderRadius - inset),
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(borderRadius),
     );
 
-    // Same diagonal sweep as the visible border (topLeft -> bottomRight)
     final shader = ui.Gradient.linear(
       Offset.zero,
       Offset(size.width, size.height),
@@ -199,7 +184,6 @@ class _EdgeGlowPainter extends CustomPainter {
       stops,
     );
 
-    // 1. Wide blurred stroke = the glow that bleeds onto the interior
     final glowPaint = Paint()
       ..shader = shader
       ..style = PaintingStyle.stroke
@@ -207,7 +191,6 @@ class _EdgeGlowPainter extends CustomPainter {
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, glowBlurSigma);
     canvas.drawRRect(rrect, glowPaint);
 
-    // 2. Thin crisp stroke = the visible hairline on top
     final linePaint = Paint()
       ..shader = shader
       ..style = PaintingStyle.stroke
@@ -215,39 +198,18 @@ class _EdgeGlowPainter extends CustomPainter {
     canvas.drawRRect(rrect, linePaint);
   }
 
-  // Static — draw once, never repaint.
   @override
   bool shouldRepaint(covariant _EdgeGlowPainter oldDelegate) => false;
 }
 
-
 // ═════════════════════════════════════════════════════════════
-// INTERIOR GLOW — CustomPainter, built from measured pixel data
+// INTERIOR GLOW
 // ═════════════════════════════════════════════════════════════
-//
-// Not a Container/BoxShadow guess — these values came from
-// sampling the actual reference image pixel-by-pixel:
-//   • Cyan glow peak sits at ~80% across, ~15% down (inset from
-//     the corner, not sitting on it), color ≈ #265062
-//   • True base color (far corner) ≈ #28363D — a muted slate,
-//     NOT near-black
-//   • Falloff reaches ~66% of width / ~70% of height before
-//     hitting base color
-//
-// Technique: draw a RADIAL gradient with ui.Gradient.radial,
-// then squash the canvas on one axis before painting it. A
-// perfect circle, painted onto a non-uniformly scaled canvas,
-// becomes a true ellipse — with independently controllable X/Y
-// radii. This is the correct way to get an elliptical gradient;
-// BoxDecoration's RadialGradient cannot do this precisely.
-// ─────────────────────────────────────────────────────────────
 
 class InteriorGlowPainter extends CustomPainter {
-  /// Where the glow peaks, in Alignment space (-1..1 on each axis).
   final Alignment position;
   final Color peakColor;
   final Color baseColor;
-  /// How far the glow reaches, as a fraction of the canvas width/height.
   final double radiusXFactor;
   final double radiusYFactor;
 
@@ -267,9 +229,6 @@ class InteriorGlowPainter extends CustomPainter {
     final squash = radiusY / radiusX;
 
     canvas.save();
-    // Squash canvas vertically around the glow's own center, so a
-    // circular gradient renders as an ellipse matching the measured
-    // horizontal vs vertical falloff.
     canvas.translate(center.dx, center.dy);
     canvas.scale(1.0, squash);
     canvas.translate(-center.dx, -center.dy);
@@ -282,8 +241,6 @@ class InteriorGlowPainter extends CustomPainter {
         const [0.0, 1.0],
       );
 
-    // Oversized rect so the squashed paint still fully covers the
-    // canvas after the inverse-scale is applied on restore.
     canvas.drawRect(
       Rect.fromCircle(center: center, radius: radiusX * 3),
       paint,
@@ -294,31 +251,6 @@ class InteriorGlowPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant InteriorGlowPainter oldDelegate) => false;
 }
-
-// ═════════════════════════════════════════════════════════════
-// WALLET SUMMARY BANNER (Connected to Live WalletProvider)
-// ═════════════════════════════════════════════════════════════
-
-class WalletSummaryBanner extends StatelessWidget {
-  const WalletSummaryBanner({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<WalletProvider>(
-      builder: (context, walletProv, child) {
-        final summary = walletProv.summary;
-
-        return KarmaCoinsCard(
-          coins: summary.availableCoins.toInt(),
-          grantLeft: summary.corporateGrantRemaining.toInt(),
-          co2SavedKg: summary.co2SavedKg,
-          trustScore: summary.trustScore.toInt(),
-        );
-      },
-    );
-  }
-}
-
 
 class KarmaCoinsCard extends StatelessWidget {
   final int coins;
@@ -339,93 +271,73 @@ class KarmaCoinsCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        color: KarmaCardColors.bgBase.withOpacity(0.45), // Translucent base to show rainfall
-        child: Stack(
-          children: [
-            // ── INTERIOR GLOW (cyan): CustomPainter, elliptical
-            // radial gradient fitted to measured pixel data.
-            // Peak sits at 80% across / 15% down — NOT at the
-            // literal corner — fading to transparent so the rainfall shows through.
-            Positioned.fill(
-              child: CustomPaint(
-                painter: InteriorGlowPainter(
-                  position: const Alignment(0.60, -0.70), // 80%,15% -> alignment space
-                  peakColor: KarmaCardColors.fogCyan, // Fully opaque peak as original
-                  baseColor: Colors.transparent, // Fade to transparent, not opaque base
-                  radiusXFactor: 0.66,
-                  radiusYFactor: 0.70,
-                ),
-              ),
-            ),
-
-            // ── INTERIOR GLOW (amber): same technique, centered
-            // near the coin icon on the left rather than the
-            // exact top-left corner point. Fades to TRANSPARENT
-            // (not bgBase) since this paints on top of the cyan
-            // layer — using an opaque outer color here would
-            // erase the cyan glow underneath everywhere it covers.
-            Positioned.fill(
-              child: CustomPaint(
-                painter: InteriorGlowPainter(
-                  position: const Alignment(-0.84, -0.10), // ~8%,45% -> alignment space
-                  peakColor: const Color(0xCC6E5A2E), // ~80% opacity, blends instead of replacing
-                  baseColor: Colors.transparent,
-                  radiusXFactor: 0.60,
-                  radiusYFactor: 0.62,
-                ),
-              ),
-            ),
-
-            // ── TOP EDGE HIGHLIGHT: a separate thin white sheen
-            // strip along the very top of the card — a different
-            // SHAPE entirely (a band, not a circle). Simulates
-            // glass catching overhead light.
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 46,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0x14FFFFFF), // ~8% white
-                      Color(0x00FFFFFF),
-                    ],
+        padding: const EdgeInsets.all(1.4),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              KarmaCardColors.borderGold,
+              KarmaCardColors.borderTeal,
+              KarmaCardColors.borderCyan,
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(19),
+          child: Container(
+            color: KarmaCardColors.bgBase,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: InteriorGlowPainter(
+                      position: const Alignment(0.60, -0.70),
+                      peakColor: KarmaCardColors.fogCyan,
+                      baseColor: KarmaCardColors.bgBase,
+                      radiusXFactor: 0.66,
+                      radiusYFactor: 0.70,
+                    ),
                   ),
                 ),
-              ),
-            ),
-
-            // ── BORDER STROKE
-            // Uses the EdgeGlowBorder class but with glowWidth: 0
-            // so we just get the crisp 1.4px gradient line without
-            // the heavy "rectangle-wise" glow you disliked earlier.
-            // This replaces the old "opaque container padding" hack,
-            // allowing true transparency for the rainfall.
-            const Positioned.fill(
-              child: EdgeGlowBorder(
-                borderRadius: 20,
-                lineWidth: 1.4,
-                glowWidth: 0, // No glow, just the stroke
-              ),
-            ),
-
-            // ── GRAIN: subtle noise texture over the whole card,
-            // sits above the fog glow, below the text/icons.
-            const Positioned.fill(
-              child: GrainOverlay(opacity: 0.06, density: 7),
-            ),
-
-            // ── CONTENT
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: InteriorGlowPainter(
+                      position: const Alignment(-0.84, -0.10),
+                      peakColor: const Color(0xCC6E5A2E),
+                      baseColor: Colors.transparent,
+                      radiusXFactor: 0.60,
+                      radiusYFactor: 0.62,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 46,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0x14FFFFFF),
+                          Color(0x00FFFFFF),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const Positioned.fill(
+                  child: GrainOverlay(opacity: 0.06, density: 7),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Row 1: sparkle + "Karma Coins" label
                       Row(
                         children: [
                           const Icon(Icons.auto_awesome,
@@ -442,12 +354,9 @@ class KarmaCoinsCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-
-                      // Row 2: coin icon + big glowing count
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Coin circle with gold gradient + glow
                           Container(
                             width: 30,
                             height: 30,
@@ -510,20 +419,24 @@ class KarmaCoinsCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 14),
-
-                      // Row 3: grant pill + CO2 + trust score
                       Row(
                         children: [
-                          // Solid glowing cyan pill
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 7),
                             decoration: BoxDecoration(
-                              color: KarmaCardColors.pillCyanFill,
+                              gradient: const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  KarmaCardColors.pillCyanHi,
+                                  KarmaCardColors.pillCyanLo,
+                                ],
+                              ),
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: KarmaCardColors.pillCyanFill
+                                  color: KarmaCardColors.pillCyanHi
                                       .withOpacity(0.55),
                                   blurRadius: 14,
                                   spreadRadius: 0.5,
@@ -549,8 +462,6 @@ class KarmaCoinsCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 16),
-
-                          // CO2 saved
                           _StatItem(
                             icon: Icons.cloud_upload_outlined,
                             iconColor: KarmaCardColors.co2Green,
@@ -560,8 +471,6 @@ class KarmaCoinsCard extends StatelessWidget {
                             labelColor: KarmaCardColors.co2GreenMuted,
                           ),
                           const SizedBox(width: 16),
-
-                          // Trust score
                           _StatItem(
                             icon: Icons.verified_user_outlined,
                             iconColor: KarmaCardColors.trustRed,
@@ -578,6 +487,8 @@ class KarmaCoinsCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
     );
   }
 }

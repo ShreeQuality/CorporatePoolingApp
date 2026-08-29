@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/wallet_provider.dart';
 
@@ -101,7 +100,7 @@ class _GrainPainter extends CustomPainter {
       final isLight = _rng.nextBool();
       final strength = _rng.nextDouble() * 0.5 + 0.2; // 0.2–0.7
       paint.color =
-          (isLight ? Colors.white : Colors.black).withValues(alpha: strength);
+          (isLight ? Colors.white : Colors.black).withOpacity(strength);
       canvas.drawRect(Rect.fromLTWH(x, y, 1.0, 1.0), paint);
     }
   }
@@ -317,6 +316,7 @@ class WalletSummaryBanner extends StatelessWidget {
   }
 }
 
+
 class KarmaCoinsCard extends StatelessWidget {
   final int coins;
   final int grantLeft;
@@ -374,13 +374,16 @@ class KarmaCoinsCard extends StatelessWidget {
 
                 // ── INTERIOR GLOW (amber): same technique, centered
                 // near the coin icon on the left rather than the
-                // exact top-left corner point.
+                // exact top-left corner point. Fades to TRANSPARENT
+                // (not bgBase) since this paints on top of the cyan
+                // layer — using an opaque outer color here would
+                // erase the cyan glow underneath everywhere it covers.
                 Positioned.fill(
                   child: CustomPaint(
                     painter: InteriorGlowPainter(
                       position: const Alignment(-0.84, -0.10), // ~8%,45% -> alignment space
-                      peakColor: const Color(0xFF6E5A2E), // measured composite amber-on-base
-                      baseColor: KarmaCardColors.bgBase,
+                      peakColor: const Color(0xCC6E5A2E), // ~80% opacity, blends instead of replacing
+                      baseColor: Colors.transparent,
                       radiusXFactor: 0.60,
                       radiusYFactor: 0.62,
                     ),
@@ -436,7 +439,7 @@ class KarmaCoinsCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             'Karma Coins',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: KarmaCardColors.textLabel,
@@ -467,7 +470,7 @@ class KarmaCoinsCard extends StatelessWidget {
                               boxShadow: [
                                 BoxShadow(
                                   color: KarmaCardColors.fogAmber
-                                      .withValues(alpha: 0.6),
+                                      .withOpacity(0.6),
                                   blurRadius: 14,
                                   spreadRadius: 1,
                                 ),
@@ -484,14 +487,14 @@ class KarmaCoinsCard extends StatelessWidget {
                           const SizedBox(width: 10),
                           Text(
                             '$coins',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.w800,
                               color: KarmaCardColors.textCoinTitle,
                               shadows: [
                                 Shadow(
                                   color: KarmaCardColors.fogAmber
-                                      .withValues(alpha: 0.55),
+                                      .withOpacity(0.55),
                                   blurRadius: 16,
                                 ),
                               ],
@@ -502,11 +505,11 @@ class KarmaCoinsCard extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               'Coins',
-                              style: GoogleFonts.outfit(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: KarmaCardColors.textCoinTitle
-                                    .withValues(alpha: 0.9),
+                                    .withOpacity(0.9),
                               ),
                             ),
                           ),
@@ -527,7 +530,7 @@ class KarmaCoinsCard extends StatelessWidget {
                               boxShadow: [
                                 BoxShadow(
                                   color: KarmaCardColors.pillCyanFill
-                                      .withValues(alpha: 0.55),
+                                      .withOpacity(0.55),
                                   blurRadius: 14,
                                   spreadRadius: 0.5,
                                 ),
@@ -542,7 +545,7 @@ class KarmaCoinsCard extends StatelessWidget {
                                 const SizedBox(width: 5),
                                 Text(
                                   '$grantLeft Grant Left',
-                                  style: GoogleFonts.inter(
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
                                     color: KarmaCardColors.pillCyanText,
@@ -557,7 +560,7 @@ class KarmaCoinsCard extends StatelessWidget {
                           _StatItem(
                             icon: Icons.cloud_upload_outlined,
                             iconColor: KarmaCardColors.co2Green,
-                            valueText: '${co2SavedKg.toStringAsFixed(1)}kg',
+                            valueText: '${co2SavedKg}kg',
                             valueColor: KarmaCardColors.co2Green,
                             labelText: 'CO2 Saved',
                             labelColor: KarmaCardColors.co2GreenMuted,
@@ -619,7 +622,7 @@ class _StatItem extends StatelessWidget {
           children: [
             Text(
               valueText,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
                 color: valueColor,
@@ -627,7 +630,7 @@ class _StatItem extends StatelessWidget {
             ),
             Text(
               labelText,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w500,
                 color: labelColor,

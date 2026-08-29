@@ -16,7 +16,6 @@ class DashboardTab extends StatefulWidget {
 class _DashboardTabState extends State<DashboardTab> {
   String _selectedFindVehicle = 'Any';
   String _selectedGiveVehicle = 'Car';
-  int _activeModeIndex = 0; // 0 = Find a Ride, 1 = Give a Ride
 
   @override
   void initState() {
@@ -54,12 +53,17 @@ class _DashboardTabState extends State<DashboardTab> {
             const WalletSummaryBanner(),
             const SizedBox(height: 16),
 
-            // Mode Selector Tabs (Find a Ride vs Give a Ride)
-            _buildModeSwitcher(),
-            const SizedBox(height: 16),
+            // Find a Ride Section
+            _buildSectionTitle('[ Find a Ride ]', const Color(0xFFFFD54F)),
+            const SizedBox(height: 12),
+            _buildFindRidePanel(),
 
-            // Active Mode Panel
-            if (_activeModeIndex == 0) _buildFindRidePanel() else _buildGiveRidePanel(),
+            const SizedBox(height: 24),
+
+            // Give a Ride Section
+            _buildSectionTitle('[ Give a Ride ]', const Color(0xFF00E676)),
+            const SizedBox(height: 12),
+            _buildGiveRidePanel(),
 
             const SizedBox(height: 110), // clearance for bottom navigation
           ],
@@ -155,91 +159,14 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildModeSwitcher() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildModeTab(
-              index: 0,
-              label: '[ Find a Ride ]',
-              selectedGradient: const LinearGradient(
-                colors: [Color(0xFFFFE082), Color(0xFFFFA000)],
-              ),
-              textColor: const Color(0xFF3E2723),
-              borderColor: const Color(0xFFFFD54F),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _buildModeTab(
-              index: 1,
-              label: '[ Give a Ride ]',
-              selectedGradient: const LinearGradient(
-                colors: [Color(0xFF69F0AE), Color(0xFF00E676)],
-              ),
-              textColor: const Color(0xFF0A2E17),
-              borderColor: const Color(0xFF00E676),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeTab({
-    required int index,
-    required String label,
-    required Gradient selectedGradient,
-    required Color textColor,
-    required Color borderColor,
-  }) {
-    final isSelected = _activeModeIndex == index;
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        setState(() => _activeModeIndex = index);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          gradient: isSelected ? selectedGradient : null,
-          color: isSelected ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? Border.all(color: borderColor, width: 1.5)
-              : Border.all(color: Colors.transparent),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: borderColor.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    spreadRadius: 0,
-                  ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.outfit(
-              color: isSelected ? textColor : const Color(0xFF94A3B8),
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
+  Widget _buildSectionTitle(String title, Color color) {
+    return Text(
+      title,
+      style: GoogleFonts.outfit(
+        color: color,
+        fontSize: 16,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.5,
       ),
     );
   }

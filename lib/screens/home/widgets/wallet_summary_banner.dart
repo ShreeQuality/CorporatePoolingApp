@@ -353,19 +353,19 @@ class KarmaCoinsCard extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(19),
           child: Container(
-            color: KarmaCardColors.bgBase,
+            color: KarmaCardColors.bgBase.withOpacity(0.45), // Translucent base to show rainfall
             child: Stack(
               children: [
                 // ── INTERIOR GLOW (cyan): CustomPainter, elliptical
                 // radial gradient fitted to measured pixel data.
                 // Peak sits at 80% across / 15% down — NOT at the
-                // literal corner — fading to the true base slate color.
+                // literal corner — fading to transparent so the rainfall shows through.
                 Positioned.fill(
                   child: CustomPaint(
                     painter: InteriorGlowPainter(
                       position: const Alignment(0.60, -0.70), // 80%,15% -> alignment space
-                      peakColor: KarmaCardColors.fogCyan,
-                      baseColor: KarmaCardColors.bgBase,
+                      peakColor: KarmaCardColors.fogCyan.withOpacity(0.7), // Semi-transparent peak
+                      baseColor: Colors.transparent, // Fade to transparent, not opaque base
                       radiusXFactor: 0.66,
                       radiusYFactor: 0.70,
                     ),

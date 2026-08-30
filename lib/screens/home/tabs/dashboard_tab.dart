@@ -120,9 +120,22 @@ class _DashboardTabState extends State<DashboardTab> {
               ],
             ),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  icon: const Icon(Icons.shield_rounded, color: Color(0xFFFF5252), size: 22),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    context.push('/safety');
+                  },
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 24),
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -130,13 +143,7 @@ class _DashboardTabState extends State<DashboardTab> {
                     );
                   },
                 ),
-                IconButton(
-                  icon: const Icon(Icons.shield_rounded, color: Color(0xFFFF5252)),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    context.push('/safety');
-                  },
-                ),
+                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () {
                     HapticFeedback.lightImpact();

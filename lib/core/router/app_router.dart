@@ -8,6 +8,7 @@ import '../../screens/auth/corporate_verify_screen.dart';
 import '../../screens/auth/aadhaar_kyc_screen.dart';
 import '../../screens/auth/driver_kyc_screen.dart';
 import '../../screens/home/home_shell_screen.dart';
+import '../../screens/home/tabs/wallet_screen.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -58,6 +59,10 @@ final GoRouter appRouter = GoRouter(
         final args = state.extra as Map<String, dynamic>?;
         return HomeShellScreen(arguments: args);
       },
+    ),
+    GoRoute(
+      path: '/wallet',
+      builder: (context, state) => const WalletScreen(),
     ),
   ],
 );

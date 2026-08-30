@@ -5,7 +5,6 @@ import 'tabs/dashboard_tab.dart';
 import 'tabs/my_rides_tab.dart';
 import 'tabs/profile_tab.dart';
 import 'tabs/safety_tab.dart';
-import 'tabs/wallet_tab.dart';
 
 class HomeShellScreen extends StatefulWidget {
   final Map<String, dynamic>? arguments;
@@ -21,7 +20,6 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
   final List<Widget> _tabs = const [
     DashboardTab(),
     MyRidesTab(),
-    WalletTab(),
     SafetyTab(),
     ProfileTab(),
   ];
@@ -43,7 +41,6 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
     const List<_NavItem> items = [
       _NavItem(icon: Icons.home_rounded, label: 'Home', activeColor: Color(0xFFFFB74D)),
       _NavItem(icon: Icons.directions_car_rounded, label: 'Rides', activeColor: Color(0xFF00E5FF)),
-      _NavItem(icon: Icons.account_balance_wallet_rounded, label: 'Wallet', activeColor: Color(0xFFFFD54F)),
       _NavItem(icon: Icons.shield_rounded, label: 'Safety', activeColor: Color(0xFFFF5252)),
       _NavItem(icon: Icons.person_rounded, label: 'Profile', activeColor: Color(0xFF00E676)),
     ];

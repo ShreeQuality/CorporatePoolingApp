@@ -72,53 +72,67 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget _buildHeader() {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
-        final userName = auth.currentUser?.fullName ?? 'Commuter';
-        final company = auth.currentUser?.companyName ?? 'Verified Corporate';
+        String userName = auth.currentUser?.fullName ?? '';
+        if (userName.trim().isEmpty) userName = 'Commuter';
+        String company = auth.currentUser?.companyName ?? '';
+        if (company.trim().isEmpty) company = 'Verified Corporate';
+        
         final initials = _getInitials(userName);
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _greeting,
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 13,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _greeting,
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 13,
+                    ),
                   ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      userName,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.2,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          userName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.verified_rounded,
-                      color: Color(0xFF00E5FF),
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '[ $company ]',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.65),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.verified_rounded,
+                        color: Color(0xFF00E5FF),
+                        size: 18,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          '[ $company ]',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.65),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

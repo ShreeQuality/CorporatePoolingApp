@@ -8,16 +8,34 @@ import '../../../providers/auth_provider.dart';
 import '../../../widgets/core/glass_panel.dart';
 import '../widgets/driver_upgrade_card.dart';
 
-class ProfileTab extends StatelessWidget {
-  const ProfileTab({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Consumer<AuthProvider>(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'Profile',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Consumer<AuthProvider>(
           builder: (context, auth, _) {
             final user = auth.currentUser;
             final fullName = user?.fullName ?? 'Commuter';
@@ -168,8 +186,9 @@ class ProfileTab extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildBadge(String label, IconData icon, Color color) {
     return Container(

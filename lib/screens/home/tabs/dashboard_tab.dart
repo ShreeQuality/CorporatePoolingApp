@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/wallet_provider.dart';
 import '../widgets/wallet_summary_banner.dart';
@@ -129,20 +130,26 @@ class _DashboardTabState extends State<DashboardTab> {
                     );
                   },
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF00E676), width: 1.5),
-                  ),
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: const Color(0xFF1E293B),
-                    child: Text(
-                      initials,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.push('/profile');
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF00E676), width: 1.5),
+                    ),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: const Color(0xFF1E293B),
+                      child: Text(
+                        initials,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),

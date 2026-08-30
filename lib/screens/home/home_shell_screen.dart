@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'tabs/dashboard_tab.dart';
 import 'tabs/my_rides_tab.dart';
-import 'tabs/profile_tab.dart';
 import 'tabs/safety_tab.dart';
 
 class HomeShellScreen extends StatefulWidget {
@@ -21,7 +20,6 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
     DashboardTab(),
     MyRidesTab(),
     SafetyTab(),
-    ProfileTab(),
   ];
 
   @override
@@ -42,7 +40,6 @@ class _HomeShellScreenState extends State<HomeShellScreen> {
       _NavItem(icon: Icons.home_rounded, label: 'Home', activeColor: Color(0xFFFFB74D)),
       _NavItem(icon: Icons.directions_car_rounded, label: 'Rides', activeColor: Color(0xFF00E5FF)),
       _NavItem(icon: Icons.shield_rounded, label: 'Safety', activeColor: Color(0xFFFF5252)),
-      _NavItem(icon: Icons.person_rounded, label: 'Profile', activeColor: Color(0xFF00E676)),
     ];
 
     return Container(

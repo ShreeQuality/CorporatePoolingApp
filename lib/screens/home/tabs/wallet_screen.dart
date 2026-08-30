@@ -187,8 +187,9 @@ class WalletScreen extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildTierCol(String label, String value, Color color) {
     return Expanded(

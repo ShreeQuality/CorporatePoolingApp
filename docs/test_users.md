@@ -3,27 +3,29 @@
 This file maintains a list of fake test users to be used during local development and testing. 
 **Do not use real phone numbers or real Aadhaar numbers in development.** All OTPs in development are mocked (e.g., `123456`).
 
+*Note: The Aadhaar numbers listed below are mathematically valid (they pass the Verhoeff checksum algorithm and do not start with 0 or 1), ensuring they pass backend validation logic.*
+
 ## 🚗 5 Drivers (Aadhaar + Vehicle Verified)
 These users went through the entire onboarding flow, verified their Aadhaar, and uploaded their vehicle RC/DL to offer rides.
 
-| Phone Number | Name (Aadhaar) | Aadhaar No. | Company | Vehicle Type | Vehicle Plate (Vahan) |
+| Phone Number | Name (Aadhaar) | Aadhaar No. (Verhoeff Valid) | Company | Vehicle Type | Vehicle Plate (Vahan) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `99999 00001` | Rahul Sharma | `1111 2222 3333` | Infosys | Car (Tata Nexon) | `MH 12 AB 1234` |
-| `99999 00002` | Priya Patel | `2222 3333 4444` | TCS | Scooter (Activa) | `KA 01 CD 5678` |
-| `99999 00003` | Amit Singh | `3333 4444 5555` | Infosys | Car (Hyundai i20) | `DL 4C EF 9012` |
-| `99999 00004` | Neha Gupta | `4444 5555 6666` | Wipro | Car (Maruti Swift) | `TS 09 GH 3456` |
-| `99999 00005` | Vikram Reddy | `5555 6666 7777` | *Public Commuter* | Bike (Royal Enfield) | `MH 02 IJ 7890` |
+| `99999 00001` | Rahul Sharma | `2222 1111 0002` | Infosys | Car (Tata Nexon) | `MH 12 AB 1234` |
+| `99999 00002` | Priya Patel | `3333 2222 0005` | TCS | Scooter (Activa) | `KA 01 CD 5678` |
+| `99999 00003` | Amit Singh | `4444 3333 0006` | Infosys | Car (Hyundai i20) | `DL 4C EF 9012` |
+| `99999 00004` | Neha Gupta | `5555 4444 0002` | Wipro | Car (Maruti Swift) | `TS 09 GH 3456` |
+| `99999 00005` | Vikram Reddy | `6666 5555 0006` | *Public Commuter* | Bike (Royal Enfield) | `MH 02 IJ 7890` |
 
 ---
 
 ## 🚶 3 Verified Riders (Aadhaar Only, No Vehicle)
 These users verified their identity but skipped the "Driver KYC" screen. They can only search for rides.
 
-| Phone Number | Name (Aadhaar) | Aadhaar No. | Company | Status |
+| Phone Number | Name (Aadhaar) | Aadhaar No. (Verhoeff Valid) | Company | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| `99999 00006` | Sneha Desai | `6666 7777 8888` | Infosys | Rider |
-| `99999 00007` | Rohan Joshi | `7777 8888 9999` | TCS | Rider |
-| `99999 00008` | Pooja Iyer | `8888 9999 0000` | Wipro | Rider |
+| `99999 00006` | Sneha Desai | `7777 6666 0001` | Infosys | Rider |
+| `99999 00007` | Rohan Joshi | `8888 7777 0002` | TCS | Rider |
+| `99999 00008` | Pooja Iyer | `9999 8888 0000` | Wipro | Rider |
 
 ---
 

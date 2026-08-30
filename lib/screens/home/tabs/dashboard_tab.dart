@@ -130,6 +130,13 @@ class _DashboardTabState extends State<DashboardTab> {
                     );
                   },
                 ),
+                IconButton(
+                  icon: const Icon(Icons.shield_rounded, color: Color(0xFFFF5252)),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    context.push('/safety');
+                  },
+                ),
                 GestureDetector(
                   onTap: () {
                     HapticFeedback.lightImpact();

@@ -10,6 +10,7 @@ import '../../screens/auth/driver_kyc_screen.dart';
 import '../../screens/home/home_shell_screen.dart';
 import '../../screens/home/tabs/wallet_screen.dart';
 import '../../screens/home/tabs/profile_screen.dart';
+import '../../screens/home/tabs/safety_screen.dart';
 import '../../core/services/aadhaar_kyc_validator.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -68,6 +69,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/safety',
+      builder: (context, state) => const SafetyScreen(),
     ),
   ],
 );

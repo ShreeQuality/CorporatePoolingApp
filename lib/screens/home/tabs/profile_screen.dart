@@ -46,16 +46,7 @@ class ProfileScreen extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top Header
-                Text(
-                  'User Profile',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
+
 
                 // User Identity Card
                 GlassPanel(
